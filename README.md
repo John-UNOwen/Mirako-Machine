@@ -58,12 +58,17 @@ New to the game? Learn its systems first: [game guides](./readmes/GUIDES.md).
 
 ### Install and run
 
+**Download (easiest):** go to the [latest release](https://github.com/John-UNOwen/Mirako-Machine/releases/latest),
+download **`Mirako-Machine-<version>.zip`**, and extract it wherever you like.
+
+**Or clone it with git**, which lets the bot update itself with one button:
+
 ```
 git clone https://github.com/John-UNOwen/Mirako-Machine.git
 cd Mirako-Machine
 ```
 
-Double-click **`start.bat`**. The first run sets up a private environment in `.venv`
+Then double-click **`start.bat`**. The first run sets up a private environment in `.venv`
 (a few minutes); later runs start immediately. To uninstall, delete `.venv`.
 
 <details>
@@ -83,11 +88,16 @@ py -3.13 -m venv .venv
 When a new version is out, a banner appears in the web UI. Press **Update**, then restart
 `start.bat` when told. If the new version is worse, the same dialog offers **Go back**.
 
-The update is refused if the bot is running, you've edited tracked files, you're not on
-`main`, or you downloaded a zip instead of cloning.
+The update is refused if the bot is running, you've edited tracked files, or you're not on
+`main`.
 
-To update by hand: close the bot, run `git pull` (after `git checkout main` if you rolled
-back), then reinstall requirements if it fails to start.
+**If you downloaded the zip:** close the bot, download the new zip from the
+[latest release](https://github.com/John-UNOwen/Mirako-Machine/releases/latest), and
+extract it over your existing folder, replacing files when asked. Your settings and
+stats are kept.
+
+To update a clone by hand: close the bot, run `git pull` (after `git checkout main` if you
+rolled back), then reinstall requirements if it fails to start.
 
 Your settings, stats and logs are never touched by updates. See [CHANGELOG.md](./CHANGELOG.md)
 for what changed.
