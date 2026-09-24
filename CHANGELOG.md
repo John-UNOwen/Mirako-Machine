@@ -8,6 +8,11 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.2 (2026-09-24)
+
+- Updated dependencies with known security issues (Pillow, Starlette, FastAPI and others).
+- `start.bat` now installs updated dependencies by itself after an update.
+
 ## 1.0.1 (2026-09-24)
 
 - **Fixed: the update banner could announce a version that does not exist.** The bot

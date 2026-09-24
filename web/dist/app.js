@@ -538,7 +538,7 @@ var hasRequiredScheduler_production;
 function requireScheduler_production() {
   if (hasRequiredScheduler_production) return scheduler_production;
   hasRequiredScheduler_production = 1;
-  (function(exports$1) {
+  (function(exports) {
     function push(heap, node) {
       var index2 = heap.length;
       heap.push(node);
@@ -572,15 +572,15 @@ function requireScheduler_production() {
       var diff = a.sortIndex - b.sortIndex;
       return 0 !== diff ? diff : a.id - b.id;
     }
-    exports$1.unstable_now = void 0;
+    exports.unstable_now = void 0;
     if ("object" === typeof performance && "function" === typeof performance.now) {
       var localPerformance = performance;
-      exports$1.unstable_now = function() {
+      exports.unstable_now = function() {
         return localPerformance.now();
       };
     } else {
       var localDate = Date, initialTime = localDate.now();
-      exports$1.unstable_now = function() {
+      exports.unstable_now = function() {
         return localDate.now() - initialTime;
       };
     }
@@ -607,12 +607,12 @@ function requireScheduler_production() {
     }
     var isMessageLoopRunning = false, taskTimeoutID = -1, frameInterval = 5, startTime = -1;
     function shouldYieldToHost() {
-      return needsPaint ? true : exports$1.unstable_now() - startTime < frameInterval ? false : true;
+      return needsPaint ? true : exports.unstable_now() - startTime < frameInterval ? false : true;
     }
     function performWorkUntilDeadline() {
       needsPaint = false;
       if (isMessageLoopRunning) {
-        var currentTime = exports$1.unstable_now();
+        var currentTime = exports.unstable_now();
         startTime = currentTime;
         var hasMoreWork = true;
         try {
@@ -632,7 +632,7 @@ function requireScheduler_production() {
                     var continuationCallback = callback(
                       currentTask.expirationTime <= currentTime
                     );
-                    currentTime = exports$1.unstable_now();
+                    currentTime = exports.unstable_now();
                     if ("function" === typeof continuationCallback) {
                       currentTask.callback = continuationCallback;
                       advanceTimers(currentTime);
@@ -682,27 +682,27 @@ function requireScheduler_production() {
       };
     function requestHostTimeout(callback, ms) {
       taskTimeoutID = localSetTimeout(function() {
-        callback(exports$1.unstable_now());
+        callback(exports.unstable_now());
       }, ms);
     }
-    exports$1.unstable_IdlePriority = 5;
-    exports$1.unstable_ImmediatePriority = 1;
-    exports$1.unstable_LowPriority = 4;
-    exports$1.unstable_NormalPriority = 3;
-    exports$1.unstable_Profiling = null;
-    exports$1.unstable_UserBlockingPriority = 2;
-    exports$1.unstable_cancelCallback = function(task) {
+    exports.unstable_IdlePriority = 5;
+    exports.unstable_ImmediatePriority = 1;
+    exports.unstable_LowPriority = 4;
+    exports.unstable_NormalPriority = 3;
+    exports.unstable_Profiling = null;
+    exports.unstable_UserBlockingPriority = 2;
+    exports.unstable_cancelCallback = function(task) {
       task.callback = null;
     };
-    exports$1.unstable_forceFrameRate = function(fps) {
+    exports.unstable_forceFrameRate = function(fps) {
       0 > fps || 125 < fps ? console.error(
         "forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"
       ) : frameInterval = 0 < fps ? Math.floor(1e3 / fps) : 5;
     };
-    exports$1.unstable_getCurrentPriorityLevel = function() {
+    exports.unstable_getCurrentPriorityLevel = function() {
       return currentPriorityLevel;
     };
-    exports$1.unstable_next = function(eventHandler) {
+    exports.unstable_next = function(eventHandler) {
       switch (currentPriorityLevel) {
         case 1:
         case 2:
@@ -720,10 +720,10 @@ function requireScheduler_production() {
         currentPriorityLevel = previousPriorityLevel;
       }
     };
-    exports$1.unstable_requestPaint = function() {
+    exports.unstable_requestPaint = function() {
       needsPaint = true;
     };
-    exports$1.unstable_runWithPriority = function(priorityLevel, eventHandler) {
+    exports.unstable_runWithPriority = function(priorityLevel, eventHandler) {
       switch (priorityLevel) {
         case 1:
         case 2:
@@ -742,9 +742,9 @@ function requireScheduler_production() {
         currentPriorityLevel = previousPriorityLevel;
       }
     };
-    exports$1.unstable_scheduleCallback = function(priorityLevel, callback, options) {
-      var currentTime = exports$1.unstable_now();
-      "object" === typeof options && null !== options ? (options = options.delay, options = "number" === typeof options && 0 < options ? currentTime + options : currentTime) : options = currentTime;
+    exports.unstable_scheduleCallback = function(priorityLevel, callback, options2) {
+      var currentTime = exports.unstable_now();
+      "object" === typeof options2 && null !== options2 ? (options2 = options2.delay, options2 = "number" === typeof options2 && 0 < options2 ? currentTime + options2 : currentTime) : options2 = currentTime;
       switch (priorityLevel) {
         case 1:
           var timeout = -1;
@@ -761,20 +761,20 @@ function requireScheduler_production() {
         default:
           timeout = 5e3;
       }
-      timeout = options + timeout;
+      timeout = options2 + timeout;
       priorityLevel = {
         id: taskIdCounter++,
         callback,
         priorityLevel,
-        startTime: options,
+        startTime: options2,
         expirationTime: timeout,
         sortIndex: -1
       };
-      options > currentTime ? (priorityLevel.sortIndex = options, push(timerQueue, priorityLevel), null === peek(taskQueue) && priorityLevel === peek(timerQueue) && (isHostTimeoutScheduled ? (localClearTimeout(taskTimeoutID), taskTimeoutID = -1) : isHostTimeoutScheduled = true, requestHostTimeout(handleTimeout, options - currentTime))) : (priorityLevel.sortIndex = timeout, push(taskQueue, priorityLevel), isHostCallbackScheduled || isPerformingWork || (isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline())));
+      options2 > currentTime ? (priorityLevel.sortIndex = options2, push(timerQueue, priorityLevel), null === peek(taskQueue) && priorityLevel === peek(timerQueue) && (isHostTimeoutScheduled ? (localClearTimeout(taskTimeoutID), taskTimeoutID = -1) : isHostTimeoutScheduled = true, requestHostTimeout(handleTimeout, options2 - currentTime))) : (priorityLevel.sortIndex = timeout, push(taskQueue, priorityLevel), isHostCallbackScheduled || isPerformingWork || (isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline())));
       return priorityLevel;
     };
-    exports$1.unstable_shouldYield = shouldYieldToHost;
-    exports$1.unstable_wrapCallback = function(callback) {
+    exports.unstable_shouldYield = shouldYieldToHost;
+    exports.unstable_wrapCallback = function(callback) {
       var parentPriorityLevel = currentPriorityLevel;
       return function() {
         var previousPriorityLevel = currentPriorityLevel;
@@ -864,18 +864,18 @@ function requireReactDom_production() {
       ReactSharedInternals.T = previousTransition, Internals.p = previousUpdatePriority, Internals.d.f();
     }
   };
-  reactDom_production.preconnect = function(href, options) {
-    "string" === typeof href && (options ? (options = options.crossOrigin, options = "string" === typeof options ? "use-credentials" === options ? options : "" : void 0) : options = null, Internals.d.C(href, options));
+  reactDom_production.preconnect = function(href, options2) {
+    "string" === typeof href && (options2 ? (options2 = options2.crossOrigin, options2 = "string" === typeof options2 ? "use-credentials" === options2 ? options2 : "" : void 0) : options2 = null, Internals.d.C(href, options2));
   };
   reactDom_production.prefetchDNS = function(href) {
     "string" === typeof href && Internals.d.D(href);
   };
-  reactDom_production.preinit = function(href, options) {
-    if ("string" === typeof href && options && "string" === typeof options.as) {
-      var as = options.as, crossOrigin = getCrossOriginStringAs(as, options.crossOrigin), integrity = "string" === typeof options.integrity ? options.integrity : void 0, fetchPriority = "string" === typeof options.fetchPriority ? options.fetchPriority : void 0;
+  reactDom_production.preinit = function(href, options2) {
+    if ("string" === typeof href && options2 && "string" === typeof options2.as) {
+      var as = options2.as, crossOrigin = getCrossOriginStringAs(as, options2.crossOrigin), integrity = "string" === typeof options2.integrity ? options2.integrity : void 0, fetchPriority = "string" === typeof options2.fetchPriority ? options2.fetchPriority : void 0;
       "style" === as ? Internals.d.S(
         href,
-        "string" === typeof options.precedence ? options.precedence : void 0,
+        "string" === typeof options2.precedence ? options2.precedence : void 0,
         {
           crossOrigin,
           integrity,
@@ -885,50 +885,50 @@ function requireReactDom_production() {
         crossOrigin,
         integrity,
         fetchPriority,
-        nonce: "string" === typeof options.nonce ? options.nonce : void 0
+        nonce: "string" === typeof options2.nonce ? options2.nonce : void 0
       });
     }
   };
-  reactDom_production.preinitModule = function(href, options) {
+  reactDom_production.preinitModule = function(href, options2) {
     if ("string" === typeof href)
-      if ("object" === typeof options && null !== options) {
-        if (null == options.as || "script" === options.as) {
+      if ("object" === typeof options2 && null !== options2) {
+        if (null == options2.as || "script" === options2.as) {
           var crossOrigin = getCrossOriginStringAs(
-            options.as,
-            options.crossOrigin
+            options2.as,
+            options2.crossOrigin
           );
           Internals.d.M(href, {
             crossOrigin,
-            integrity: "string" === typeof options.integrity ? options.integrity : void 0,
-            nonce: "string" === typeof options.nonce ? options.nonce : void 0
+            integrity: "string" === typeof options2.integrity ? options2.integrity : void 0,
+            nonce: "string" === typeof options2.nonce ? options2.nonce : void 0
           });
         }
-      } else null == options && Internals.d.M(href);
+      } else null == options2 && Internals.d.M(href);
   };
-  reactDom_production.preload = function(href, options) {
-    if ("string" === typeof href && "object" === typeof options && null !== options && "string" === typeof options.as) {
-      var as = options.as, crossOrigin = getCrossOriginStringAs(as, options.crossOrigin);
+  reactDom_production.preload = function(href, options2) {
+    if ("string" === typeof href && "object" === typeof options2 && null !== options2 && "string" === typeof options2.as) {
+      var as = options2.as, crossOrigin = getCrossOriginStringAs(as, options2.crossOrigin);
       Internals.d.L(href, as, {
         crossOrigin,
-        integrity: "string" === typeof options.integrity ? options.integrity : void 0,
-        nonce: "string" === typeof options.nonce ? options.nonce : void 0,
-        type: "string" === typeof options.type ? options.type : void 0,
-        fetchPriority: "string" === typeof options.fetchPriority ? options.fetchPriority : void 0,
-        referrerPolicy: "string" === typeof options.referrerPolicy ? options.referrerPolicy : void 0,
-        imageSrcSet: "string" === typeof options.imageSrcSet ? options.imageSrcSet : void 0,
-        imageSizes: "string" === typeof options.imageSizes ? options.imageSizes : void 0,
-        media: "string" === typeof options.media ? options.media : void 0
+        integrity: "string" === typeof options2.integrity ? options2.integrity : void 0,
+        nonce: "string" === typeof options2.nonce ? options2.nonce : void 0,
+        type: "string" === typeof options2.type ? options2.type : void 0,
+        fetchPriority: "string" === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
+        referrerPolicy: "string" === typeof options2.referrerPolicy ? options2.referrerPolicy : void 0,
+        imageSrcSet: "string" === typeof options2.imageSrcSet ? options2.imageSrcSet : void 0,
+        imageSizes: "string" === typeof options2.imageSizes ? options2.imageSizes : void 0,
+        media: "string" === typeof options2.media ? options2.media : void 0
       });
     }
   };
-  reactDom_production.preloadModule = function(href, options) {
+  reactDom_production.preloadModule = function(href, options2) {
     if ("string" === typeof href)
-      if (options) {
-        var crossOrigin = getCrossOriginStringAs(options.as, options.crossOrigin);
+      if (options2) {
+        var crossOrigin = getCrossOriginStringAs(options2.as, options2.crossOrigin);
         Internals.d.m(href, {
-          as: "string" === typeof options.as && "script" !== options.as ? options.as : void 0,
+          as: "string" === typeof options2.as && "script" !== options2.as ? options2.as : void 0,
           crossOrigin,
-          integrity: "string" === typeof options.integrity ? options.integrity : void 0
+          integrity: "string" === typeof options2.integrity ? options2.integrity : void 0
         });
       } else Internals.d.m(href);
   };
@@ -2120,14 +2120,14 @@ function requireReactDomClient_production() {
   var canUseDOM2 = !("undefined" === typeof window || "undefined" === typeof window.document || "undefined" === typeof window.document.createElement), passiveBrowserEventsSupported = false;
   if (canUseDOM2)
     try {
-      var options = {};
-      Object.defineProperty(options, "passive", {
+      var options2 = {};
+      Object.defineProperty(options2, "passive", {
         get: function() {
           passiveBrowserEventsSupported = true;
         }
       });
-      window.addEventListener("test", options, options);
-      window.removeEventListener("test", options, options);
+      window.addEventListener("test", options2, options2);
+      window.removeEventListener("test", options2, options2);
     } catch (e) {
       passiveBrowserEventsSupported = false;
     }
@@ -11305,15 +11305,15 @@ function requireReactDomClient_production() {
     previousDispatcher.C(href, crossOrigin);
     preconnectAs("preconnect", href, crossOrigin);
   }
-  function preload(href, as, options2) {
-    previousDispatcher.L(href, as, options2);
+  function preload(href, as, options3) {
+    previousDispatcher.L(href, as, options3);
     var ownerDocument = globalDocument;
     if (ownerDocument && href && as) {
       var preloadSelector = 'link[rel="preload"][as="' + escapeSelectorAttributeValueInsideDoubleQuotes(as) + '"]';
-      "image" === as ? options2 && options2.imageSrcSet ? (preloadSelector += '[imagesrcset="' + escapeSelectorAttributeValueInsideDoubleQuotes(
-        options2.imageSrcSet
-      ) + '"]', "string" === typeof options2.imageSizes && (preloadSelector += '[imagesizes="' + escapeSelectorAttributeValueInsideDoubleQuotes(
-        options2.imageSizes
+      "image" === as ? options3 && options3.imageSrcSet ? (preloadSelector += '[imagesrcset="' + escapeSelectorAttributeValueInsideDoubleQuotes(
+        options3.imageSrcSet
+      ) + '"]', "string" === typeof options3.imageSizes && (preloadSelector += '[imagesizes="' + escapeSelectorAttributeValueInsideDoubleQuotes(
+        options3.imageSizes
       ) + '"]')) : preloadSelector += '[href="' + escapeSelectorAttributeValueInsideDoubleQuotes(href) + '"]' : preloadSelector += '[href="' + escapeSelectorAttributeValueInsideDoubleQuotes(href) + '"]';
       var key = preloadSelector;
       switch (as) {
@@ -11326,18 +11326,18 @@ function requireReactDomClient_production() {
       preloadPropsMap.has(key) || (href = assign(
         {
           rel: "preload",
-          href: "image" === as && options2 && options2.imageSrcSet ? void 0 : href,
+          href: "image" === as && options3 && options3.imageSrcSet ? void 0 : href,
           as
         },
-        options2
+        options3
       ), preloadPropsMap.set(key, href), null !== ownerDocument.querySelector(preloadSelector) || "style" === as && ownerDocument.querySelector(getStylesheetSelectorFromKey(key)) || "script" === as && ownerDocument.querySelector(getScriptSelectorFromKey(key)) || (as = ownerDocument.createElement("link"), setInitialProperties(as, "link", href), markNodeAsHoistable(as), ownerDocument.head.appendChild(as)));
     }
   }
-  function preloadModule(href, options2) {
-    previousDispatcher.m(href, options2);
+  function preloadModule(href, options3) {
+    previousDispatcher.m(href, options3);
     var ownerDocument = globalDocument;
     if (ownerDocument && href) {
-      var as = options2 && "string" === typeof options2.as ? options2.as : "script", preloadSelector = 'link[rel="modulepreload"][as="' + escapeSelectorAttributeValueInsideDoubleQuotes(as) + '"][href="' + escapeSelectorAttributeValueInsideDoubleQuotes(href) + '"]', key = preloadSelector;
+      var as = options3 && "string" === typeof options3.as ? options3.as : "script", preloadSelector = 'link[rel="modulepreload"][as="' + escapeSelectorAttributeValueInsideDoubleQuotes(as) + '"][href="' + escapeSelectorAttributeValueInsideDoubleQuotes(href) + '"]', key = preloadSelector;
       switch (as) {
         case "audioworklet":
         case "paintworklet":
@@ -11347,7 +11347,7 @@ function requireReactDomClient_production() {
         case "script":
           key = getScriptKey(href);
       }
-      if (!preloadPropsMap.has(key) && (href = assign({ rel: "modulepreload", href }, options2), preloadPropsMap.set(key, href), null === ownerDocument.querySelector(preloadSelector))) {
+      if (!preloadPropsMap.has(key) && (href = assign({ rel: "modulepreload", href }, options3), preloadPropsMap.set(key, href), null === ownerDocument.querySelector(preloadSelector))) {
         switch (as) {
           case "audioworklet":
           case "paintworklet":
@@ -11365,8 +11365,8 @@ function requireReactDomClient_production() {
       }
     }
   }
-  function preinitStyle(href, precedence, options2) {
-    previousDispatcher.S(href, precedence, options2);
+  function preinitStyle(href, precedence, options3) {
+    previousDispatcher.S(href, precedence, options3);
     var ownerDocument = globalDocument;
     if (ownerDocument && href) {
       var styles = getResourcesFromRoot(ownerDocument).hoistableStyles, key = getStyleKey(href);
@@ -11381,9 +11381,9 @@ function requireReactDomClient_production() {
         else {
           href = assign(
             { rel: "stylesheet", href, "data-precedence": precedence },
-            options2
+            options3
           );
-          (options2 = preloadPropsMap.get(key)) && adoptPreloadPropsForStylesheet(href, options2);
+          (options3 = preloadPropsMap.get(key)) && adoptPreloadPropsForStylesheet(href, options3);
           var link = resource = ownerDocument.createElement("link");
           markNodeAsHoistable(link);
           setInitialProperties(link, "link", href);
@@ -11410,12 +11410,12 @@ function requireReactDomClient_production() {
       }
     }
   }
-  function preinitScript(src, options2) {
-    previousDispatcher.X(src, options2);
+  function preinitScript(src, options3) {
+    previousDispatcher.X(src, options3);
     var ownerDocument = globalDocument;
     if (ownerDocument && src) {
       var scripts = getResourcesFromRoot(ownerDocument).hoistableScripts, key = getScriptKey(src), resource = scripts.get(key);
-      resource || (resource = ownerDocument.querySelector(getScriptSelectorFromKey(key)), resource || (src = assign({ src, async: true }, options2), (options2 = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options2), resource = ownerDocument.createElement("script"), markNodeAsHoistable(resource), setInitialProperties(resource, "link", src), ownerDocument.head.appendChild(resource)), resource = {
+      resource || (resource = ownerDocument.querySelector(getScriptSelectorFromKey(key)), resource || (src = assign({ src, async: true }, options3), (options3 = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options3), resource = ownerDocument.createElement("script"), markNodeAsHoistable(resource), setInitialProperties(resource, "link", src), ownerDocument.head.appendChild(resource)), resource = {
         type: "script",
         instance: resource,
         count: 1,
@@ -11423,12 +11423,12 @@ function requireReactDomClient_production() {
       }, scripts.set(key, resource));
     }
   }
-  function preinitModuleScript(src, options2) {
-    previousDispatcher.M(src, options2);
+  function preinitModuleScript(src, options3) {
+    previousDispatcher.M(src, options3);
     var ownerDocument = globalDocument;
     if (ownerDocument && src) {
       var scripts = getResourcesFromRoot(ownerDocument).hoistableScripts, key = getScriptKey(src), resource = scripts.get(key);
-      resource || (resource = ownerDocument.querySelector(getScriptSelectorFromKey(key)), resource || (src = assign({ src, async: true, type: "module" }, options2), (options2 = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options2), resource = ownerDocument.createElement("script"), markNodeAsHoistable(resource), setInitialProperties(resource, "link", src), ownerDocument.head.appendChild(resource)), resource = {
+      resource || (resource = ownerDocument.querySelector(getScriptSelectorFromKey(key)), resource || (src = assign({ src, async: true, type: "module" }, options3), (options3 = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options3), resource = ownerDocument.createElement("script"), markNodeAsHoistable(resource), setInitialProperties(resource, "link", src), ownerDocument.head.appendChild(resource)), resource = {
         type: "script",
         instance: resource,
         count: 1,
@@ -12426,11 +12426,11 @@ function requireReactDomClient_production() {
       } catch (err) {
       }
   }
-  reactDomClient_production.createRoot = function(container, options2) {
+  reactDomClient_production.createRoot = function(container, options3) {
     if (!isValidContainer(container)) throw Error(formatProdErrorMessage(299));
     var isStrictMode = false, identifierPrefix = "", onUncaughtError = defaultOnUncaughtError, onCaughtError = defaultOnCaughtError, onRecoverableError = defaultOnRecoverableError;
-    null !== options2 && void 0 !== options2 && (true === options2.unstable_strictMode && (isStrictMode = true), void 0 !== options2.identifierPrefix && (identifierPrefix = options2.identifierPrefix), void 0 !== options2.onUncaughtError && (onUncaughtError = options2.onUncaughtError), void 0 !== options2.onCaughtError && (onCaughtError = options2.onCaughtError), void 0 !== options2.onRecoverableError && (onRecoverableError = options2.onRecoverableError));
-    options2 = createFiberRoot(
+    null !== options3 && void 0 !== options3 && (true === options3.unstable_strictMode && (isStrictMode = true), void 0 !== options3.identifierPrefix && (identifierPrefix = options3.identifierPrefix), void 0 !== options3.onUncaughtError && (onUncaughtError = options3.onUncaughtError), void 0 !== options3.onCaughtError && (onCaughtError = options3.onCaughtError), void 0 !== options3.onRecoverableError && (onRecoverableError = options3.onRecoverableError));
+    options3 = createFiberRoot(
       container,
       1,
       false,
@@ -12444,20 +12444,20 @@ function requireReactDomClient_production() {
       onRecoverableError,
       defaultOnDefaultTransitionIndicator
     );
-    container[internalContainerInstanceKey] = options2.current;
+    container[internalContainerInstanceKey] = options3.current;
     listenToAllSupportedEvents(container);
-    return new ReactDOMRoot(options2);
+    return new ReactDOMRoot(options3);
   };
-  reactDomClient_production.hydrateRoot = function(container, initialChildren, options2) {
+  reactDomClient_production.hydrateRoot = function(container, initialChildren, options3) {
     if (!isValidContainer(container)) throw Error(formatProdErrorMessage(299));
     var isStrictMode = false, identifierPrefix = "", onUncaughtError = defaultOnUncaughtError, onCaughtError = defaultOnCaughtError, onRecoverableError = defaultOnRecoverableError, formState = null;
-    null !== options2 && void 0 !== options2 && (true === options2.unstable_strictMode && (isStrictMode = true), void 0 !== options2.identifierPrefix && (identifierPrefix = options2.identifierPrefix), void 0 !== options2.onUncaughtError && (onUncaughtError = options2.onUncaughtError), void 0 !== options2.onCaughtError && (onCaughtError = options2.onCaughtError), void 0 !== options2.onRecoverableError && (onRecoverableError = options2.onRecoverableError), void 0 !== options2.formState && (formState = options2.formState));
+    null !== options3 && void 0 !== options3 && (true === options3.unstable_strictMode && (isStrictMode = true), void 0 !== options3.identifierPrefix && (identifierPrefix = options3.identifierPrefix), void 0 !== options3.onUncaughtError && (onUncaughtError = options3.onUncaughtError), void 0 !== options3.onCaughtError && (onCaughtError = options3.onCaughtError), void 0 !== options3.onRecoverableError && (onRecoverableError = options3.onRecoverableError), void 0 !== options3.formState && (formState = options3.formState));
     initialChildren = createFiberRoot(
       container,
       1,
       true,
       initialChildren,
-      null != options2 ? options2 : null,
+      null != options3 ? options3 : null,
       isStrictMode,
       identifierPrefix,
       formState,
@@ -12467,15 +12467,15 @@ function requireReactDomClient_production() {
       defaultOnDefaultTransitionIndicator
     );
     initialChildren.context = getContextForSubtree(null);
-    options2 = initialChildren.current;
+    options3 = initialChildren.current;
     isStrictMode = requestUpdateLane();
     isStrictMode = getBumpedLaneForHydrationByLane(isStrictMode);
     identifierPrefix = createUpdate(isStrictMode);
     identifierPrefix.callback = null;
-    enqueueUpdate(options2, identifierPrefix, isStrictMode);
-    options2 = isStrictMode;
-    initialChildren.current.lanes = options2;
-    markRootUpdated$1(initialChildren, options2);
+    enqueueUpdate(options3, identifierPrefix, isStrictMode);
+    options3 = isStrictMode;
+    initialChildren.current.lanes = options3;
+    markRootUpdated$1(initialChildren, options3);
     ensureRootIsScheduled(initialChildren);
     container[internalContainerInstanceKey] = initialChildren.current;
     listenToAllSupportedEvents(container);
@@ -16128,14 +16128,14 @@ const objectProcessor = (schema, ctx, _json, params) => {
 const unionProcessor = (schema, ctx, json, params) => {
   const def = schema._zod.def;
   const isExclusive = def.inclusive === false;
-  const options = def.options.map((x, i) => process$1(x, ctx, {
+  const options2 = def.options.map((x, i) => process$1(x, ctx, {
     ...params,
     path: [...params.path, isExclusive ? "oneOf" : "anyOf", i]
   }));
   if (isExclusive) {
-    json.oneOf = options;
+    json.oneOf = options2;
   } else {
-    json.anyOf = options;
+    json.anyOf = options2;
   }
 };
 const intersectionProcessor = (schema, ctx, json, params) => {
@@ -16631,10 +16631,10 @@ const ZodUnion = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
   inst._zod.processJSONSchema = (ctx, json, params) => unionProcessor(inst, ctx, json, params);
   inst.options = def.options;
 });
-function union(options, params) {
+function union(options2, params) {
   return new ZodUnion({
     type: "union",
-    options,
+    options: options2,
     ...normalizeParams(params)
   });
 }
@@ -21875,12 +21875,12 @@ function innerCreateMedium(defaults, middleware) {
   };
   return medium;
 }
-function createSidecarMedium(options) {
-  if (options === void 0) {
-    options = {};
+function createSidecarMedium(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   var medium = innerCreateMedium(null);
-  medium.options = __assign({ async: true, ssr: false }, options);
+  medium.options = __assign({ async: true, ssr: false }, options2);
   return medium;
 }
 var SideCar$1 = function(_a2) {
@@ -24205,10 +24205,10 @@ function computeCoordsFromPlacement(_ref, placement, rtl) {
   }
   return coords;
 }
-async function detectOverflow(state, options) {
+async function detectOverflow(state, options2) {
   var _await$platform$isEle;
-  if (options === void 0) {
-    options = {};
+  if (options2 === void 0) {
+    options2 = {};
   }
   const {
     x,
@@ -24224,7 +24224,7 @@ async function detectOverflow(state, options) {
     elementContext = "floating",
     altBoundary = false,
     padding = 0
-  } = evaluate(options, state);
+  } = evaluate(options2, state);
   const paddingObject = getPaddingObject(padding);
   const altContext = elementContext === "floating" ? "reference" : "floating";
   const element = elements[altBoundary ? altContext : elementContext];
@@ -24348,9 +24348,9 @@ const computePosition$1 = async (reference, floating, config2) => {
     middlewareData
   };
 };
-const arrow$3 = (options) => ({
+const arrow$3 = (options2) => ({
   name: "arrow",
-  options,
+  options: options2,
   async fn(state) {
     const {
       x,
@@ -24364,7 +24364,7 @@ const arrow$3 = (options) => ({
     const {
       element,
       padding = 0
-    } = evaluate(options, state) || {};
+    } = evaluate(options2, state) || {};
     if (element == null) {
       return {};
     }
@@ -24410,13 +24410,13 @@ const arrow$3 = (options) => ({
     };
   }
 });
-const flip$2 = function(options) {
-  if (options === void 0) {
-    options = {};
+const flip$2 = function(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   return {
     name: "flip",
-    options,
+    options: options2,
     async fn(state) {
       var _middlewareData$arrow, _middlewareData$flip;
       const {
@@ -24435,7 +24435,7 @@ const flip$2 = function(options) {
         fallbackAxisSideDirection = "none",
         flipAlignment = true,
         ...detectOverflowOptions
-      } = evaluate(options, state);
+      } = evaluate(options2, state);
       if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -24530,13 +24530,13 @@ function getSideOffsets(overflow, rect) {
 function isAnySideFullyClipped(overflow) {
   return sides.some((side) => overflow[side] >= 0);
 }
-const hide$2 = function(options) {
-  if (options === void 0) {
-    options = {};
+const hide$2 = function(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   return {
     name: "hide",
-    options,
+    options: options2,
     async fn(state) {
       const {
         rects,
@@ -24545,7 +24545,7 @@ const hide$2 = function(options) {
       const {
         strategy = "referenceHidden",
         ...detectOverflowOptions
-      } = evaluate(options, state);
+      } = evaluate(options2, state);
       switch (strategy) {
         case "referenceHidden": {
           const overflow = await platform2.detectOverflow(state, {
@@ -24581,7 +24581,7 @@ const hide$2 = function(options) {
   };
 };
 const originSides = /* @__PURE__ */ new Set(["left", "top"]);
-async function convertValueToCoords(state, options) {
+async function convertValueToCoords(state, options2) {
   const {
     placement,
     platform: platform2,
@@ -24593,7 +24593,7 @@ async function convertValueToCoords(state, options) {
   const isVertical = getSideAxis(placement) === "y";
   const mainAxisMulti = originSides.has(side) ? -1 : 1;
   const crossAxisMulti = rtl && isVertical ? -1 : 1;
-  const rawValue = evaluate(options, state);
+  const rawValue = evaluate(options2, state);
   let {
     mainAxis,
     crossAxis,
@@ -24618,13 +24618,13 @@ async function convertValueToCoords(state, options) {
     y: crossAxis * crossAxisMulti
   };
 }
-const offset$2 = function(options) {
-  if (options === void 0) {
-    options = 0;
+const offset$2 = function(options2) {
+  if (options2 === void 0) {
+    options2 = 0;
   }
   return {
     name: "offset",
-    options,
+    options: options2,
     async fn(state) {
       var _middlewareData$offse, _middlewareData$arrow;
       const {
@@ -24633,7 +24633,7 @@ const offset$2 = function(options) {
         placement,
         middlewareData
       } = state;
-      const diffCoords = await convertValueToCoords(state, options);
+      const diffCoords = await convertValueToCoords(state, options2);
       if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -24648,13 +24648,13 @@ const offset$2 = function(options) {
     }
   };
 };
-const shift$2 = function(options) {
-  if (options === void 0) {
-    options = {};
+const shift$2 = function(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   return {
     name: "shift",
-    options,
+    options: options2,
     async fn(state) {
       const {
         x,
@@ -24678,7 +24678,7 @@ const shift$2 = function(options) {
           }
         },
         ...detectOverflowOptions
-      } = evaluate(options, state);
+      } = evaluate(options2, state);
       const coords = {
         x,
         y
@@ -24721,12 +24721,12 @@ const shift$2 = function(options) {
     }
   };
 };
-const limitShift$2 = function(options) {
-  if (options === void 0) {
-    options = {};
+const limitShift$2 = function(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   return {
-    options,
+    options: options2,
     fn(state) {
       const {
         x,
@@ -24739,7 +24739,7 @@ const limitShift$2 = function(options) {
         offset: offset2 = 0,
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = true
-      } = evaluate(options, state);
+      } = evaluate(options2, state);
       const coords = {
         x,
         y
@@ -24786,13 +24786,13 @@ const limitShift$2 = function(options) {
     }
   };
 };
-const size$2 = function(options) {
-  if (options === void 0) {
-    options = {};
+const size$2 = function(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   return {
     name: "size",
-    options,
+    options: options2,
     async fn(state) {
       var _state$middlewareData, _state$middlewareData2;
       const {
@@ -24805,7 +24805,7 @@ const size$2 = function(options) {
         apply = () => {
         },
         ...detectOverflowOptions
-      } = evaluate(options, state);
+      } = evaluate(options2, state);
       const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
       const side = getSide(placement);
       const alignment = getAlignment(placement);
@@ -25496,7 +25496,7 @@ function observeMove(element, onMove) {
     const insetBottom = floor(root.clientHeight - (top + height));
     const insetLeft = floor(left);
     const rootMargin = -insetTop + "px " + -insetRight + "px " + -insetBottom + "px " + -insetLeft + "px";
-    const options = {
+    const options2 = {
       rootMargin,
       threshold: max(0, min(1, threshold)) || 1
     };
@@ -25522,21 +25522,21 @@ function observeMove(element, onMove) {
     }
     try {
       io = new IntersectionObserver(handleObserve, {
-        ...options,
+        ...options2,
         // Handle <iframe>s
         root: root.ownerDocument
       });
     } catch (_e) {
-      io = new IntersectionObserver(handleObserve, options);
+      io = new IntersectionObserver(handleObserve, options2);
     }
     io.observe(element);
   }
   refresh(true);
   return cleanup;
 }
-function autoUpdate(reference, floating, update, options) {
-  if (options === void 0) {
-    options = {};
+function autoUpdate(reference, floating, update, options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   const {
     ancestorScroll = true,
@@ -25544,7 +25544,7 @@ function autoUpdate(reference, floating, update, options) {
     elementResize = typeof ResizeObserver === "function",
     layoutShift = typeof IntersectionObserver === "function",
     animationFrame = false
-  } = options;
+  } = options2;
   const referenceEl = unwrapElement(reference);
   const ancestors = ancestorScroll || ancestorResize ? [...referenceEl ? getOverflowAncestors(referenceEl) : [], ...getOverflowAncestors(floating)] : [];
   ancestors.forEach((ancestor) => {
@@ -25609,11 +25609,11 @@ const size$1 = size$2;
 const hide$1 = hide$2;
 const arrow$2 = arrow$3;
 const limitShift$1 = limitShift$2;
-const computePosition = (reference, floating, options) => {
+const computePosition = (reference, floating, options2) => {
   const cache = /* @__PURE__ */ new Map();
   const mergedOptions = {
     platform,
-    ...options
+    ...options2
   };
   const platformWithCache = {
     ...mergedOptions.platform,
@@ -25693,9 +25693,9 @@ function useLatestRef(value) {
   });
   return ref;
 }
-function useFloating(options) {
-  if (options === void 0) {
-    options = {};
+function useFloating(options2) {
+  if (options2 === void 0) {
+    options2 = {};
   }
   const {
     placement = "bottom",
@@ -25709,7 +25709,7 @@ function useFloating(options) {
     transform: transform2 = true,
     whileElementsMounted,
     open
-  } = options;
+  } = options2;
   const [data, setData] = reactExports.useState({
     x: 0,
     y: 0,
@@ -25844,18 +25844,18 @@ function useFloating(options) {
     floatingStyles
   }), [data, update, refs, elements, floatingStyles]);
 }
-const arrow$1 = (options) => {
+const arrow$1 = (options2) => {
   function isRef(value) {
     return {}.hasOwnProperty.call(value, "current");
   }
   return {
     name: "arrow",
-    options,
+    options: options2,
     fn(state) {
       const {
         element,
         padding
-      } = typeof options === "function" ? options(state) : options;
+      } = typeof options2 === "function" ? options2(state) : options2;
       if (element && isRef(element)) {
         if (element.current != null) {
           return arrow$2({
@@ -25875,33 +25875,33 @@ const arrow$1 = (options) => {
     }
   };
 };
-const offset = (options, deps) => ({
-  ...offset$1(options),
-  options: [options, deps]
+const offset = (options2, deps) => ({
+  ...offset$1(options2),
+  options: [options2, deps]
 });
-const shift = (options, deps) => ({
-  ...shift$1(options),
-  options: [options, deps]
+const shift = (options2, deps) => ({
+  ...shift$1(options2),
+  options: [options2, deps]
 });
-const limitShift = (options, deps) => ({
-  ...limitShift$1(options),
-  options: [options, deps]
+const limitShift = (options2, deps) => ({
+  ...limitShift$1(options2),
+  options: [options2, deps]
 });
-const flip = (options, deps) => ({
-  ...flip$1(options),
-  options: [options, deps]
+const flip = (options2, deps) => ({
+  ...flip$1(options2),
+  options: [options2, deps]
 });
-const size = (options, deps) => ({
-  ...size$1(options),
-  options: [options, deps]
+const size = (options2, deps) => ({
+  ...size$1(options2),
+  options: [options2, deps]
 });
-const hide = (options, deps) => ({
-  ...hide$1(options),
-  options: [options, deps]
+const hide = (options2, deps) => ({
+  ...hide$1(options2),
+  options: [options2, deps]
 });
-const arrow = (options, deps) => ({
-  ...arrow$1(options),
-  options: [options, deps]
+const arrow = (options2, deps) => ({
+  ...arrow$1(options2),
+  options: [options2, deps]
 });
 var NAME$1 = "Arrow";
 var Arrow$1 = reactExports.forwardRef((props, forwardedRef) => {
@@ -26185,15 +26185,15 @@ PopperArrow.displayName = ARROW_NAME$2;
 function isNotNull(value) {
   return value !== null;
 }
-var transformOrigin = (options) => ({
+var transformOrigin = (options2) => ({
   name: "transformOrigin",
-  options,
+  options: options2,
   fn(data) {
     const { placement, rects, middlewareData } = data;
     const cannotCenterArrow = middlewareData.arrow?.centerOffset !== 0;
     const isArrowHidden = cannotCenterArrow;
-    const arrowWidth = isArrowHidden ? 0 : options.arrowWidth;
-    const arrowHeight = isArrowHidden ? 0 : options.arrowHeight;
+    const arrowWidth = isArrowHidden ? 0 : options2.arrowWidth;
+    const arrowHeight = isArrowHidden ? 0 : options2.arrowHeight;
     const [placedSide, placedAlign] = getSideAndAlignFromPlacement(placement);
     const noArrowAlign = { start: "0%", center: "50%", end: "100%" }[placedAlign];
     const arrowXCenter = (middlewareData.arrow?.x ?? 0) + arrowWidth / 2;
@@ -29117,14 +29117,14 @@ var Action;
 })(Action || (Action = {}));
 function noop$2() {
 }
-function useSensor(sensor, options) {
+function useSensor(sensor, options2) {
   return reactExports.useMemo(
     () => ({
       sensor,
-      options: options != null ? options : {}
+      options: options2 != null ? options2 : {}
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sensor, options]
+    [sensor, options2]
   );
 }
 function useSensors() {
@@ -29335,12 +29335,12 @@ function inverseTransform(rect, transform2, transformOrigin2) {
 const defaultOptions = {
   ignoreTransform: false
 };
-function getClientRect(element, options) {
-  if (options === void 0) {
-    options = defaultOptions;
+function getClientRect(element, options2) {
+  if (options2 === void 0) {
+    options2 = defaultOptions;
   }
   let rect = element.getBoundingClientRect();
-  if (options.ignoreTransform) {
+  if (options2.ignoreTransform) {
     const {
       transform: transform2,
       transformOrigin: transformOrigin2
@@ -29684,10 +29684,10 @@ class Listeners {
     };
     this.target = target;
   }
-  add(eventName, handler, options) {
+  add(eventName, handler, options2) {
     var _this$target2;
-    (_this$target2 = this.target) == null ? void 0 : _this$target2.addEventListener(eventName, handler, options);
-    this.listeners.push([eventName, handler, options]);
+    (_this$target2 = this.target) == null ? void 0 : _this$target2.addEventListener(eventName, handler, options2);
+    this.listeners.push([eventName, handler, options2]);
   }
 }
 function getEventListenerTarget(target) {
@@ -29815,13 +29815,13 @@ class KeyboardSensor {
       const {
         active,
         context,
-        options
+        options: options2
       } = this.props;
       const {
         keyboardCodes = defaultKeyboardCodes,
         coordinateGetter = defaultKeyboardCoordinateGetter,
         scrollBehavior = "smooth"
-      } = options;
+      } = options2;
       const {
         code
       } = event;
@@ -31413,7 +31413,7 @@ const DndContext = /* @__PURE__ */ reactExports.memo(function DndContext2(_ref) 
     (event, _ref2) => {
       let {
         sensor: Sensor,
-        options
+        options: options2
       } = _ref2;
       if (activeRef.current == null) {
         return;
@@ -31427,7 +31427,7 @@ const DndContext = /* @__PURE__ */ reactExports.memo(function DndContext2(_ref) 
         active: activeRef.current,
         activeNode: activeNode2,
         event: activatorEvent2,
-        options,
+        options: options2,
         // Sensors need to be instantiated with refs for arguments that change over time
         // otherwise they are frozen in time with the stale arguments
         context: sensorContext,
@@ -32622,8 +32622,8 @@ function matchMutation(filters, mutation) {
   }
   return true;
 }
-function hashQueryKeyByOptions(queryKey, options) {
-  const hashFn = options?.queryKeyHashFn || hashKey;
+function hashQueryKeyByOptions(queryKey, options2) {
+  const hashFn = options2?.queryKeyHashFn || hashKey;
   return hashFn(queryKey);
 }
 function hashKey(queryKey) {
@@ -32722,10 +32722,10 @@ function sleep(timeout) {
     timeoutManager.setTimeout(resolve, timeout);
   });
 }
-function replaceData(prevData, data, options) {
-  if (typeof options.structuralSharing === "function") {
-    return options.structuralSharing(prevData, data);
-  } else if (options.structuralSharing !== false) {
+function replaceData(prevData, data, options2) {
+  if (typeof options2.structuralSharing === "function") {
+    return options2.structuralSharing(prevData, data);
+  } else if (options2.structuralSharing !== false) {
     return replaceEqualDeep(prevData, data);
   }
   return data;
@@ -32739,14 +32739,14 @@ function addToStart(items, item, max2 = 0) {
   return max2 && newItems.length > max2 ? newItems.slice(0, -1) : newItems;
 }
 var skipToken = /* @__PURE__ */ Symbol();
-function ensureQueryFn(options, fetchOptions) {
-  if (!options.queryFn && fetchOptions?.initialPromise) {
+function ensureQueryFn(options2, fetchOptions) {
+  if (!options2.queryFn && fetchOptions?.initialPromise) {
     return () => fetchOptions.initialPromise;
   }
-  if (!options.queryFn || options.queryFn === skipToken) {
-    return () => Promise.reject(new Error(`Missing queryFn: '${options.queryHash}'`));
+  if (!options2.queryFn || options2.queryFn === skipToken) {
+    return () => Promise.reject(new Error(`Missing queryFn: '${options2.queryHash}'`));
   }
-  return options.queryFn;
+  return options2.queryFn;
 }
 function shouldThrowError(throwOnError, params) {
   if (typeof throwOnError === "function") {
@@ -32924,26 +32924,26 @@ function defaultShouldDehydrateQuery(query) {
 function defaultShouldRedactErrors(_) {
   return true;
 }
-function dehydrate(client2, options = {}) {
-  const filterMutation = options.shouldDehydrateMutation ?? client2.getDefaultOptions().dehydrate?.shouldDehydrateMutation ?? defaultShouldDehydrateMutation;
+function dehydrate(client2, options2 = {}) {
+  const filterMutation = options2.shouldDehydrateMutation ?? client2.getDefaultOptions().dehydrate?.shouldDehydrateMutation ?? defaultShouldDehydrateMutation;
   const mutations = client2.getMutationCache().getAll().flatMap(
     (mutation) => filterMutation(mutation) ? [dehydrateMutation(mutation)] : []
   );
-  const filterQuery = options.shouldDehydrateQuery ?? client2.getDefaultOptions().dehydrate?.shouldDehydrateQuery ?? defaultShouldDehydrateQuery;
-  const shouldRedactErrors = options.shouldRedactErrors ?? client2.getDefaultOptions().dehydrate?.shouldRedactErrors ?? defaultShouldRedactErrors;
-  const serializeData = options.serializeData ?? client2.getDefaultOptions().dehydrate?.serializeData ?? defaultTransformerFn;
+  const filterQuery = options2.shouldDehydrateQuery ?? client2.getDefaultOptions().dehydrate?.shouldDehydrateQuery ?? defaultShouldDehydrateQuery;
+  const shouldRedactErrors = options2.shouldRedactErrors ?? client2.getDefaultOptions().dehydrate?.shouldRedactErrors ?? defaultShouldRedactErrors;
+  const serializeData = options2.serializeData ?? client2.getDefaultOptions().dehydrate?.serializeData ?? defaultTransformerFn;
   const queries = client2.getQueryCache().getAll().flatMap(
     (query) => filterQuery(query) ? [dehydrateQuery(query, serializeData, shouldRedactErrors)] : []
   );
   return { mutations, queries };
 }
-function hydrate(client2, dehydratedState, options) {
+function hydrate(client2, dehydratedState, options2) {
   if (typeof dehydratedState !== "object" || dehydratedState === null) {
     return;
   }
   const mutationCache = client2.getMutationCache();
   const queryCache = client2.getQueryCache();
-  const deserializeData = options?.defaultOptions?.deserializeData ?? client2.getDefaultOptions().hydrate?.deserializeData ?? defaultTransformerFn;
+  const deserializeData = options2?.defaultOptions?.deserializeData ?? client2.getDefaultOptions().hydrate?.deserializeData ?? defaultTransformerFn;
   const mutations = dehydratedState.mutations || [];
   const queries = dehydratedState.queries || [];
   mutations.forEach(({ state, ...mutationOptions }) => {
@@ -32951,7 +32951,7 @@ function hydrate(client2, dehydratedState, options) {
       client2,
       {
         ...client2.getDefaultOptions().hydrate?.mutations,
-        ...options?.defaultOptions?.mutations,
+        ...options2?.defaultOptions?.mutations,
         ...mutationOptions
       },
       state
@@ -32981,7 +32981,7 @@ function hydrate(client2, dehydratedState, options) {
           client2,
           {
             ...client2.getDefaultOptions().hydrate?.queries,
-            ...options?.defaultOptions?.queries,
+            ...options2?.defaultOptions?.queries,
             queryKey,
             queryHash,
             meta
@@ -33142,10 +33142,10 @@ function canFetch(networkMode) {
   return (networkMode ?? "online") === "online" ? onlineManager.isOnline() : true;
 }
 var CancelledError = class extends Error {
-  constructor(options) {
+  constructor(options2) {
     super("CancelledError");
-    this.revert = options?.revert;
-    this.silent = options?.silent;
+    this.revert = options2?.revert;
+    this.silent = options2?.silent;
   }
 };
 function createRetryer(config2) {
@@ -33307,8 +33307,8 @@ var Query = class extends Removable {
   get promise() {
     return this.#retryer?.promise;
   }
-  setOptions(options) {
-    this.options = { ...this.#defaultOptions, ...options };
+  setOptions(options2) {
+    this.options = { ...this.#defaultOptions, ...options2 };
     this.updateGcTime(this.options.gcTime);
     if (this.state && this.state.data === void 0) {
       const defaultState = getDefaultState$1(this.options);
@@ -33325,22 +33325,22 @@ var Query = class extends Removable {
       this.#cache.remove(this);
     }
   }
-  setData(newData, options) {
+  setData(newData, options2) {
     const data = replaceData(this.state.data, newData, this.options);
     this.#dispatch({
       data,
       type: "success",
-      dataUpdatedAt: options?.updatedAt,
-      manual: options?.manual
+      dataUpdatedAt: options2?.updatedAt,
+      manual: options2?.manual
     });
     return data;
   }
   setState(state, setStateOptions) {
     this.#dispatch({ type: "setState", state, setStateOptions });
   }
-  cancel(options) {
+  cancel(options2) {
     const promise = this.#retryer?.promise;
-    this.#retryer?.cancel(options);
+    this.#retryer?.cancel(options2);
     return promise ? promise.then(noop$1).catch(noop$1) : Promise.resolve();
   }
   destroy() {
@@ -33431,7 +33431,7 @@ var Query = class extends Removable {
       this.#dispatch({ type: "invalidate" });
     }
   }
-  async fetch(options, fetchOptions) {
+  async fetch(options2, fetchOptions) {
     if (this.state.fetchStatus !== "idle" && // If the promise in the retryer is already rejected, we have to definitely
     // re-start the fetch; there is a chance that the query is still in a
     // pending state when that happens
@@ -33443,8 +33443,8 @@ var Query = class extends Removable {
         return this.#retryer.promise;
       }
     }
-    if (options) {
-      this.setOptions(options);
+    if (options2) {
+      this.setOptions(options2);
     }
     if (!this.options.queryFn) {
       const observer = this.observers.find((x) => x.options.queryFn);
@@ -33645,11 +33645,11 @@ var Query = class extends Removable {
     });
   }
 };
-function fetchState(data, options) {
+function fetchState(data, options2) {
   return {
     fetchFailureCount: 0,
     fetchFailureReason: null,
-    fetchStatus: canFetch(options.networkMode) ? "fetching" : "paused",
+    fetchStatus: canFetch(options2.networkMode) ? "fetching" : "paused",
     ...data === void 0 && {
       error: null,
       status: "pending"
@@ -33665,10 +33665,10 @@ function successState(data, dataUpdatedAt) {
     status: "success"
   };
 }
-function getDefaultState$1(options) {
-  const data = typeof options.initialData === "function" ? options.initialData() : options.initialData;
+function getDefaultState$1(options2) {
+  const data = typeof options2.initialData === "function" ? options2.initialData() : options2.initialData;
   const hasData = data !== void 0;
-  const initialDataUpdatedAt = hasData ? typeof options.initialDataUpdatedAt === "function" ? options.initialDataUpdatedAt() : options.initialDataUpdatedAt : 0;
+  const initialDataUpdatedAt = hasData ? typeof options2.initialDataUpdatedAt === "function" ? options2.initialDataUpdatedAt() : options2.initialDataUpdatedAt : 0;
   return {
     data,
     dataUpdateCount: 0,
@@ -33685,14 +33685,14 @@ function getDefaultState$1(options) {
   };
 }
 var QueryObserver = class extends Subscribable {
-  constructor(client2, options) {
+  constructor(client2, options2) {
     super();
-    this.options = options;
+    this.options = options2;
     this.#client = client2;
     this.#selectError = null;
     this.#currentThenable = pendingThenable();
     this.bindMethods();
-    this.setOptions(options);
+    this.setOptions(options2);
   }
   #client;
   #currentQuery = void 0;
@@ -33750,10 +33750,10 @@ var QueryObserver = class extends Subscribable {
     this.#clearRefetchInterval();
     this.#currentQuery.removeObserver(this);
   }
-  setOptions(options) {
+  setOptions(options2) {
     const prevOptions = this.options;
     const prevQuery = this.#currentQuery;
-    this.options = this.#client.defaultQueryOptions(options);
+    this.options = this.#client.defaultQueryOptions(options2);
     if (this.options.enabled !== void 0 && typeof this.options.enabled !== "boolean" && typeof this.options.enabled !== "function" && typeof resolveEnabled(this.options.enabled, this.#currentQuery) !== "boolean") {
       throw new Error(
         "Expected enabled to be a boolean or a callback that returns a boolean"
@@ -33786,9 +33786,9 @@ var QueryObserver = class extends Subscribable {
       this.#updateRefetchInterval(nextRefetchInterval);
     }
   }
-  getOptimisticResult(options) {
-    const query = this.#client.getQueryCache().build(this.#client, options);
-    const result = this.createResult(query, options);
+  getOptimisticResult(options2) {
+    const query = this.#client.getQueryCache().build(this.#client, options2);
+    const result = this.createResult(query, options2);
     if (shouldAssignObserverCurrentProperties(this, result)) {
       this.#currentResult = result;
       this.#currentResultOptions = this.options;
@@ -33824,13 +33824,13 @@ var QueryObserver = class extends Subscribable {
   getCurrentQuery() {
     return this.#currentQuery;
   }
-  refetch({ ...options } = {}) {
+  refetch({ ...options2 } = {}) {
     return this.fetch({
-      ...options
+      ...options2
     });
   }
-  fetchOptimistic(options) {
-    const defaultedOptions = this.#client.defaultQueryOptions(options);
+  fetchOptimistic(options2) {
+    const defaultedOptions = this.#client.defaultQueryOptions(options2);
     const query = this.#client.getQueryCache().build(this.#client, defaultedOptions);
     return query.fetch().then(() => this.createResult(query, defaultedOptions));
   }
@@ -33902,7 +33902,7 @@ var QueryObserver = class extends Subscribable {
       this.#refetchIntervalId = void 0;
     }
   }
-  createResult(query, options) {
+  createResult(query, options2) {
     const prevQuery = this.#currentQuery;
     const prevOptions = this.options;
     const prevResult = this.#currentResult;
@@ -33914,52 +33914,52 @@ var QueryObserver = class extends Subscribable {
     let newState = { ...state };
     let isPlaceholderData = false;
     let data;
-    if (options._optimisticResults) {
+    if (options2._optimisticResults) {
       const mounted = this.hasListeners();
-      const fetchOnMount = !mounted && shouldFetchOnMount(query, options);
-      const fetchOptionally = mounted && shouldFetchOptionally(query, prevQuery, options, prevOptions);
+      const fetchOnMount = !mounted && shouldFetchOnMount(query, options2);
+      const fetchOptionally = mounted && shouldFetchOptionally(query, prevQuery, options2, prevOptions);
       if (fetchOnMount || fetchOptionally) {
         newState = {
           ...newState,
           ...fetchState(state.data, query.options)
         };
       }
-      if (options._optimisticResults === "isRestoring") {
+      if (options2._optimisticResults === "isRestoring") {
         newState.fetchStatus = "idle";
       }
     }
     let { error, errorUpdatedAt, status } = newState;
     data = newState.data;
     let skipSelect = false;
-    if (options.placeholderData !== void 0 && data === void 0 && status === "pending") {
+    if (options2.placeholderData !== void 0 && data === void 0 && status === "pending") {
       let placeholderData;
-      if (prevResult?.isPlaceholderData && options.placeholderData === prevResultOptions?.placeholderData) {
+      if (prevResult?.isPlaceholderData && options2.placeholderData === prevResultOptions?.placeholderData) {
         placeholderData = prevResult.data;
         skipSelect = true;
       } else {
-        placeholderData = typeof options.placeholderData === "function" ? options.placeholderData(
+        placeholderData = typeof options2.placeholderData === "function" ? options2.placeholderData(
           this.#lastQueryWithDefinedData?.state.data,
           this.#lastQueryWithDefinedData
-        ) : options.placeholderData;
+        ) : options2.placeholderData;
       }
       if (placeholderData !== void 0) {
         status = "success";
         data = replaceData(
           prevResult?.data,
           placeholderData,
-          options
+          options2
         );
         isPlaceholderData = true;
       }
     }
-    if (options.select && data !== void 0 && !skipSelect) {
-      if (prevResult && data === prevResultState?.data && options.select === this.#selectFn) {
+    if (options2.select && data !== void 0 && !skipSelect) {
+      if (prevResult && data === prevResultState?.data && options2.select === this.#selectFn) {
         data = this.#selectResult;
       } else {
         try {
-          this.#selectFn = options.select;
-          data = options.select(data);
-          data = replaceData(prevResult?.data, data, options);
+          this.#selectFn = options2.select;
+          data = options2.select(data);
+          data = replaceData(prevResult?.data, data, options2);
           this.#selectResult = data;
           this.#selectError = null;
         } catch (selectError) {
@@ -34001,10 +34001,10 @@ var QueryObserver = class extends Subscribable {
       isPaused: newState.fetchStatus === "paused",
       isPlaceholderData,
       isRefetchError: isError && hasData,
-      isStale: isStale(query, options),
+      isStale: isStale(query, options2),
       refetch: this.refetch,
       promise: this.#currentThenable,
-      isEnabled: resolveEnabled(options.enabled, query) !== false
+      isEnabled: resolveEnabled(options2.enabled, query) !== false
     };
     const nextResult = result;
     if (this.options.experimental_prefetchInRender) {
@@ -34110,24 +34110,24 @@ var QueryObserver = class extends Subscribable {
     });
   }
 };
-function shouldLoadOnMount(query, options) {
-  return resolveEnabled(options.enabled, query) !== false && query.state.data === void 0 && !(query.state.status === "error" && options.retryOnMount === false);
+function shouldLoadOnMount(query, options2) {
+  return resolveEnabled(options2.enabled, query) !== false && query.state.data === void 0 && !(query.state.status === "error" && options2.retryOnMount === false);
 }
-function shouldFetchOnMount(query, options) {
-  return shouldLoadOnMount(query, options) || query.state.data !== void 0 && shouldFetchOn(query, options, options.refetchOnMount);
+function shouldFetchOnMount(query, options2) {
+  return shouldLoadOnMount(query, options2) || query.state.data !== void 0 && shouldFetchOn(query, options2, options2.refetchOnMount);
 }
-function shouldFetchOn(query, options, field) {
-  if (resolveEnabled(options.enabled, query) !== false && resolveStaleTime(options.staleTime, query) !== "static") {
+function shouldFetchOn(query, options2, field) {
+  if (resolveEnabled(options2.enabled, query) !== false && resolveStaleTime(options2.staleTime, query) !== "static") {
     const value = typeof field === "function" ? field(query) : field;
-    return value === "always" || value !== false && isStale(query, options);
+    return value === "always" || value !== false && isStale(query, options2);
   }
   return false;
 }
-function shouldFetchOptionally(query, prevQuery, options, prevOptions) {
-  return (query !== prevQuery || resolveEnabled(prevOptions.enabled, query) === false) && (!options.suspense || query.state.status !== "error") && isStale(query, options);
+function shouldFetchOptionally(query, prevQuery, options2, prevOptions) {
+  return (query !== prevQuery || resolveEnabled(prevOptions.enabled, query) === false) && (!options2.suspense || query.state.status !== "error") && isStale(query, options2);
 }
-function isStale(query, options) {
-  return resolveEnabled(options.enabled, query) !== false && query.isStaleByTime(resolveStaleTime(options.staleTime, query));
+function isStale(query, options2) {
+  return resolveEnabled(options2.enabled, query) !== false && query.isStaleByTime(resolveStaleTime(options2.staleTime, query));
 }
 function shouldAssignObserverCurrentProperties(observer, optimisticResult) {
   if (!shallowEqualObjects(observer.getCurrentResult(), optimisticResult)) {
@@ -34138,7 +34138,7 @@ function shouldAssignObserverCurrentProperties(observer, optimisticResult) {
 function infiniteQueryBehavior(pages) {
   return {
     onFetch: (context, query) => {
-      const options = context.options;
+      const options2 = context.options;
       const direction = context.fetchOptions?.meta?.fetchMore?.direction;
       const oldPages = context.state.data?.pages || [];
       const oldPageParams = context.state.data?.pageParams || [];
@@ -34188,12 +34188,12 @@ function infiniteQueryBehavior(pages) {
             pages: oldPages,
             pageParams: oldPageParams
           };
-          const param = pageParamFn(options, oldData);
+          const param = pageParamFn(options2, oldData);
           result = await fetchPage(oldData, param, previous);
         } else {
           const remainingPages = pages ?? oldPages.length;
           do {
-            const param = currentPage === 0 ? oldPageParams[0] ?? options.initialPageParam : getNextPageParam(options, result);
+            const param = currentPage === 0 ? oldPageParams[0] ?? options2.initialPageParam : getNextPageParam(options2, result);
             if (currentPage > 0 && param == null) {
               break;
             }
@@ -34222,17 +34222,17 @@ function infiniteQueryBehavior(pages) {
     }
   };
 }
-function getNextPageParam(options, { pages, pageParams }) {
+function getNextPageParam(options2, { pages, pageParams }) {
   const lastIndex = pages.length - 1;
-  return pages.length > 0 ? options.getNextPageParam(
+  return pages.length > 0 ? options2.getNextPageParam(
     pages[lastIndex],
     pages,
     pageParams[lastIndex],
     pageParams
   ) : void 0;
 }
-function getPreviousPageParam(options, { pages, pageParams }) {
-  return pages.length > 0 ? options.getPreviousPageParam?.(pages[0], pages, pageParams[0], pageParams) : void 0;
+function getPreviousPageParam(options2, { pages, pageParams }) {
+  return pages.length > 0 ? options2.getPreviousPageParam?.(pages[0], pages, pageParams[0], pageParams) : void 0;
 }
 var Mutation = class extends Removable {
   #client;
@@ -34249,8 +34249,8 @@ var Mutation = class extends Removable {
     this.setOptions(config2.options);
     this.scheduleGc();
   }
-  setOptions(options) {
-    this.options = options;
+  setOptions(options2) {
+    this.options = options2;
     this.updateGcTime(this.options.gcTime);
   }
   get meta() {
@@ -34517,12 +34517,12 @@ var MutationCache = class extends Subscribable {
   #mutations;
   #scopes;
   #mutationId;
-  build(client2, options, state) {
+  build(client2, options2, state) {
     const mutation = new Mutation({
       client: client2,
       mutationCache: this,
       mutationId: ++this.#mutationId,
-      options: client2.defaultMutationOptions(options),
+      options: client2.defaultMutationOptions(options2),
       state
     });
     this.add(mutation);
@@ -34628,16 +34628,16 @@ var QueryCache = class extends Subscribable {
     this.#queries = /* @__PURE__ */ new Map();
   }
   #queries;
-  build(client2, options, state) {
-    const queryKey = options.queryKey;
-    const queryHash = options.queryHash ?? hashQueryKeyByOptions(queryKey, options);
+  build(client2, options2, state) {
+    const queryKey = options2.queryKey;
+    const queryHash = options2.queryHash ?? hashQueryKeyByOptions(queryKey, options2);
     let query = this.get(queryHash);
     if (!query) {
       query = new Query({
         client: client2,
         queryKey,
         queryHash,
-        options: client2.defaultQueryOptions(options),
+        options: client2.defaultQueryOptions(options2),
         state,
         defaultOptions: client2.getQueryDefaults(queryKey)
       });
@@ -34764,17 +34764,17 @@ var QueryClient = class {
    * Use `useQuery` to create a `QueryObserver` that subscribes to changes.
    */
   getQueryData(queryKey) {
-    const options = this.defaultQueryOptions({ queryKey });
-    return this.#queryCache.get(options.queryHash)?.state.data;
+    const options2 = this.defaultQueryOptions({ queryKey });
+    return this.#queryCache.get(options2.queryHash)?.state.data;
   }
-  ensureQueryData(options) {
-    const defaultedOptions = this.defaultQueryOptions(options);
+  ensureQueryData(options2) {
+    const defaultedOptions = this.defaultQueryOptions(options2);
     const query = this.#queryCache.build(this, defaultedOptions);
     const cachedData = query.state.data;
     if (cachedData === void 0) {
-      return this.fetchQuery(options);
+      return this.fetchQuery(options2);
     }
-    if (options.revalidateIfStale && query.isStaleByTime(resolveStaleTime(defaultedOptions.staleTime, query))) {
+    if (options2.revalidateIfStale && query.isStaleByTime(resolveStaleTime(defaultedOptions.staleTime, query))) {
       void this.prefetchQuery(defaultedOptions);
     }
     return Promise.resolve(cachedData);
@@ -34785,7 +34785,7 @@ var QueryClient = class {
       return [queryKey, data];
     });
   }
-  setQueryData(queryKey, updater, options) {
+  setQueryData(queryKey, updater, options2) {
     const defaultedOptions = this.defaultQueryOptions({ queryKey });
     const query = this.#queryCache.get(
       defaultedOptions.queryHash
@@ -34795,20 +34795,20 @@ var QueryClient = class {
     if (data === void 0) {
       return void 0;
     }
-    return this.#queryCache.build(this, defaultedOptions).setData(data, { ...options, manual: true });
+    return this.#queryCache.build(this, defaultedOptions).setData(data, { ...options2, manual: true });
   }
-  setQueriesData(filters, updater, options) {
+  setQueriesData(filters, updater, options2) {
     return notifyManager.batch(
       () => this.#queryCache.findAll(filters).map(({ queryKey }) => [
         queryKey,
-        this.setQueryData(queryKey, updater, options)
+        this.setQueryData(queryKey, updater, options2)
       ])
     );
   }
   getQueryState(queryKey) {
-    const options = this.defaultQueryOptions({ queryKey });
+    const options2 = this.defaultQueryOptions({ queryKey });
     return this.#queryCache.get(
-      options.queryHash
+      options2.queryHash
     )?.state;
   }
   removeQueries(filters) {
@@ -34819,7 +34819,7 @@ var QueryClient = class {
       });
     });
   }
-  resetQueries(filters, options) {
+  resetQueries(filters, options2) {
     const queryCache = this.#queryCache;
     return notifyManager.batch(() => {
       queryCache.findAll(filters).forEach((query) => {
@@ -34830,7 +34830,7 @@ var QueryClient = class {
           type: "active",
           ...filters
         },
-        options
+        options2
       );
     });
   }
@@ -34841,7 +34841,7 @@ var QueryClient = class {
     );
     return Promise.all(promises).then(noop$1).catch(noop$1);
   }
-  invalidateQueries(filters, options = {}) {
+  invalidateQueries(filters, options2 = {}) {
     return notifyManager.batch(() => {
       this.#queryCache.findAll(filters).forEach((query) => {
         query.invalidate();
@@ -34854,14 +34854,14 @@ var QueryClient = class {
           ...filters,
           type: filters?.refetchType ?? filters?.type ?? "active"
         },
-        options
+        options2
       );
     });
   }
-  refetchQueries(filters, options = {}) {
+  refetchQueries(filters, options2 = {}) {
     const fetchOptions = {
-      ...options,
-      cancelRefetch: options.cancelRefetch ?? true
+      ...options2,
+      cancelRefetch: options2.cancelRefetch ?? true
     };
     const promises = notifyManager.batch(
       () => this.#queryCache.findAll(filters).filter((query) => !query.isDisabled() && !query.isStatic()).map((query) => {
@@ -34874,8 +34874,8 @@ var QueryClient = class {
     );
     return Promise.all(promises).then(noop$1);
   }
-  fetchQuery(options) {
-    const defaultedOptions = this.defaultQueryOptions(options);
+  fetchQuery(options2) {
+    const defaultedOptions = this.defaultQueryOptions(options2);
     if (defaultedOptions.retry === void 0) {
       defaultedOptions.retry = false;
     }
@@ -34884,19 +34884,19 @@ var QueryClient = class {
       resolveStaleTime(defaultedOptions.staleTime, query)
     ) ? query.fetch(defaultedOptions) : Promise.resolve(query.state.data);
   }
-  prefetchQuery(options) {
-    return this.fetchQuery(options).then(noop$1).catch(noop$1);
+  prefetchQuery(options2) {
+    return this.fetchQuery(options2).then(noop$1).catch(noop$1);
   }
-  fetchInfiniteQuery(options) {
-    options.behavior = infiniteQueryBehavior(options.pages);
-    return this.fetchQuery(options);
+  fetchInfiniteQuery(options2) {
+    options2.behavior = infiniteQueryBehavior(options2.pages);
+    return this.fetchQuery(options2);
   }
-  prefetchInfiniteQuery(options) {
-    return this.fetchInfiniteQuery(options).then(noop$1).catch(noop$1);
+  prefetchInfiniteQuery(options2) {
+    return this.fetchInfiniteQuery(options2).then(noop$1).catch(noop$1);
   }
-  ensureInfiniteQueryData(options) {
-    options.behavior = infiniteQueryBehavior(options.pages);
-    return this.ensureQueryData(options);
+  ensureInfiniteQueryData(options2) {
+    options2.behavior = infiniteQueryBehavior(options2.pages);
+    return this.ensureQueryData(options2);
   }
   resumePausedMutations() {
     if (onlineManager.isOnline()) {
@@ -34913,13 +34913,13 @@ var QueryClient = class {
   getDefaultOptions() {
     return this.#defaultOptions;
   }
-  setDefaultOptions(options) {
-    this.#defaultOptions = options;
+  setDefaultOptions(options2) {
+    this.#defaultOptions = options2;
   }
-  setQueryDefaults(queryKey, options) {
+  setQueryDefaults(queryKey, options2) {
     this.#queryDefaults.set(hashKey(queryKey), {
       queryKey,
-      defaultOptions: options
+      defaultOptions: options2
     });
   }
   getQueryDefaults(queryKey) {
@@ -34932,10 +34932,10 @@ var QueryClient = class {
     });
     return result;
   }
-  setMutationDefaults(mutationKey, options) {
+  setMutationDefaults(mutationKey, options2) {
     this.#mutationDefaults.set(hashKey(mutationKey), {
       mutationKey,
-      defaultOptions: options
+      defaultOptions: options2
     });
   }
   getMutationDefaults(mutationKey) {
@@ -34948,14 +34948,14 @@ var QueryClient = class {
     });
     return result;
   }
-  defaultQueryOptions(options) {
-    if (options._defaulted) {
-      return options;
+  defaultQueryOptions(options2) {
+    if (options2._defaulted) {
+      return options2;
     }
     const defaultedOptions = {
       ...this.#defaultOptions.queries,
-      ...this.getQueryDefaults(options.queryKey),
-      ...options,
+      ...this.getQueryDefaults(options2.queryKey),
+      ...options2,
       _defaulted: true
     };
     if (!defaultedOptions.queryHash) {
@@ -34978,14 +34978,14 @@ var QueryClient = class {
     }
     return defaultedOptions;
   }
-  defaultMutationOptions(options) {
-    if (options?._defaulted) {
-      return options;
+  defaultMutationOptions(options2) {
+    if (options2?._defaulted) {
+      return options2;
     }
     return {
       ...this.#defaultOptions.mutations,
-      ...options?.mutationKey && this.getMutationDefaults(options.mutationKey),
-      ...options,
+      ...options2?.mutationKey && this.getMutationDefaults(options2.mutationKey),
+      ...options2,
       _defaulted: true
     };
   }
@@ -35035,11 +35035,11 @@ function createValue() {
 }
 var QueryErrorResetBoundaryContext = reactExports.createContext(createValue());
 var useQueryErrorResetBoundary = () => reactExports.useContext(QueryErrorResetBoundaryContext);
-var ensurePreventErrorBoundaryRetry = (options, errorResetBoundary, query) => {
-  const throwOnError = query?.state.error && typeof options.throwOnError === "function" ? shouldThrowError(options.throwOnError, [query.state.error, query]) : options.throwOnError;
-  if (options.suspense || options.experimental_prefetchInRender || throwOnError) {
+var ensurePreventErrorBoundaryRetry = (options2, errorResetBoundary, query) => {
+  const throwOnError = query?.state.error && typeof options2.throwOnError === "function" ? shouldThrowError(options2.throwOnError, [query.state.error, query]) : options2.throwOnError;
+  if (options2.suspense || options2.experimental_prefetchInRender || throwOnError) {
     if (!errorResetBoundary.isReset()) {
-      options.retryOnMount = false;
+      options2.retryOnMount = false;
     }
   }
 };
@@ -35076,11 +35076,11 @@ var shouldSuspend = (defaultedOptions, result) => defaultedOptions?.suspense && 
 var fetchOptimistic = (defaultedOptions, observer, errorResetBoundary) => observer.fetchOptimistic(defaultedOptions).catch(() => {
   errorResetBoundary.clearReset();
 });
-function useBaseQuery(options, Observer, queryClient2) {
+function useBaseQuery(options2, Observer, queryClient2) {
   const isRestoring = useIsRestoring();
   const errorResetBoundary = useQueryErrorResetBoundary();
   const client2 = useQueryClient();
-  const defaultedOptions = client2.defaultQueryOptions(options);
+  const defaultedOptions = client2.defaultQueryOptions(options2);
   client2.getDefaultOptions().queries?._experimental_beforeQuery?.(
     defaultedOptions
   );
@@ -35097,7 +35097,7 @@ function useBaseQuery(options, Observer, queryClient2) {
     )
   );
   const result = observer.getOptimisticResult(defaultedOptions);
-  const shouldSubscribe = !isRestoring && options.subscribed !== false;
+  const shouldSubscribe = !isRestoring && options2.subscribed !== false;
   reactExports.useSyncExternalStore(
     reactExports.useCallback(
       (onStoreChange) => {
@@ -35143,8 +35143,8 @@ function useBaseQuery(options, Observer, queryClient2) {
   }
   return !defaultedOptions.notifyOnChangeProps ? observer.trackResult(result) : result;
 }
-function useQuery(options, queryClient2) {
-  return useBaseQuery(options, QueryObserver);
+function useQuery(options2, queryClient2) {
+  return useBaseQuery(options2, QueryObserver);
 }
 const TIER_GLYPHS = ["○", "◎", "×", "☆"];
 const familyOf = (name) => {

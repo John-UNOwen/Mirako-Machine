@@ -18,7 +18,7 @@ rem 3.13 by name rather than whatever "py" defaults to. It currently defaults to
 rem a fresh install, which main.py refuses -- it supports 3.11 through 3.13.
 set "PYTHON_TAG=-3.13"
 
-if exist ".venv\Scripts\python.exe" goto :run
+if exist ".venv\Scripts\python.exe" goto :refresh
 
 echo Setting up for first use. This downloads about 500 MB and takes a few minutes.
 echo.
@@ -55,10 +55,31 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+copy /y requirements.txt ".venv\requirements.installed" >nul
 
 echo.
 echo Setup finished.
 echo.
+goto :run
+
+rem An update can change requirements.txt; install again whenever it differs from the
+rem copy saved after the last successful install.
+:refresh
+fc /b requirements.txt ".venv\requirements.installed" >nul 2>&1
+if not errorlevel 1 goto :run
+
+echo Updating dependencies.
+echo.
+".venv\Scripts\python.exe" -m pip install -r requirements.txt
+if errorlevel 1 (
+  echo.
+  echo   Updating the dependencies failed. Run this again; the lines above say which
+  echo   package broke.
+  echo.
+  pause
+  exit /b 1
+)
+copy /y requirements.txt ".venv\requirements.installed" >nul
 
 :run
 ".venv\Scripts\python.exe" main.py %*
