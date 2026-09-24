@@ -112,22 +112,27 @@ class Sandbox:
     self.setup = os.path.join(self.folder, "setup.json")
     self.machine = os.path.join(self.folder, "machine.json")
     self.instances = os.path.join(self.folder, "instances")
+    # The default instance's own file. Left pointing at the real config.json, every run
+    # of this suite saved device_id "x" into the user's live config.
+    self.config = os.path.join(self.folder, "config.json")
     os.makedirs(self.instances)
+    write(self.config, read("config.template.json"))
 
   def __enter__(self):
     self.saved = (self.server.GLOBAL_SETUP_PATH, core_config.MACHINE_PATH,
-                  core_config.INSTANCE_DIR, bot.instance_name,
+                  core_config.INSTANCE_DIR, core_config.CONFIG_PATH, bot.instance_name,
                   self.server._apply_saved_config)
     self.server.GLOBAL_SETUP_PATH = self.setup
     core_config.MACHINE_PATH = self.machine
     core_config.INSTANCE_DIR = self.instances
+    core_config.CONFIG_PATH = self.config
     self.reloads = []
     self.server._apply_saved_config = lambda: self.reloads.append(True)
     return self
 
   def __exit__(self, *_):
     (self.server.GLOBAL_SETUP_PATH, core_config.MACHINE_PATH, core_config.INSTANCE_DIR,
-     bot.instance_name, self.server._apply_saved_config) = self.saved
+     core_config.CONFIG_PATH, bot.instance_name, self.server._apply_saved_config) = self.saved
     shutil.rmtree(self.folder, ignore_errors=True)
 
   def own(self, name):

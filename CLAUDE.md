@@ -162,7 +162,10 @@ setting it without that permission defeats the point.
 ```
 
 **Do not run the desktop replay unless asked for it.** The `check_*.py` suites in
-`devtools/` are offline and safe to run freely. Mutation testing is the standard
+`devtools/` are offline. Run them through `devtools/run_checks.py`, not one by one or in a
+shell loop: it fails any suite that writes the user's live `config.json`, `config/` or
+`stats/`, and puts the file back. A suite whose sandbox missed `config.json` once saved
+`device_id "x"` into the live config on every run. Mutation testing is the standard
 here: after writing a test, break the code it covers and confirm the test fails.
 Several tests in this repo passed against the bug they were written for.
 
