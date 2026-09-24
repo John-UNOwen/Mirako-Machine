@@ -170,7 +170,9 @@ def check(fetcher=_fetch):
   except (urllib.error.URLError, OSError, ValueError, IndexError) as problem:
     answer["error"] = _readable(problem)
     previous = _read_cache()
-    if previous:
+    # Only what this version was told. An answer from another version's check is not
+    # "what was known" about this one, and kept, it announced a version that is gone.
+    if previous and previous.get("current") == mine:
       # Keep what was known rather than replacing it with a blank. An offline morning
       # should not un-announce an update the user was told about yesterday.
       previous["error"] = answer["error"]
@@ -200,7 +202,13 @@ def status(refresh=False, fetcher=_fetch):
   news, and a banner that survives the update it asked for is the obvious bug here.
   """
   cached = _read_cache()
+  # Asked by this version, too. An answer recorded under another one -- a config folder
+  # carried into a fresh download, a history restarted at 1.0.0 -- announced a latest
+  # version compared against a number that is no longer running: 1.0.11 "is out" to a
+  # 1.0.0 whose repository no longer has any such version. A version change costs one
+  # request, which is what an update or a new install should cost anyway.
   fresh_enough = (cached is not None
+                  and cached.get("current") == version.current()
                   and time.time() - float(cached.get("checked_at") or 0) < CACHE_SECONDS)
   if cached is not None and fresh_enough and not refresh:
     cached["current"] = version.current()

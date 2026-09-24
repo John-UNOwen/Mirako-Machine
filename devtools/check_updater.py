@@ -458,12 +458,51 @@ def wiring_cases():
         "and swallows everything -- a bad morning at GitHub does not stop the bot")
 
 
+def other_version_cache_cases():
+  """Reported 2026-09-24, after the history was restarted at 1.0.0: "Version 1.0.11 is
+  out -- you are on 1.0.0". The config folder carried a cache written four hours earlier
+  by 1.0.12, which GitHub had then answered with 1.0.11. Inside its six hours it was
+  reused as is, and 1.0.11 is newer than 1.0.0 -- a version that no longer existed."""
+  print("\nA cached answer belongs to the version that asked for it")
+  import json
+  import tempfile
+  folder = tempfile.mkdtemp(prefix="check_updater_version_")
+  try:
+    stale = {"current": "1.0.12", "commit": "5e5dd30", "latest": "1.0.11", "behind": False,
+             "notes": "", "url": "", "checked_at": time.time() - 4 * 3600, "error": ""}
+    with open(os.path.join(folder, "update_check.json"), "w", encoding="utf-8") as handle:
+      json.dump(stale, handle)
+    github = Fake(latest="1.0.0")
+    answer = with_cache(folder, "1.0.0", lambda: updates.status(fetcher=github))
+    check(github.calls >= 1, "a cache another version wrote is not reused, however fresh")
+    check(not answer["behind"] and answer["latest"] == "1.0.0",
+          f"so 1.0.0 hears what GitHub says now: latest {answer['latest']!r}")
+
+    with open(os.path.join(folder, "update_check.json"), "w", encoding="utf-8") as handle:
+      json.dump(stale, handle)
+    answer = with_cache(folder, "1.0.0",
+                        lambda: updates.status(refresh=True, fetcher=Fake(fails=True)))
+    check(not answer["behind"] and answer["latest"] != "1.0.11",
+          "and with GitHub unreachable, another version's answer is not offered instead")
+
+    same = dict(stale, current="1.0.0", latest="1.0.3")
+    with open(os.path.join(folder, "update_check.json"), "w", encoding="utf-8") as handle:
+      json.dump(same, handle)
+    github = Fake(latest="1.0.3")
+    answer = with_cache(folder, "1.0.0", lambda: updates.status(fetcher=github))
+    check(github.calls == 0 and answer["behind"],
+          "while this version's own answer is still reused inside its six hours")
+  finally:
+    shutil.rmtree(folder, ignore_errors=True)
+
+
 def main():
   comparison_cases()
   notes_cases()
   answer_cases()
   cache_cases()
   offline_cases()
+  other_version_cache_cases()
   other_instance_cases()
   remote_cases()
   boot_stamp_cases()

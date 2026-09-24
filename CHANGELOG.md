@@ -8,6 +8,13 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.1 (2026-09-24)
+
+- **Fixed: the update banner could announce a version that does not exist.** The bot
+  keeps GitHub's answer for six hours, and it reused an answer saved by a different
+  version, for example one that came along with a copied `config` folder. It now asks
+  again whenever the version it is running has changed.
+
 ## 1.0.0 (2026-09-23)
 
 Mirako Machine starts counting again, with a single commit as its history.
