@@ -202,6 +202,10 @@ MAX_DECK_PAGES = 20
 # absent from the map on purpose: it means leave the trainee's own style alone, and the
 # whole dialog is skipped rather than being opened and cancelled.
 RACING_STYLE_DEFAULT = "default"
+# How many times one career may open the Strategy dialog without finding its button. A
+# miss cancels and reopens the dialog, so without a limit it loops for as long as the
+# button stays unrecognised.
+MAX_STYLE_ATTEMPTS = 3
 RACING_STYLE_BUTTONS = {
   "front": "style_front_btn.png",
   "pace": "style_pace_btn.png",
@@ -327,6 +331,7 @@ class RunState:
     # Whether this career's racing style has been set yet. Per-run: the dialog has to be
     # driven again for every new career.
     self.style_applied = False
+    self.style_attempts = 0
     self.focus_applied = False
     self.focus_attempts = 0
     # Whether "+" has already been pressed on the carats dialog currently open. Reset
@@ -1736,7 +1741,14 @@ def handle_strategy_select(state):
     return
   info(f"Setting the racing style to {style}.")
   if not _click(f"{ASSETS}/{RACING_STYLE_BUTTONS[style]}"):
-    warning(f"Could not find the {style} button; leaving the style unchanged.")
+    state.style_attempts += 1
+    if state.style_attempts >= MAX_STYLE_ATTEMPTS:
+      _stop(StopReason.STUCK, "ERROR_NOTIFICATION",
+            f"Could not find the {style} button on the Strategy dialog after "
+            f"{state.style_attempts} attempts. Not starting a career with a different "
+            "racing style.")
+      return
+    warning(f"Could not find the {style} button; cancelling to try again.")
     _click(f"{BUTTONS}/cancel_btn.png")
     return
   sleep(device_action.jittered(0.4))   # let the selection redraw before confirming

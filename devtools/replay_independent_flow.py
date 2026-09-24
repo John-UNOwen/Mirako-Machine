@@ -1140,6 +1140,38 @@ def main():
   independent.HANDLERS[Screen.STRATEGY_SELECT](independent.RunState())
   if clicks != ["cancel_btn.png"]:
     failures.append(f"an unknown style should cancel the dialog, got {clicks}")
+
+  # A button that is never found retries a few times and then stops, rather than
+  # cancelling and reopening the dialog forever -- which it did when the templates still
+  # carried the trainee's aptitude grade.
+  config.INDEPENDENT_RACING_STYLE = "pace"
+  blind = independent.RunState()
+  saved_blind = independent._click
+  independent._click = lambda t, *a, **k: (not t.endswith("style_pace_btn.png")
+                                           and fake_click(t, *a, **k))
+  stops.clear()
+  try:
+    for attempt in range(1, independent.MAX_STYLE_ATTEMPTS):
+      clicks.clear()
+      independent.HANDLERS[Screen.STRATEGY_SELECT](blind)
+      if clicks != ["cancel_btn.png"] or stops:
+        failures.append(f"missing button, attempt {attempt}: should cancel and retry, "
+                        f"got {clicks} {stops}")
+    try:
+      independent.HANDLERS[Screen.STRATEGY_SELECT](blind)
+    except BotStopException:
+      pass
+    if len(stops) != 1:
+      failures.append(f"missing button: attempt {independent.MAX_STYLE_ATTEMPTS} should "
+                      f"stop the bot, got {stops}")
+    if blind.style_applied:
+      failures.append("missing button: the style must not be marked applied")
+    blind.reset_for_new_run()
+    if blind.style_attempts:
+      failures.append("style_attempts should reset between careers")
+  finally:
+    independent._click = saved_blind
+    stops.clear()
   config.INDEPENDENT_RACING_STYLE = "default"
 
   # --- TP refill --------------------------------------------------------------------

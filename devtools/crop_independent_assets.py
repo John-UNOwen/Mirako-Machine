@@ -196,10 +196,10 @@ CROPS = {
     # those change with the trainee, so they are left outside the box. The selected
     # button also gains green corner brackets, which sit on the border rather than the
     # label, so one template covers both states.
-    "style_end_btn":            ("style3.png",   (325, 630, 396, 676)),
-    "style_late_btn":           ("style3.png",   (462, 630, 529, 676)),
-    "style_pace_btn":           ("style3.png",   (587, 630, 659, 676)),
-    "style_front_btn":          ("style3.png",   (715, 630, 787, 676)),
+    "style_end_btn":            ("style3.png",   (325, 630, 368, 676)),
+    "style_late_btn":           ("style3.png",   (462, 630, 501, 676)),
+    "style_pace_btn":           ("style3.png",   (587, 630, 632, 676)),
+    "style_front_btn":          ("style3.png",   (715, 630, 761, 676)),
 }
 
 

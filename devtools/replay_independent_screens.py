@@ -358,6 +358,8 @@ EXPECTED = {
   "style1.png": Screen.FINAL_CONFIRM_INDEPENDENT_TAB,
   "style2.png": Screen.FINAL_CONFIRM_LINEUP_EXPANDED,
   "style3.png": Screen.STRATEGY_SELECT,
+  # A different trainee's grades (Pace D, not A), from another PC's emulator.
+  "strategy_pace_d.png": Screen.STRATEGY_SELECT,
 
   # TP refill. refill3 and refill5 are the same screen either side of pressing "+",
   # and refill4/refill6 are the same receipt for the two different items.
