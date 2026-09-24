@@ -1,0 +1,80 @@
+*venv*
+venv_test
+__pycache__
+test.py
+config.json
+PLAN.md
+PLAN_PAST.md
+old_configs.json
+action_calc.json
+min_scores.json
+config/*.json
+# Per-instance configs: whole configs, so they carry device ids, borrow cards and
+# skill lists. config/*.json above does not reach into a subdirectory.
+config/instances/
+
+# Atomic-write temp files: core/atomic_write.py names its per-writer scratch
+# files *.tmp (e.g. config.json.<rand>.tmp in the repo root) and core/updates.py
+# writes {cache}.{pid}.tmp. Only the config writers' temporaries hold FULL config
+# snapshots -- device ids and all; the schedule and update-cache ones hold only
+# their own (small, no-identity) payloads. A leftover from a killed write must
+# never reach the public repo via a stray git add -A.
+*.tmp
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist_ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore everything under notifications
+assets/notifications/*
+
+# But keep these specific sound effects
+!assets/notifications/harikitte_ikou.mp3
+!assets/notifications/sfx_01.mp3
+!assets/notifications/sfx_02.mp3
+!assets/notifications/sfx_03.mp3
+
+# Windows thumbnail caches. Explorer regenerates these in any folder holding images,
+# so they kept turning up as modified alongside real asset and reference changes.
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Per-career run history. User data, and it grows -- see core/independent_stats.py.
+stats/
+
+# Local Claude Code settings, not project config.
+.claude/
+
+# Per-run vision scratch: the vision router's working directory at the repo root,
+# regenerated on demand and never part of the project.
+.dsh-vision-router/
+# Timestamped config backups.
+config.json.bak-*
+
+# Development reference: screen captures the devtools suites verify behaviour
+# against, defect captures, and the reference calculator the scoring was ported
+# from. Nothing at runtime reads it, it is 160MB of private game captures, and
+# each developer's own captures are what their devtools runs need. Kept on disk,
+# out of the repo.
+references/

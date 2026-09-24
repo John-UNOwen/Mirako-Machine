@@ -1,0 +1,70 @@
+# Mirako Machine — License
+
+Copyright (c) 2026 John-UNOwen
+
+This project is not released under a standard open-source license. It is
+distributed under the custom license written below.
+
+## 1. Where this project comes from
+
+Mirako Machine began as a fork of
+[samsulpanjul/umamusume-auto-train](https://github.com/samsulpanjul/umamusume-auto-train),
+by way of the
+[CrazyIvanTR/umamusume-auto-train](https://github.com/CrazyIvanTR/umamusume-auto-train)
+fork, and that original project was itself inspired by
+[shiokaze/UmamusumeAutoTrainer](https://github.com/shiokaze/UmamusumeAutoTrainer).
+The full history, and what changed in this build, is in
+[`CREDITS.md`](./CREDITS.md).
+
+**Honesty note:** the licensing of the upstream projects is UNCONFIRMED. Their
+license terms could not be established, and no licence covering the upstream
+code that remained in this tree has ever been granted by or from their
+authors. This license therefore asserts no grant of rights from the upstream
+projects, and gives no rights in or to them. It covers only what this
+repository itself ships, and only the rights its author can give.
+
+## 2. What you may do
+
+Anyone may download, run, modify and share this project, subject to all of
+the following conditions:
+
+1. **Your own copy.** The project automates your personal, legally owned
+   copy of the game *Umamusume*. It is not a way to access, play or
+   distribute the game, and nothing in this repository is the game or
+   replaces it.
+2. **The game's rules still apply.** You are responsible for complying with
+   the game's Terms of Service and any applicable law. Automation may
+   trigger detection and enforcement; any ban or suspension of your account
+   is your own risk.
+3. **Keep the notices.** If you share the project or a modified version,
+   keep [`LICENSE`](./LICENSE),
+   [`LICENSE_AND_DISCLAIMER.md`](./LICENSE_AND_DISCLAIMER.md) and
+   [`CREDITS.md`](./CREDITS.md) intact, so every downstream user sees the
+   same terms and acknowledgements.
+
+Commercial use is reserved. This project may not be sold, offered for sale,
+or used to provide a paid service of any kind. The author reserves all
+rights of commercial exploitation.
+
+## 3. The game is not ours
+
+This project is not affiliated with, endorsed by or sponsored by Cygames or
+by any other publisher, developer or rights holder of *Umamusume*
+(*Uma Musume: Pretty Derby*). All game assets, character and scenario names,
+music, artwork and trademarks encountered in or shipped with the project
+belong to their respective owners. The game assets that ship here are used
+solely to make the automation work — not to play, display or distribute
+game content.
+
+## 4. As is — no warranty, no liability
+
+The project is provided "AS IS", without warranty of any kind, express or
+implied, and the author will not be liable for any damage, loss or
+consequence of any kind arising from its use, including any action against
+your game account. The full terms — assumption of risk, no liability,
+indemnification and acceptance — are in
+[`LICENSE_AND_DISCLAIMER.md`](./LICENSE_AND_DISCLAIMER.md), which applies to
+this project as well.
+
+By downloading, running or using this project you agree to this license and
+to the full terms above. If you do not agree, do not use it.
