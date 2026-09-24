@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, RotateCcw } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCcw } from "lucide-react";
 
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -27,7 +27,7 @@ type Outcome = {
   from?: string;
   to?: string;
   restart_required?: boolean;
-  requirements_installed?: boolean;
+  install_requirements?: boolean;
   detached?: boolean;
   return_command?: string;
   log?: string;
@@ -59,6 +59,10 @@ export default function UpdateDialog({
   const [busy, setBusy] = useState<"" | "update" | "rollback">("");
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [failure, setFailure] = useState<{ message: string; log: string } | null>(null);
+  // After an update the bot restarts itself: "waiting" until it goes down, "down" while it
+  // is starting again (installing first, if the dependencies changed), "stuck" if it never
+  // went down -- the restart did not happen, and the old instruction is the way out.
+  const [restart, setRestart] = useState<"" | "waiting" | "down" | "slow" | "stuck">("");
 
   const check = useCallback(async () => {
     try {
@@ -92,13 +96,53 @@ export default function UpdateDialog({
         void check();
         return;
       }
-      setOutcome((await res.json()) as Outcome);
+      const result = (await res.json()) as Outcome;
+      setOutcome(result);
+      if (result.restart_required) setRestart("waiting");
     } catch (error) {
       setFailure({ message: `Could not reach the bot: ${String(error)}`, log: "" });
     } finally {
       setBusy("");
     }
   };
+
+  // Polls until the process has gone down and come back, then reloads onto the new page.
+  const polling = restart !== "" && restart !== "stuck";
+  useEffect(() => {
+    if (!polling) return;
+    const started = Date.now();
+    let wentDown = false;
+    let stopped = false;
+    const tick = async () => {
+      if (stopped) return;
+      let up = false;
+      try {
+        up = (await fetch("/version.txt", { cache: "no-store" })).ok;
+      } catch {
+        up = false;
+      }
+      if (stopped) return;
+      if (!up && !wentDown) {
+        wentDown = true;
+        setRestart("down");
+      } else if (up && wentDown) {
+        window.location.reload();
+        return;
+      }
+      const waited = Date.now() - started;
+      if (!wentDown && waited > 30_000) {
+        setRestart("stuck");
+        return;
+      }
+      if (wentDown && waited > 60_000) setRestart("slow");
+      setTimeout(() => void tick(), 1000);
+    };
+    const first = setTimeout(() => void tick(), 1000);
+    return () => {
+      stopped = true;
+      clearTimeout(first);
+    };
+  }, [polling]);
 
   // Phase 3. New Python routes only exist in a process that started with them, so once
   // the files have moved this process is serving a page that will call routes it does not
@@ -127,21 +171,21 @@ export default function UpdateDialog({
 
         {finished ? (
           <div className="flex flex-col gap-3">
-            {outcome?.requirements_installed === false && (
-              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
-                <AlertTriangle size={16} className="text-destructive mt-0.5 shrink-0" />
-                <p className="m-0 whitespace-pre-wrap">
-                  The environment may be half-installed -- run{" "}
-                  <code className="rounded bg-card px-1 py-0.5 text-xs">pip install -r requirements.txt</code>{" "}
-                  in the bot folder before starting.
-                </p>
-              </div>
-            )}
             <div className="flex items-start gap-2 rounded-md border border-primary/40 bg-primary/10 p-3">
-              <CheckCircle2 size={16} className="text-primary mt-0.5 shrink-0" />
+              {restart === "stuck" ? (
+                <AlertTriangle size={16} className="text-destructive mt-0.5 shrink-0" />
+              ) : (
+                <Loader2 size={16} className="text-primary mt-0.5 shrink-0 animate-spin" />
+              )}
               <div className="text-sm">
                 <p className="m-0 font-semibold">
-                  Close this window and run start.bat again to finish.
+                  {restart === "stuck"
+                    ? "The bot did not restart. Close its window and run start.bat again."
+                    : restart === "slow"
+                      ? "Still starting. Installing dependencies can take a few minutes; the new console window shows progress."
+                      : outcome?.install_requirements
+                        ? "Restarting and installing the new dependencies. This page reloads when it is back."
+                        : "Restarting. This page reloads when it is back."}
                 </p>
                 <p className="m-0 mt-1 text-muted-foreground">
                   {outcome?.detached

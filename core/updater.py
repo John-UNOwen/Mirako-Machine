@@ -18,16 +18,15 @@ be git users and an error from git is not an instruction they can act on:
     resumed from where it stopped
 
 After the checks: the current commit is recorded so `rollback` has somewhere to go, the
-pull is fast-forward only, and pip runs only when `requirements.txt` actually changed --
-compared by hash, because a pull touches the mtime of every file it writes. Nothing is
-built, because `web/dist` is tracked.
+pull is fast-forward only, and the result says whether `requirements.txt` actually changed --
+compared by hash, because a pull touches the mtime of every file it writes. Installing
+and restarting are `core.restart`'s. Nothing is built, because `web/dist` is tracked.
 """
 import hashlib
 import io
 import json
 import os
 import subprocess
-import sys
 import time
 
 import core.bot as bot
@@ -41,7 +40,6 @@ REQUIREMENTS = "requirements.txt"
 # git is not expected to be slow, but a pull hitting an unreachable remote will sit on a
 # DNS or TLS timeout of its own. The button must come back either way.
 GIT_TIMEOUT = 120
-PIP_TIMEOUT = 900
 
 MAIN_BRANCH = "main"
 
@@ -342,39 +340,17 @@ class Progress:
     return "\n".join(self.lines)
 
 
-def _pip_install(progress, root=None, context="update"):
-  """Install requirements into the interpreter this process is running under.
+def _requirements_moved(progress, root, before):
+  """Whether requirements.txt changed, said in the log.
 
-  `sys.executable` on purpose: the bot is started through .venv's python, so this is that
-  venv without having to find it. Running a bare `pip` would install into whatever came
-  first on PATH, which on a machine with Anaconda is somewhere else entirely.
-
-  `context` ("update" or "rollback") only shapes the failure wording: a failed update
-  says the code moved, a failed rollback says nothing has been confirmed working --
-  either way the environment may be half-installed and pip must be run by hand.
+  Installing is left to the restart, which runs pip after this process has exited: on
+  Windows a running bot holds its imported packages open and pip cannot replace them.
   """
-  progress.say("requirements.txt changed; installing.")
-  try:
-    finished = subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-r", REQUIREMENTS],
-        cwd=root or REPO_ROOT, capture_output=True, text=True, timeout=PIP_TIMEOUT)
-  except subprocess.TimeoutExpired:
-    progress.say(f"pip took longer than {PIP_TIMEOUT}s and was given up on. The "
-                 f"{context} finished moving files, but the environment may be "
-                 "half-installed; run `pip install -r requirements.txt` in the bot "
-                 "folder before starting.")
-    return False
-  for line in (finished.stdout or "").splitlines()[-15:]:
-    progress.say(f"  {line}")
-  if finished.returncode != 0:
-    for line in (finished.stderr or "").splitlines()[-15:]:
-      progress.say(f"  {line}")
-    progress.say(f"pip failed. The {context} moved the files, but their dependencies "
-                 "are not installed -- the environment may be half-installed. Run "
-                 "`pip install -r requirements.txt` in the bot folder before starting.")
-    return False
-  progress.say("Dependencies are up to date.")
-  return True
+  if requirements_hash(root) != before:
+    progress.say("requirements.txt changed; the new dependencies install on restart.")
+    return True
+  progress.say("requirements.txt is unchanged, so nothing to install.")
+  return False
 
 
 def apply(root=None, progress=None, running=None, other_instances=None):
@@ -434,20 +410,13 @@ def apply(root=None, progress=None, running=None, other_instances=None):
   progress.say(f"Recorded {before_sha[:8]} ({before_version or 'the previous version'}) "
                "so this can be rolled back to.")
 
-  installed = True
-  if requirements_hash(root) != before_requirements:
-    installed = _pip_install(progress, root, context="update")
-  else:
-    progress.say("requirements.txt is unchanged, so nothing to install.")
-
+  install = _requirements_moved(progress, root, before_requirements)
   progress.say(f"Updated to {after_version or 'the latest version'}.")
-  # Phase 3. New routes are registered when the process starts, so a running server is
-  # serving the old ones however new the files on disk are -- and the page it is serving
-  # is the new one, which will call routes that are not there. The UI stays blocked on
-  # this until the process is restarted.
-  progress.say("Close this window and run start.bat again to finish.")
+  # New routes are registered when the process starts, so a running server is serving
+  # the old ones however new the files on disk are. The caller restarts it (core.restart).
+  progress.say("Restarting to finish.")
   return {"status": "updated", "from": before_version, "to": after_version,
-          "requirements_installed": installed, "restart_required": True,
+          "install_requirements": install, "restart_required": True,
           "sha": head_sha(root), "log": progress.text()}
 
 
@@ -507,16 +476,12 @@ def rollback(root=None, progress=None, running=None, other_instances=None):
                   "git could not check that commit out. Nothing has been changed.\n\n"
                   + output)
 
-  installed = True
-  if requirements_hash(root) != before_requirements:
-    installed = _pip_install(progress, root, context="rollback")
-  else:
-    progress.say("requirements.txt is unchanged, so nothing to install.")
+  install = _requirements_moved(progress, root, before_requirements)
 
   progress.say(f"Now on {_version_text(root) or target[:8]}, which is a single commit "
                f"rather than a branch. To come back to the latest version later, run "
                f"`git checkout {MAIN_BRANCH}` in the bot folder, or press Update.")
-  progress.say("Close this window and run start.bat again to finish.")
+  progress.say("Restarting to finish.")
   return {"status": "rolled_back", "to": _version_text(root), "sha": target,
-          "requirements_installed": installed, "restart_required": True, "detached": True,
+          "install_requirements": install, "restart_required": True, "detached": True,
           "return_command": f"git checkout {MAIN_BRANCH}", "log": progress.text()}

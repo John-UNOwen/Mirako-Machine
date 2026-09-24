@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import json
 import re
+import sys
 import time
 
 from update_config import RETIRED_KEYS, SETUP_KEYS
@@ -707,14 +708,16 @@ def instance_log(name: str, kind: str = "log", lines: int = 200):
 
 
 @app.post("/instance/shutdown")
-def shutdown_instance():
-  """Stop this instance's bot and end its process. Named instances only.
+def shutdown_instance(reason: str = ""):
+  """Stop this instance's bot and end its process. Named instances only, but see below.
 
   The unnamed instance is the one start.bat opened in a console, and usually the page the
   user is looking at; closing it from its own page would leave that page talking to
-  nothing. It is closed the way it was opened.
+  nothing. It is closed the way it was opened -- except by an update pressed on another
+  instance's page (`reason=update`), which restarts every instance on the new code and
+  starts this one again itself.
   """
-  if not bot.instance_name:
+  if not bot.instance_name and reason != "update":
     raise HTTPException(status_code=400,
                         detail="The default instance is closed from its console window.")
   import threading
@@ -1710,29 +1713,91 @@ def post_update_apply():
 
   Runs in the request rather than on a thread: an update takes seconds, and the one thing
   that must not happen is the page moving on while the working tree is halfway changed.
-  The log is returned whole, and also left in logs/update.log.
+  The log is returned whole, and also left in logs/update.log. When the files moved, the
+  bot restarts itself once the answer has gone out.
   """
   from core import updater
   progress = updater.Progress()
   try:
-    return updater.apply(progress=progress, other_instances=_other_instances())
+    result = updater.apply(progress=progress, other_instances=_other_instances())
   except updater.Refusal as refusal:
     raise HTTPException(status_code=409,
                         detail={"message": refusal.message, **refusal.as_dict(),
                                 "log": progress.text()})
+  if result.get("restart_required"):
+    _restart_soon(result.get("install_requirements", False))
+  return result
 
 
 @app.post("/update/rollback")
 def post_update_rollback():
-  """Go back to the version recorded before the last update."""
+  """Go back to the version recorded before the last update, and restart on it."""
   from core import updater
   progress = updater.Progress()
   try:
-    return updater.rollback(progress=progress, other_instances=_other_instances())
+    result = updater.rollback(progress=progress, other_instances=_other_instances())
   except updater.Refusal as refusal:
     raise HTTPException(status_code=409,
                         detail={"message": refusal.message, **refusal.as_dict(),
                                 "log": progress.text()})
+  if result.get("restart_required"):
+    _restart_soon(result.get("install_requirements", False))
+  return result
+
+
+# How long the restart waits for sibling instances to let go of their ports, seconds.
+SIBLING_EXIT_SECONDS = 15
+
+
+def _restart_soon(install):
+  """End every instance and start them again on the files an update just wrote.
+
+  After a delay, so the page gets its answer first. Siblings are asked to exit and waited
+  for, since the relaunched default instance takes the first free port and would land on
+  one a sibling still held. Then this process hands over to core.restart's script, which
+  waits for it to exit, installs, and starts the default instance -- which starts the
+  named ones again from the relaunch record.
+  """
+  import threading
+  import urllib.request
+
+  def go():
+    time.sleep(1.0)
+    from core import restart
+    try:
+      rows = live_instances()["instances"]
+    except Exception:                                              # noqa: BLE001
+      rows = []
+    siblings = [row for row in rows if row.get("running") and not row.get("current")
+                and row.get("port")]
+    names = [row["name"] for row in siblings if row.get("declared")]
+    if bot.instance_name:
+      names.append(bot.instance_name)
+    for row in siblings:
+      try:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{row['port']}/instance/shutdown?reason=update",
+            method="POST", data=b"")
+        urllib.request.urlopen(request, timeout=3).close()
+      except Exception:                                            # noqa: BLE001
+        pass
+    deadline = time.monotonic() + SIBLING_EXIT_SECONDS
+    while time.monotonic() < deadline and any(_probe_instance(row["port"])
+                                               for row in siblings):
+      time.sleep(0.5)
+    restart.write_relaunch(names)
+    # The default instance's own arguments when it is the one restarting; a named
+    # instance cannot know how the default was started, and starts it plainly.
+    try:
+      restart.spawn([] if bot.instance_name else sys.argv[1:], install)
+    except Exception as exception:                                 # noqa: BLE001
+      # Staying up on the old code beats exiting with nothing to start the new one.
+      print(f"[ERROR] Could not restart after the update: {exception}. Close this "
+            "window and run start.bat again.")
+      return
+    os._exit(0)
+
+  threading.Thread(target=go, daemon=True).start()
 
 
 @app.get("/update/log")

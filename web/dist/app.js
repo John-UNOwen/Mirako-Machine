@@ -23476,6 +23476,7 @@ function UpdateDialog({
   const [busy, setBusy] = reactExports.useState("");
   const [outcome, setOutcome] = reactExports.useState(null);
   const [failure, setFailure] = reactExports.useState(null);
+  const [restart, setRestart] = reactExports.useState("");
   const check = reactExports.useCallback(async () => {
     try {
       const res = await fetch("/update/preflight", { cache: "no-store" });
@@ -23503,13 +23504,51 @@ function UpdateDialog({
         void check();
         return;
       }
-      setOutcome(await res.json());
+      const result = await res.json();
+      setOutcome(result);
+      if (result.restart_required) setRestart("waiting");
     } catch (error) {
       setFailure({ message: `Could not reach the bot: ${String(error)}`, log: "" });
     } finally {
       setBusy("");
     }
   };
+  const polling = restart !== "" && restart !== "stuck";
+  reactExports.useEffect(() => {
+    if (!polling) return;
+    const started = Date.now();
+    let wentDown = false;
+    let stopped = false;
+    const tick = async () => {
+      if (stopped) return;
+      let up = false;
+      try {
+        up = (await fetch("/version.txt", { cache: "no-store" })).ok;
+      } catch {
+        up = false;
+      }
+      if (stopped) return;
+      if (!up && !wentDown) {
+        wentDown = true;
+        setRestart("down");
+      } else if (up && wentDown) {
+        window.location.reload();
+        return;
+      }
+      const waited = Date.now() - started;
+      if (!wentDown && waited > 3e4) {
+        setRestart("stuck");
+        return;
+      }
+      if (wentDown && waited > 6e4) setRestart("slow");
+      setTimeout(() => void tick(), 1e3);
+    };
+    const first = setTimeout(() => void tick(), 1e3);
+    return () => {
+      stopped = true;
+      clearTimeout(first);
+    };
+  }, [polling]);
   const finished = Boolean(outcome?.restart_required);
   const rolledBack = outcome?.status === "rolled_back";
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open, onOpenChange: (next) => finished ? void 0 : onOpenChange(next), children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "sm:max-w-xl", showCloseButton: !finished, children: [
@@ -23518,20 +23557,10 @@ function UpdateDialog({
       /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { children: finished ? rolledBack ? "The files are back on the recorded version, but this window is still running the new one." : "The files have changed, but this window is still running the old version." : latest ? `Version ${latest} is available.` : "Pull the newest version from GitHub." })
     ] }),
     finished ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-3", children: [
-      outcome?.requirements_installed === false && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { size: 16, className: "text-destructive mt-0.5 shrink-0" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "m-0 whitespace-pre-wrap", children: [
-          "The environment may be half-installed -- run",
-          " ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "rounded bg-card px-1 py-0.5 text-xs", children: "pip install -r requirements.txt" }),
-          " ",
-          "in the bot folder before starting."
-        ] })
-      ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-2 rounded-md border border-primary/40 bg-primary/10 p-3", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { size: 16, className: "text-primary mt-0.5 shrink-0" }),
+        restart === "stuck" ? /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { size: 16, className: "text-destructive mt-0.5 shrink-0" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { size: 16, className: "text-primary mt-0.5 shrink-0 animate-spin" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "m-0 font-semibold", children: "Close this window and run start.bat again to finish." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "m-0 font-semibold", children: restart === "stuck" ? "The bot did not restart. Close its window and run start.bat again." : restart === "slow" ? "Still starting. Installing dependencies can take a few minutes; the new console window shows progress." : outcome?.install_requirements ? "Restarting and installing the new dependencies. This page reloads when it is back." : "Restarting. This page reloads when it is back." }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "m-0 mt-1 text-muted-foreground", children: outcome?.detached ? `You are now on ${outcome?.to || "the previous version"}, which is a single version rather than the latest. To come back to the latest later, run ${outcome?.return_command} in the bot folder.` : `Updated ${outcome?.from || "?"} → ${outcome?.to || "?"}.` })
         ] })
       ] }),

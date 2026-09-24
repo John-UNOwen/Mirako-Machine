@@ -171,6 +171,28 @@ def resolve_device():
       bot.device_id_is_default = True
 
 
+def relaunch_instances(server, timeout=30.0):
+  """Start again the named instances an update closed (core.restart's record).
+
+  Waits for this server to be up first: a launch picks a free port by asking the others,
+  and this instance's own port has to be answering to be counted as taken.
+  """
+  from core import restart
+  names = restart.take_relaunch()
+  if not names:
+    return
+  deadline = time.monotonic() + timeout
+  while not server.started and time.monotonic() < deadline:
+    time.sleep(0.2)
+  for name in names:
+    try:
+      outcome = server_main.launch_instance(name)
+      info(f"Restarted instance '{name}' on port {outcome['port']}.")
+    except Exception as exception:                                 # noqa: BLE001
+      detail = getattr(exception, "detail", exception)
+      warning(f"Could not restart instance '{name}' after the update: {detail}")
+
+
 def say_if_behind():
   """One line at startup when a newer build is published. Says; does not pull.
 
@@ -456,6 +478,8 @@ def start_server():
   server = uvicorn.Server(server_config)
   init_logging()
   threading.Thread(target=say_if_behind, daemon=True).start()
+  if not bot.instance_name:
+    threading.Thread(target=relaunch_instances, args=(server,), daemon=True).start()
   info(f"Instance '{bot.instance_label()}' on port {port}.")
   info(f"Press '{bot.hotkey}' to start/stop the bot.")
   info(f"Press 'shift+{bot.hotkey}' to stop once the career in progress finishes.")

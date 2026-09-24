@@ -179,7 +179,7 @@ def apply_cases():
     # Phase 3: routes are registered at startup, so the running process is still the old
     # one however new the files are.
     check(result["restart_required"] is True, "and asks for a restart")
-    check("start.bat" in result["log"], "saying how, in the log the dialog shows")
+    check("Restarting" in result["log"], "saying so, in the log the dialog shows")
 
     recorded = json.load(io.open(os.path.join(clone, "config", "last_version.json"),
                                  encoding="utf-8"))
@@ -427,56 +427,50 @@ def timeout_cases():
         updater._ask_head_sha = original_ask
 
 
-def pip_failure_cases():
-  """A pip that fails mid-operation: the result must say so, and the wording must not
-  claim the environment is fine.
+def requirements_cases():
+  """Whether requirements.txt moved is reported, and pip never runs in this process.
 
-  Offline: `_pip_install` is faked to report failure (no real pip runs), while git does
-  its real work. The same fake stands in for both operations, so one case covers a failed
-  update *and* a failed rollback -- each of which re-runs pip when requirements moved.
+  pip used to run from inside the bot, where on Windows every imported package is held
+  open and cannot be replaced, so an install left the environment half-upgraded. The
+  result now says whether the dependencies changed, and core.restart installs them after
+  this process has exited. A pip call here would be the old bug back, so it fails.
   """
-  print("\nWhen pip fails")
+  print("\nWhen requirements.txt changes")
   with tempfile.TemporaryDirectory() as folder:
-    upstream, clone = new_repo(folder, "pipfail")
-    # Move requirements.txt too, so both operations actually run pip.
-    publish(upstream, "1.1.0", requirements="numpy==2.0\n")
-    original_pip = updater._pip_install
+    upstream, clone = new_repo(folder, "reqs")
+    original_run = updater.subprocess.run
+
+    def no_pip(command, *args, **kwargs):
+      if "pip" in command:
+        raise AssertionError("pip ran inside the bot process")
+      return original_run(command, *args, **kwargs)
+    updater.subprocess.run = no_pip
     try:
-      def fake_pip(progress, root=None, context="update"):
-        # Mirror the real failure wording so the log assertions test what a person sees.
-        progress.say(f"pip failed. The {context} moved the files, but their dependencies "
-                     "are not installed -- the environment may be half-installed. Run "
-                     "`pip install -r requirements.txt` in the bot folder before starting.")
-        return False
-      updater._pip_install = fake_pip
-
-      progress = updater.Progress(path="u.log", root=clone)
-      result = updater.apply(root=clone, progress=progress, running=False)
-      check(result["status"] == "updated",
-            f"a failed pip still counts as an applied update, got {result['status']}")
-      check(result.get("requirements_installed") is False,
-            "and the result says the dependencies were NOT installed")
+      publish(upstream, "1.1.0", requirements="numpy==2.0\n")
+      result = updater.apply(root=clone, progress=updater.Progress(path="u.log", root=clone),
+                             running=False)
+      check(result["status"] == "updated" and result.get("install_requirements") is True,
+            "an update that moves requirements.txt asks the restart to install")
       log = io.open(os.path.join(clone, "u.log"), encoding="utf-8").read()
-      check("half-installed" in log and "pip install -r requirements.txt" in log,
-            "and the log warns the environment may be half-installed, naming the fix")
-      check("The code is updated" not in log,
-            "without claiming the code is updated as if nothing went wrong")
+      check("install on restart" in log, "and the log says when they install")
 
-      # Now roll back: the checkout moves to 1.0.0, whose requirements.txt differs from
-      # 1.1.0's, so pip runs again -- and fails again.
-      rprogress = updater.Progress(path="r.log", root=clone)
-      rresult = updater.rollback(root=clone, progress=rprogress, running=False)
-      check(rresult["status"] == "rolled_back",
-            f"a failed pip does not stop the rollback itself, got {rresult['status']}")
-      check(rresult.get("requirements_installed") is False,
-            "and the rollback result says the dependencies were NOT installed")
-      rlog = io.open(os.path.join(clone, "r.log"), encoding="utf-8").read()
-      check("half-installed" in rlog and "pip install -r requirements.txt" in rlog,
-            "and the rollback log carries the same warning")
-      check("rollback" in rlog.lower(),
-            "worded for a rollback, not pretending it was an update")
+      rresult = updater.rollback(root=clone,
+                                 progress=updater.Progress(path="r.log", root=clone),
+                                 running=False)
+      check(rresult["status"] == "rolled_back"
+            and rresult.get("install_requirements") is True,
+            "so does a rollback across the same change")
+
+      git(clone, "checkout", "-q", "main")
+      publish(upstream, "1.2.0")
+      again = updater.apply(root=clone, progress=updater.Progress(path="v.log", root=clone),
+                            running=False)
+      check(again["status"] == "updated" and again.get("install_requirements") is False,
+            "and one that leaves it alone does not")
+    except AssertionError as exception:
+      check(False, str(exception))
     finally:
-      updater._pip_install = original_pip
+      updater.subprocess.run = original_run
 
 
 def main():
@@ -495,7 +489,7 @@ def main():
   failed_apply_cases()
   rollback_refusal_cases()
   timeout_cases()
-  pip_failure_cases()
+  requirements_cases()
   print()
   if failures:
     print(f"{len(failures)} failure(s).")

@@ -8,6 +8,13 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.4 (2026-09-24)
+
+- The bot restarts itself after an update or a rollback, other instances included, and
+  the page reloads when it is back.
+- New dependencies install after the old process has exited, so Windows no longer
+  blocks replacing packages the bot had open.
+
 ## 1.0.3 (2026-09-24)
 
 - Racing style buttons are found for every trainee, not only ones whose aptitude grades

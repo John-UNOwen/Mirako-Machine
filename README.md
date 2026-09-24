@@ -85,8 +85,9 @@ py -3.13 -m venv .venv
 
 ### Updating
 
-When a new version is out, a banner appears in the web UI. Press **Update**, then restart
-`start.bat` when told. If the new version is worse, the same dialog offers **Go back**.
+When a new version is out, a banner appears in the web UI. Press **Update**: the bot
+restarts itself (installing new dependencies if needed) and the page reloads. If the new
+version is worse, the same dialog offers **Go back**.
 
 The update is refused if the bot is running, you've edited tracked files, or you're not on
 `main`.
