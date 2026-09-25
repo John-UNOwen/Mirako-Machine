@@ -407,6 +407,26 @@ def handler_cases():
     check(len(fakes.posts) == 1 and state.spark_choice == "rerolled",
           "with both read, the question is asked and answered")
 
+    print("\nThe relay's key, per question:")
+    state = State()
+    state.spark_sets = {"original": (rows_of(ORIGINAL), b"\x89PNG-o"),
+                        "rerolled": (rows_of(REROLLED), b"\x89PNG-r")}
+    fakes.page = "original sparks"
+    fakes.keys.clear()
+    real_ask = relay_client.ask
+    relay_client.ask = lambda *a, **k: (_ for _ in ()).throw(
+        relay_client.RelayError("Could not reach the relay: timed out"))
+    run(spark_reroll.handle_spark_selection, state, fake_wait)
+    relay_client.ask = real_ask
+    fakes.answers = ["original"]
+    first_key = state.spark_ask_key
+    run(spark_reroll.handle_spark_selection, state, fake_wait)
+    check(fakes.keys == [first_key] and state.spark_choice == "original",
+          "a question retried after a failure goes out under the career's key")
+    abandoned = State()
+    check(abandoned.spark_ask_key != first_key,
+          "a new career has a key of its own, so a question left behind is never reused")
+
     print("\nA question that can no longer be answered:")
     state = State()
     state.spark_sets = {"original": (rows_of(ORIGINAL), b"\x89PNG-o"),
@@ -414,6 +434,7 @@ def handler_cases():
     fakes.page = "original sparks"
     fakes.posts.clear()
     fakes.answers = [None, "expired"]
+    fakes.keys.clear()
     run(spark_reroll.handle_spark_selection, state, fake_wait)
     check(state.spark_question_id is None and state.spark_choice is None,
           "an expired question is dropped, with nothing chosen")
@@ -421,6 +442,8 @@ def handler_cases():
     run(spark_reroll.handle_spark_selection, state, fake_wait)
     check(len(fakes.posts) == 2 and state.spark_choice == "original",
           "and the next pass asks again and takes that answer")
+    check(len(fakes.keys) == 2 and fakes.keys[0] != fakes.keys[1],
+          "under a new key: the old one would get the expired question back")
   finally:
     fakes.restore()
     config.INDEPENDENT_SPARK_REROLL, config.INDEPENDENT_DEBUG_STOP_BEFORE_SPARK_REROLL = saved
@@ -543,26 +566,23 @@ def relay_cases():
     check(relay.calls[0].get_header("Authorization") == "Bearer typed",
           "or the one the page passes, before it is saved")
 
-    # Asking: the same Idempotency-Key until the question is out.
+    # Asking: the key is the caller's, one per question.
     keys = []
 
     def ask(text, images, options, key, **k):
       keys.append(key)
-      if len(keys) == 1:
-        raise relay_client.RelayError("Could not reach the relay: timed out")
       return "q7"
     relay_client.ask = ask
     options = spark_reroll.OPTIONS
-    try:
-      asker.SharedBot().ask("x" * 3000, [], options)
-      check(False, "a failed ask raises")
-    except asker.AskError:
-      pass
-    question = asker.SharedBot().ask("which?", [], options)
-    check(question == "q7" and len(keys) == 2 and keys[0] == keys[1],
-          "a retry after a lost reply reuses the key, so it cannot ask twice")
-    asker.SharedBot().ask("again", [], options)
-    check(keys[2] != keys[1], "and the next question gets a key of its own")
+    asker.SharedBot().ask("which?", [], options, key="K1")
+    asker.SharedBot().ask("which?", [], options, key="K1")
+    check(keys == ["K1", "K1"], "the key the caller gives is the one sent, retry after retry")
+    asker.SharedBot().ask("new", [], options)
+    asker.SharedBot().ask("new", [], options)
+    check(keys[2] and keys[3] and keys[2] != keys[3] and "K1" not in keys[2:],
+          "and with none given, each call is a question of its own")
+    check(not hasattr(asker.SharedBot, "_pending_key"),
+          "no key is kept on the asker, which outlives careers")
 
     texts = []
     relay_client.ask = lambda text, *a, **k: texts.append(text) or "q8"
@@ -625,6 +645,19 @@ def relay_cases():
     except asker.AskError:
       check(True, "a relay that is only busy keeps the question, to poll again")
 
+    class Html:
+      def __init__(self, *_):
+        pass
+
+      def __call__(self, request, timeout=None):
+        return Reply(b"<html>Bad gateway</html>")
+    try:
+      relay_client.me(opener=Html())
+      check(False, "a reply that is not JSON is refused")
+    except relay_client.RelayError as error:
+      check(not error.permanent and "usual reply" in str(error),
+            "a success reply that is not JSON is a relay error that may pass, not a crash")
+
     relay = Script((202, None))
     relay_client.notify([{"title": "Career 1 Complete"}], opener=relay)
     check(relay.calls[0].full_url.endswith("/v1/notifications")
@@ -635,7 +668,6 @@ def relay_cases():
     for name, value in saved_fns.items():
       setattr(relay_client, name, value)
     asker.SharedBot._last_poll.clear()
-    asker.SharedBot._pending_key = None
 
 
 def main():

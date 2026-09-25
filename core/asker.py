@@ -43,30 +43,32 @@ class SharedBot:
   POLL_SECONDS = 10
   TEXT_LIMIT = 1900
 
-  # One Idempotency-Key per question being asked, kept until it is out, so a retry
-  # after a lost reply gets the same question back instead of a second DM.
-  _pending_key = None
   _last_poll = {}
 
   def configured(self):
     return bool(relay_client.token())
 
-  def ask(self, text, images, options):
-    if SharedBot._pending_key is None:
-      SharedBot._pending_key = uuid.uuid4().hex
+  def ask(self, text, images, options, key=None):
+    """Send the question; returns an id to read the answer with.
+
+    `key` is the relay's Idempotency-Key: the caller passes the same one on each retry
+    of one question, so a retry after a lost reply gets that question back rather than a
+    second DM, and a new one for each new question. The relay hands back the question a
+    key first made for a day, whatever is asked with it after, so a key must never
+    outlive its question -- which is why the caller holds it, per question, and not this
+    object, which outlives careers. Without one, every call is a new question.
+    """
+    key = key or uuid.uuid4().hex
     if len(text) > self.TEXT_LIMIT:
       text = text[:self.TEXT_LIMIT - 1] + "…"
     try:
       question_id = relay_client.ask(
           text, images, [{"id": o.id, "label": o.label, "emoji": o.emoji} for o in options],
-          SharedBot._pending_key)
+          key)
     except relay_client.RelayError as error:
-      if error.permanent:
-        SharedBot._pending_key = None
       raise AskError(str(error)) from None
     except (KeyError, TypeError) as error:
       raise AskError(f"The relay sent something unexpected: {error}") from None
-    SharedBot._pending_key = None
     return question_id
 
   def answer(self, question_id, options, clock=time.monotonic):

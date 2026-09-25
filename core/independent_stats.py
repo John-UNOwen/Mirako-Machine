@@ -202,6 +202,10 @@ def amend_run(finished_at, fields, path=None):
   records are -- a kill mid-write can then cost this line, never the history. read_runs()
   folds it into its career.
   """
+  if not finished_at:
+    # Nothing to match on: read back, it would land on whichever career also lacks one.
+    warning(f"Not adding {sorted(fields)} to a run record with no finish time.")
+    return False
   path = path or runs_path()
   try:
     with open(path, "a", encoding="utf-8") as handle:
@@ -236,7 +240,8 @@ def read_runs(path=None):
       if isinstance(entry, dict) and "amends" in entry:
         fields = {key: value for key, value in entry.items() if key != "amends"}
         target = next((run for run in reversed(runs)
-                       if run.get("finished_at") == entry["amends"]), None)
+                       if entry["amends"] and run.get("finished_at") == entry["amends"]),
+                      None)
         if target is not None:
           target.update(fields)
         continue

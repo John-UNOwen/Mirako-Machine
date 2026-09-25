@@ -139,6 +139,21 @@ def history_cases():
       stats.amend_run("2020-01-01T00:00:00+00:00", {"rating": 1}, path=path)
       check(len(stats.read_runs(path)) == 2,
             "an amendment for a career not in the file changes nothing")
+
+      # A career recorded without a finish time has nothing to match on.
+      untimed = {**stats.new_record(), "finished_at": None, "fans": 3}
+      stats.record_run(untimed)
+      before = io_lines(path)
+      check(stats.amend_run(None, {"rating": 5}, path=path) is False
+            and io_lines(path) == before,
+            "an amendment with no finish time is refused, not written")
+      with open(path, "a", encoding="utf-8") as handle:
+        handle.write('{"amends": null, "rating": 5}\n')
+      check(stats.read_runs(path)[-1]["rating"] is None,
+            "and one already on disk lands on no career, not on one that also lacks it")
+      independent.handle_career_rank(_State({**untimed}, written=True))
+      check(io_lines(path) == before + 1,
+            "the handler adds nothing for a career it cannot match")
     finally:
       stats.runs_path = saved_path
       for name, value in saved.items():

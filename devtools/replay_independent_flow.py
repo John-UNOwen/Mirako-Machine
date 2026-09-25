@@ -33,6 +33,8 @@ import scenarios.tasks.team_trials as team_trials  # noqa: E402
 import scenarios.tasks.chores as chores_module  # noqa: E402
 import scenarios.tasks.tp_recovery as tp_recovery  # noqa: E402
 import scenarios.independent_recovery as recovery  # noqa: E402
+import scenarios.tasks.spark_reroll as spark_reroll  # noqa: E402
+import core.independent_stats as stats  # noqa: E402
 from core.independent_borrow import BorrowMatch  # noqa: E402
 import utils.constants as constants  # noqa: E402
 from core.scheduler import Retry  # noqa: E402
@@ -45,6 +47,13 @@ from utils.device_action_wrapper import BotStopException  # noqa: E402
 _schedule_dir = tempfile.mkdtemp(prefix="replay_schedule_")
 independent.SCHEDULE_PATH = os.path.join(_schedule_dir, "schedule.json")
 atexit.register(shutil.rmtree, _schedule_dir, True)
+
+# The career history the replay writes, through the real record_run and amend_run, so
+# what is checked is what would be on disk -- not the dict the handlers still hold, which
+# a later edit can change after the record was written. Never the live stats/.
+_stats_dir = tempfile.mkdtemp(prefix="replay_stats_")
+RUNS_PATH = os.path.join(_stats_dir, "runs.jsonl")
+atexit.register(shutil.rmtree, _stats_dir, True)
 
 # The real TP reader, captured before the stubs below replace the module attribute.
 # Checking read_home_tp through independent.read_home_tp mid-run tests the stub instead,
@@ -81,7 +90,9 @@ def fake_stop(reason, notification_key, message):
 
 # Clicks made by coordinate rather than by template during the career walkthrough.
 flow_points = []
-recorded_runs = []
+def recorded_runs():
+  """The careers the replay recorded, as read back from its own history file."""
+  return stats.read_runs(RUNS_PATH)
 
 
 class FakeDeviceAction:
@@ -112,6 +123,10 @@ class FakeDeviceAction:
     pass
 
   @staticmethod
+  def scroll(clicks, position=None, text="", notch_px=None):
+    pass
+
+  @staticmethod
   def flush_screenshot_cache():
     pass
 
@@ -134,10 +149,16 @@ def install_fakes(remaining_seconds_sequence=(0,)):
   # the main loop does. hotkey_listener sets it in the real bot; nothing does here.
   bot.is_bot_running = True
 
-  for _module in (independent, chores_module, tp_recovery, daily_races, team_trials):
+  for _module in (independent, chores_module, tp_recovery, daily_races, team_trials,
+                  spark_reroll):
     _module._click = fake_click
-  for _module in (independent, chores_module, tp_recovery, daily_races, team_trials):
+  for _module in (independent, chores_module, tp_recovery, daily_races, team_trials,
+                  spark_reroll):
     _module._stop = fake_stop
+  # Whatever the live config says, the flow here confirms the sparks as granted: the
+  # reroll is check_spark_reroll_flow.py's, and with a trigger on it would read the list
+  # off a real screen.
+  config.INDEPENDENT_SPARK_REROLL = {}
   independent.read_home_tp = lambda: (78, 100)
   tp_recovery.read_home_tp = lambda: (78, 100)
   # The game's "!" badge is the only thing that says whether anything is still
@@ -155,7 +176,7 @@ def install_fakes(remaining_seconds_sequence=(0,)):
   # to independent_common, and the two task modules hold their own bindings, so
   # stubbing independent_training alone leaves real taps going out from the others.
   for module in (independent, common, recovery, daily_races, team_trials,
-                 chores_module, tp_recovery):
+                 chores_module, tp_recovery, spark_reroll):
     module.device_action = FakeDeviceAction
 
   # Whether the artwork is actually found in a list is replay_independent_borrow.py's
@@ -186,8 +207,11 @@ def install_fakes(remaining_seconds_sequence=(0,)):
   # record_run appends to stats/runs.jsonl, the same file the live bot keeps its career
   # history in -- so replaying a career unstubbed would file a fake one alongside the
   # real ones, for the same reason the refill tally above is faked. Kept in memory.
-  recorded_runs.clear()
-  independent.record_run = recorded_runs.append
+  if os.path.exists(RUNS_PATH):
+    os.remove(RUNS_PATH)
+  independent.record_run = lambda record: stats.record_run(record, path=RUNS_PATH)
+  independent.amend_run = lambda finished_at, fields: stats.amend_run(
+      finished_at, fields, path=RUNS_PATH)
   # Whether the award is found on the page is the ADB screen suite's job; here it only
   # has to resolve, so the scan stops on the first look and never scrolls.
   independent.read_log_carats = lambda: 5
@@ -393,9 +417,22 @@ def main():
 
   # The rating is read on the Career Rank screen, after the Training Log started the
   # record and before it is written, so it has to land in the record that is written.
-  if [run.get("rating") for run in recorded_runs] != [17811]:
-    failures.append(f"the recorded career should carry the rating read on Career Rank, "
-                    f"got {[run.get('rating') for run in recorded_runs]}")
+  # The harness's own contract: no module the career reaches talks to a real device.
+  # The spark step is the one that reads a list off the screen and scrolls it, so with a
+  # reroll trigger on in the live config it would capture the desktop.
+  real = [module.__name__ for module in (independent, common, recovery, daily_races,
+                                         team_trials, chores_module, tp_recovery,
+                                         spark_reroll)
+          if module.device_action is not FakeDeviceAction]
+  if real:
+    failures.append(f"these modules still reach the real device: {real}")
+  if config.INDEPENDENT_SPARK_REROLL:
+    failures.append("the replay should confirm the sparks as granted, with the reroll off")
+
+  if [run.get("rating") for run in recorded_runs()] != [17811]:
+    failures.append(f"the recorded career, as written to its history file, should carry "
+                    f"the rating read on Career Rank, got "
+                    f"{[run.get('rating') for run in recorded_runs()]}")
 
   # State must reset so the next career edits its agenda and buys skills again.
   if state.agenda_loaded or state.skill_screen_visits:

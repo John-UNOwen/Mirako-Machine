@@ -501,6 +501,10 @@ function App() {
       on: config.independent_training.debug_pretend_tp_short,
       label: "next career held back once (TP wait test)",
     },
+    {
+      on: config.independent_training.debug_stop_before_spark_reroll,
+      label: "stops before rerolling sparks",
+    },
   ].filter((flag) => flag.on);
 
   const renderContent = () => {

@@ -66,7 +66,6 @@ def _request(method, path, body=None, content_type="application/json", auth=None
   try:
     with opener(request, timeout=TIMEOUT) as reply:
       raw = reply.read()
-      return json.loads(raw) if raw else None
   except urllib.error.HTTPError as error:
     raw = error.read().decode("utf-8", "replace")
     try:
@@ -80,6 +79,15 @@ def _request(method, path, body=None, content_type="application/json", auth=None
     raise RelayError(message, error.code, code) from None
   except (urllib.error.URLError, TimeoutError, OSError) as error:
     raise RelayError(f"Could not reach the relay: {error}") from None
+  if not raw:
+    return None
+  try:
+    return json.loads(raw)
+  except ValueError:
+    # A success status with a body that is not the relay's JSON: something in between
+    # (a proxy's page) or a relay fault. Not permanent -- it may pass.
+    raise RelayError("The relay answered with something that is not its usual reply.",
+                     None, "unreadable") from None
 
 
 def link(code, opener=urllib.request.urlopen):

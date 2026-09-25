@@ -1213,9 +1213,12 @@ def handle_career_rank(state):
       info(f"Career rating: {state.career_rating:,}.")
       if state.pending_record is not None:
         state.pending_record["rating"] = state.career_rating
-        if state.log_record_written:
-          amend_run(state.pending_record.get("finished_at"),
-                    {"rating": state.career_rating})
+        finished_at = state.pending_record.get("finished_at")
+        if state.log_record_written and finished_at:
+          amend_run(finished_at, {"rating": state.career_rating})
+        elif state.log_record_written:
+          warning("The career was recorded without a finish time, so its rating cannot "
+                  "be matched to it; not added to run history.")
       else:
         debug("No career record to add the rating to (the Training Log was not read).")
   handle_next(state)
@@ -2267,10 +2270,12 @@ def handle_training_log(state):
     # same dict, so a read that fails part-way still leaves whatever did resolve for the
     # notification that goes out later.
     state.pending_record = record
-    record.update(read_training_log_summary())
-    record["carats_earned"] = state.carats_earned
+    # Timed before the read, not after it: a read that raises still leaves a career that
+    # finished, and its finish time is what the rating read later is matched on.
     finished = time.time()
     record["finished_at"] = _iso_now(finished)
+    record.update(read_training_log_summary())
+    record["carats_earned"] = state.carats_earned
     if state.career_started_at:
       record["duration_seconds"] = int(finished - state.career_started_at)
     else:

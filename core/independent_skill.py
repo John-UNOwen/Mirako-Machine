@@ -65,14 +65,18 @@ MAX_FILL_PASSES = 8
 
 
 class SkillRow:
-  __slots__ = ("name", "cost", "affordable", "icon_box")
+  __slots__ = ("name", "cost", "affordable", "icon_box", "least")
 
-  def __init__(self, name, cost, affordable, icon_box):
+  def __init__(self, name, cost, affordable, icon_box, least=None):
     self.name = name
+    # What is reserved for it: the dearer price when the reading and the badge disagree.
     self.cost = cost
     self.affordable = affordable
     # (x, y, w, h) in whatever frame the caller passed in.
     self.icon_box = icon_box
+    # The cheapest price it could really be (least_price); the reserved cost when that is
+    # all that is known.
+    self.least = cost if least is None else least
 
   def __repr__(self):
     return f"SkillRow({self.name!r}, cost={self.cost}, affordable={self.affordable})"
@@ -1020,9 +1024,11 @@ def reserve_for(row, target_name):
   purchases that fell off the end were the highest-priority ones.
   """
   if row.cost is None or presses_for(target_name) < 2:
-    return SkillRow(target_name, row.cost, row.affordable, row.icon_box)
+    return SkillRow(target_name, row.cost, row.affordable, row.icon_box, row.least)
   ratio = upgrade_ratios().get(base_name(target_name), DOUBLE_COST_MULTIPLIER)
-  return SkillRow(target_name, int(round(row.cost * ratio)), row.affordable, row.icon_box)
+  least = None if row.least is None else int(round(row.least * ratio))
+  return SkillRow(target_name, int(round(row.cost * ratio)), row.affordable, row.icon_box,
+                  least)
 
 
 def presses_for(name):
@@ -1302,6 +1308,36 @@ def checked_cost(name, cost, discounts=None):
   return corrected
 
 
+def survey_floor(rows, bought):
+  """The cheapest a skill still on the list could cost, or None when none is left.
+
+  The cheapest each row could really be, not what is reserved for it: a floor above a
+  price the game charges would end the next pass on a skill it would still sell.
+  """
+  prices = [row.least for row in rows if row.least and row.name not in bought]
+  return min(prices) if prices else None
+
+
+def least_price(name, cost, discounts, reserved):
+  """The cheapest price `name` could really be, given what was read and its badge.
+
+  checked_cost reserves the dearer price when the reading and the badge disagree, which
+  keeps the plan from overspending -- and can leave a skill the game would sell unbought,
+  when the balance lies between its real price and the reserve. This is the other end of
+  that range: the lowest price the badge allows, or the reading when it is one this skill
+  can show. Never more than `reserved`.
+  """
+  if reserved is None:
+    return None
+  expected = expected_prices(name, discounts)
+  if not expected or cost in expected:
+    return reserved
+  low = set(expected)
+  if cost is not None and cost in (valid_prices(name) or set()):
+    low.add(cost)
+  return min(min(low), reserved)
+
+
 def find_buy_icons(region_rgb):
   """Every "+" buy icon in the scroll region, as (x, y, w, h) boxes local to it."""
   template = cv2.imread(BUY_ICON, cv2.IMREAD_COLOR)
@@ -1390,20 +1426,23 @@ def parse_skill_rows(region_rgb, check_affordable=True):
     name = resolve_row_name(
       extract_text(_enhance_for_ocr(name_crop), use_recognize=True,
                    allowlist=skill_name_allowlist()).strip(), name_crop)
-    cost = None
+    cost, least = None, None
     if cost_crop is not None:
       cost = parse_cost(extract_text(_enhance_for_ocr(cost_crop), use_recognize=True,
                                    allowlist="0123456789"))
     if name:
-      cost = checked_cost(name, cost, hint_discounts(badge_crop))
-    return name, cost, affordable, icon_box
+      discounts = hint_discounts(badge_crop)
+      read = cost
+      cost = checked_cost(name, read, discounts)
+      least = least_price(name, read, discounts, cost)
+    return name, cost, affordable, icon_box, least
 
   get_reader()  # initialize the model once, in this thread, before fanning out
   with ThreadPoolExecutor(max_workers=min(4, len(pending) * 2)) as pool:
     results = list(pool.map(read_row, pending))
 
-  return [SkillRow(name, cost, affordable, icon_box)
-          for name, cost, affordable, icon_box in results if name]
+  return [SkillRow(name, cost, affordable, icon_box, least)
+          for name, cost, affordable, icon_box, least in results if name]
 
 
 def select_purchases(rows, skill_list, budget, spend_leftovers=False,
@@ -1455,14 +1494,24 @@ def select_purchases(rows, skill_list, budget, spend_leftovers=False,
 
   candidates.sort(key=lambda candidate: candidate[0])
 
-  chosen, spent = [], 0
+  chosen, counted = [], {}
   for _, row in candidates:
+    spent = sum(counted.values())
     if spent + row.cost <= budget:
       chosen.append(row)
-      spent += row.cost
+      counted[id(row)] = row.cost
+    elif row.affordable and row.least is not None and spent + row.least <= budget:
+      # The reserve does not fit, but the price it could really be does, and the game
+      # itself marks the row affordable. Planned at that price; the purchase re-checks
+      # the game's own marker before pressing, so a dearer real price is refused there
+      # rather than overspent. The row keeps its reserve for everything after the plan.
+      debug(f"'{row.name}': reserving {row.cost} does not fit, but it may cost as little "
+            f"as {row.least} and the game offers it; planning it at {row.least}.")
+      chosen.append(row)
+      counted[id(row)] = row.least
 
-  chosen, freed = drop_granted_whites(chosen)
-  spent -= freed
+  chosen, _ = drop_granted_whites(chosen)
+  spent = sum(counted[id(row)] for row in chosen if id(row) in counted)
 
   if not spend_leftovers:
     return chosen, spent
@@ -1991,8 +2040,6 @@ def buy_skills_by_priority(dry_run=False, aptitudes=None):
 
   # What the next pass would have to beat. Costs come from this survey, so a row bought
   # just now is excluded -- it is not on the list to buy again.
-  still_there = [row.cost for family, row in seen.items()
-                 if row.cost and row.name not in bought]
-  _survey_floor["cheapest"] = min(still_there) if still_there else None
+  _survey_floor["cheapest"] = survey_floor(seen.values(), bought)
   _survey_floor["at_balance"] = balance
   return bought

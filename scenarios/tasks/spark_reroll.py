@@ -21,6 +21,7 @@ import io
 import json
 import os
 import time
+import uuid
 from datetime import datetime
 
 import cv2
@@ -77,6 +78,9 @@ def reset(state):
   state.spark_reroll_presses = 0
   state.spark_choice = None        # "original"/"rerolled", once answered
   state.spark_question_id = None
+  # The relay's Idempotency-Key for this career's question: the same on every retry of
+  # it, new with each career and with each question asked again after one expires.
+  state.spark_ask_key = uuid.uuid4().hex
   state.spark_post_failures = 0
   state.spark_choice_recorded = False
 
@@ -344,7 +348,8 @@ def ask(state, wait):
     if state.spark_question_id is None:
       images = [(f"{which}.png", state.spark_sets[which][1])
                 for which in ("original", "rerolled") if state.spark_sets[which][1]]
-      state.spark_question_id = way.ask(_message(state), images, OPTIONS)
+      state.spark_question_id = way.ask(_message(state), images, OPTIONS,
+                                        key=state.spark_ask_key)
       info("Asked in Discord which sparks to keep; waiting for the answer.")
     state.spark_post_failures = 0
   except asker.AskError as error:
@@ -363,6 +368,7 @@ def ask(state, wait):
     except asker.AskGone as error:
       warning(f"The spark question can no longer be answered ({error}); asking again.")
       state.spark_question_id = None
+      state.spark_ask_key = uuid.uuid4().hex
       return False
     except asker.AskError as error:
       debug(f"Could not read the answer yet ({error}).")

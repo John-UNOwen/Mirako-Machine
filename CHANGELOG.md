@@ -14,6 +14,17 @@ as one, so a change to either is worth reading about.
   when the bot's files were updated while it kept running: the page came from the new
   files and the presets had not been brought up to date yet. Missing settings now take
   their defaults on the page.
+- A skill whose price reading and hint badge disagree is no longer left unbought when
+  the game itself offers it and the lower of the two prices fits the balance. The game
+  is asked again before each purchase, so nothing is overspent.
+- A career whose Training Log summary could not be read still gets its finish time, so
+  its rating reaches run history.
+- The spark question can no longer be mixed up with an earlier career's: each career's
+  question is sent under its own key, and a question asked again after expiring gets a
+  new one.
+- An unexpected reply from the Mirako relay is reported as a relay problem instead of
+  failing the spark step or the link and test buttons.
+- The debug banner now lists "stops before rerolling sparks" when that switch is on.
 
 ## 1.0.6 (2026-09-25)
 

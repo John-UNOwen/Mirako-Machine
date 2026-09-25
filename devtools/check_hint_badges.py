@@ -92,6 +92,49 @@ def price_cases():
         "a gold carrying another skill's price is left to the old correction")
 
 
+def least_cases():
+  print("\nThe cheapest a disputed price could be, and what may be planned on it:")
+  check(skills.least_price("Pace Chaser Savvy ○", 71, {35}, 71) == 71,
+        "a reading the badge agrees with is its own lowest price")
+  lowest = min(skills.expected_prices("Productive Plan", {20}) | {96})
+  check(skills.least_price("Productive Plan", 96, {20}, 128) == lowest <= 96,
+        f"a sound reading the badge disagrees with keeps the cheaper end in view: {lowest}")
+  check(skills.least_price("Productive Plan", 3, {20}, 128)
+        == min(skills.expected_prices("Productive Plan", {20})),
+        "a reading no price matches is not a lower bound; the badge's lowest is")
+  check(skills.least_price("Productive Plan", 96, None, 96) == 96,
+        "without a badge there is no range, only the price used")
+
+  Row = skills.SkillRow
+  disputed = Row("Productive Plan", 128, True, None, least=96)
+  chosen, spent = skills.select_purchases([disputed], ["Productive Plan"], 100)
+  check([row.name for row in chosen] == ["Productive Plan"] and spent == 96,
+        "a priority skill whose reserve does not fit, the game offers, and whose lowest "
+        "price does fit, is planned at that price")
+  check(chosen and chosen[0].cost == 128,
+        "and keeps its reserve, which the extras are held back by")
+  greyed = Row("Productive Plan", 128, False, None, least=96)
+  check(skills.select_purchases([greyed], ["Productive Plan"], 100)[0] == [],
+        "the game greying it out is final: never planned on the lower price")
+  check(skills.select_purchases([disputed], ["Productive Plan"], 90)[0] == [],
+        "nor when even the lowest price is out of reach")
+  first = Row("Groundwork", 60, True, None)
+  chosen, spent = skills.select_purchases([first, disputed], ["Groundwork", "Productive Plan"],
+                                          150)
+  check([row.name for row in chosen] == ["Groundwork"] and spent == 60,
+        "what is planned first counts at full price against what is left")
+  stepped = skills.reserve_for(Row("Pace Chaser Savvy ○", 100, True, None, least=80),
+                               "Pace Chaser Savvy ◎")
+  ratio = skills.upgrade_ratios().get("Pace Chaser Savvy", skills.DOUBLE_COST_MULTIPLIER)
+  check(stepped.cost == round(100 * ratio) and stepped.least == round(80 * ratio),
+        "a row stepped up to a double circle scales its lowest price like its reserve")
+
+  floor = skills.survey_floor([disputed, Row("Groundwork", 60, True, None)], {"Groundwork"})
+  check(floor == 96, f"the floor is the lowest a skill still there could cost, got {floor}")
+  check(skills.survey_floor([Row("Groundwork", 60, True, None)], {"Groundwork"}) is None,
+        "and there is none once everything was bought")
+
+
 def frame_cases():
   print("\nA live Learn list, top to bottom:")
   paths = sorted(glob.glob(os.path.join(FRAMES, "*.png")))
@@ -125,6 +168,7 @@ def frame_cases():
 def main():
   badge_cases()
   price_cases()
+  least_cases()
   frame_cases()
   print()
   if failures:

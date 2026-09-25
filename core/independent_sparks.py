@@ -63,10 +63,27 @@ def catalogue():
   if _catalogue is None:
     try:
       with io.open(SPARKS_PATH, encoding="utf-8") as handle:
-        _catalogue = json.load(handle)
+        _catalogue = _shaped(json.load(handle))
     except (OSError, ValueError):
-      _catalogue = {colour: [] for colour in COLOURS}
+      _catalogue = _shaped(None)
   return _catalogue
+
+
+def _shaped(raw):
+  """The catalogue with only what has the expected shape: names as strings, whites as
+  {"name", "group"}. A file that parses but holds something else would otherwise fail
+  later inside the Sparks handler, where a restart cannot fix it."""
+  raw = raw if isinstance(raw, dict) else {}
+  shaped = {}
+  for colour in ("blue", "pink"):
+    names = raw.get(colour) if isinstance(raw.get(colour), list) else []
+    shaped[colour] = [name for name in names if isinstance(name, str) and name]
+  whites = raw.get("white") if isinstance(raw.get("white"), list) else []
+  shaped["white"] = [{"name": spark["name"], "group": str(spark.get("group") or "other")}
+                     for spark in whites
+                     if isinstance(spark, dict) and isinstance(spark.get("name"), str)
+                     and spark["name"]]
+  return shaped
 
 
 def _stars(value):

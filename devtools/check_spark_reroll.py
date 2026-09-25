@@ -193,7 +193,32 @@ def colours_off_cases():
     config.INDEPENDENT_SPARK_REROLL = saved
 
 
+def catalogue_shape_cases():
+  print("\nA spark list of the wrong shape:")
+  import tempfile
+  saved = (sparks.SPARKS_PATH, sparks._catalogue)
+  try:
+    with tempfile.TemporaryDirectory() as folder:
+      path = os.path.join(folder, "sparks.json")
+      for body, what in (("[1, 2]", "a list at the top"),
+                         ('{"blue": "Speed", "white": [{"group": "race"}, 7, '
+                          '{"name": "Groundwork"}]}', "entries of the wrong kind")):
+        with open(path, "w", encoding="utf-8") as handle:
+          handle.write(body)
+        sparks.SPARKS_PATH, sparks._catalogue = path, None
+        listed = sparks.catalogue()
+        check(listed["blue"] == [] and listed["pink"] == []
+              and all(set(spark) == {"name", "group"} for spark in listed["white"]),
+              f"{what}: only well-formed entries are kept")
+        sparks.possible("white", ["Groundwork"], held=set())
+      check(listed["white"] == [{"name": "Groundwork", "group": "other"}],
+            "a white with a name but no group is kept, as other")
+  finally:
+    sparks.SPARKS_PATH, sparks._catalogue = saved
+
+
 def main():
+  catalogue_shape_cases()
   colours_off_cases()
   sparks.COLOUR_RULES = True
   catalogue_cases()
