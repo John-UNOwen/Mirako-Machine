@@ -35,6 +35,11 @@ const SWATCH: Record<Colour, string> = {
   white: "bg-zinc-300 border border-zinc-400",
 };
 
+// The per-colour requirements are hidden for now: any career a trigger allows is
+// rerolled, and which set to keep is asked in Discord. Matches COLOUR_RULES in
+// core/independent_sparks.py.
+const SHOW_COLOURS = false;
+
 type Props = {
   value: SparkReroll;
   onChange: (value: SparkReroll) => void;
@@ -50,6 +55,7 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
   const [group, setGroup] = useState<(typeof WHITE_GROUPS)[number]["id"]>("all");
 
   useEffect(() => {
+    if (!SHOW_COLOURS) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -284,9 +290,8 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
         Spark Reroll
         <Tooltips>
           After a career the game grants sparks, and they can be rerolled once for 30 TP
-          before choosing which set to keep. The bot rerolls when a trigger below allows
-          it and the sparks granted miss a colour you require. A required colour is met
-          by any one of the sparks chosen for it; every required colour has to be met.
+          before choosing which set to keep. The bot rerolls every career a trigger below
+          allows, then asks you in Discord which set to keep.
         </Tooltips>
       </h3>
 
@@ -309,8 +314,7 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
           />
           Reroll at Any Rating
           <Tooltips>
-            Overrides the rating: a career below SS is rerolled too when it misses a
-            required spark.
+            Overrides the rating: every career is rerolled, whatever it rated.
           </Tooltips>
         </label>
       </div>
@@ -328,6 +332,7 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
             kept as granted.
           </p>
         )}
+        {SHOW_COLOURS && (<>
         {colourRow("blue", "Blue", "A stat spark: one of the five stats.")}
         {colourRow(
           "pink",
@@ -351,6 +356,7 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
             not end with are left out, and if none is possible, white is not rerolled for.
           </>,
         )}
+        </>)}
       </div>
     </>
   );

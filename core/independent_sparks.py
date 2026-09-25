@@ -19,6 +19,10 @@ are rerolled. A pink spark needs the aptitude at A or better. A required colour 
 nothing possible is skipped for that career rather than rerolled for. What the career
 holds is only known when the bot saw it: an unknown purchase list or aptitude rules
 nothing out.
+
+The colour rules are switched off for now (COLOUR_RULES): the UI hides them, a colour
+saved as required reads as not required, and a trigger alone rerolls every career it
+allows. Which set to keep is still asked in Discord.
 """
 
 import io
@@ -33,6 +37,8 @@ STARRED = ("blue", "pink")
 # The rating the SS rank starts at. The at_ss_rating trigger needs at least this.
 SS_RATING = 17_500
 MAX_STARS = 3
+# Whether the per-colour requirements take part. Off: any triggered career is rerolled.
+COLOUR_RULES = False
 
 # A pink spark's name -> the aptitude it is for, keyed as read_aptitudes keys them.
 PINK_APTITUDE = {
@@ -78,7 +84,7 @@ def settings():
   for colour in COLOURS:
     want = raw.get(colour) if isinstance(raw.get(colour), dict) else {}
     sparks = want.get("sparks") if isinstance(want.get("sparks"), list) else []
-    wants[colour] = {"required": bool(want.get("required")),
+    wants[colour] = {"required": COLOUR_RULES and bool(want.get("required")),
                      "sparks": [name for name in sparks if isinstance(name, str) and name],
                      "min_stars": _stars(want.get("min_stars", 1)) if colour in STARRED else 1}
   return {"at_ss_rating": bool(raw.get("at_ss_rating")),
@@ -181,6 +187,8 @@ def may_reroll(rating, wanted=None):
 def should_reroll(rating, granted, wanted=None, held=None, aptitudes=None):
   """Whether to reroll: a trigger allows it and a required colour is not met. With
   nothing required -- or nothing required this career could meet -- nothing is unmet,
-  so it never rerolls."""
+  so it never rerolls. With the colour rules off, the trigger alone decides."""
   wanted = wanted or settings()
-  return bool(may_reroll(rating, wanted) and unmet(granted, wanted, held, aptitudes))
+  if not may_reroll(rating, wanted):
+    return False
+  return bool(not COLOUR_RULES or unmet(granted, wanted, held, aptitudes))

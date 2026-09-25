@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import core.config as config  # noqa: E402
-from core import discord_choice, spark_reader  # noqa: E402
+from core import discord_choice, independent_sparks, spark_reader  # noqa: E402
 from core.spark_reader import SparkRow  # noqa: E402
 from scenarios.tasks import spark_reroll  # noqa: E402
 from utils.device_action_wrapper import BotStopException  # noqa: E402
@@ -195,6 +195,30 @@ def handler_cases():
   fakes.reads[spark_reroll.LIST_BAND] = (rows_of(ORIGINAL), image)
   held = ["Superstan"]                        # Uma Stan is possible, and not granted
   try:
+    # As shipped: no colour rules, so the trigger alone decides.
+    independent_sparks.COLOUR_RULES = False
+    config.INDEPENDENT_SPARK_REROLL = setting(white={"required": True,
+                                                     "sparks": ["Groundwork"]})
+    state = State(bought=["Groundwork"])
+    run(spark_reroll.handle_sparks, state)
+    check(state.spark_decision == "reroll" and fakes.clicks == ["spark_reroll_btn.png"],
+          "colour rules off: SS is rerolled though the set has what was required")
+    fakes.clicks.clear()
+    config.INDEPENDENT_SPARK_REROLL = setting(at_ss_rating=False, any_rating=True,
+                                              white={"required": False, "sparks": []})
+    state = State(rating=9_000)
+    run(spark_reroll.handle_sparks, state)
+    check(state.spark_decision == "reroll",
+          "colour rules off: any_rating rerolls with no colour chosen at all")
+    fakes.clicks.clear()
+    config.INDEPENDENT_SPARK_REROLL = setting(at_ss_rating=False)
+    state = State(bought=held)
+    run(spark_reroll.handle_sparks, state)
+    check(fakes.clicks == ["confirm_btn.png"] and state.spark_decision is None,
+          "colour rules off: with no trigger on, Sparks is confirmed")
+    fakes.clicks.clear()
+    independent_sparks.COLOUR_RULES = True
+
     config.INDEPENDENT_SPARK_REROLL = setting(at_ss_rating=False)
     state = State(bought=held)
     run(spark_reroll.handle_sparks, state)

@@ -174,7 +174,28 @@ def settings_cases():
     config.INDEPENDENT_SPARK_REROLL = saved
 
 
+def colours_off_cases():
+  print("\nWith the colour rules off, as shipped for now:")
+  check(not sparks.COLOUR_RULES, "the colour rules are off")
+  saved = getattr(config, "INDEPENDENT_SPARK_REROLL", None)
+  try:
+    config.INDEPENDENT_SPARK_REROLL = wanted(at_ss=True, blue=["Power"])
+    read = sparks.settings()
+    check(not read["blue"]["required"], "a colour saved as required reads as not required")
+    check(sparks.should_reroll(17_500, got(blue=["Power"])),
+          "an SS career is rerolled whatever it was granted")
+    check(not sparks.should_reroll(17_499, got()), "below SS with only the SS trigger, it is not")
+    config.INDEPENDENT_SPARK_REROLL = wanted(any_rating=True)
+    check(sparks.should_reroll(None, {}), "any_rating rerolls even an unread rating")
+    config.INDEPENDENT_SPARK_REROLL = wanted()
+    check(not sparks.should_reroll(20_000, {}), "with no trigger on, nothing is rerolled")
+  finally:
+    config.INDEPENDENT_SPARK_REROLL = saved
+
+
 def main():
+  colours_off_cases()
+  sparks.COLOUR_RULES = True
   catalogue_cases()
   rule_cases()
   possible_cases()

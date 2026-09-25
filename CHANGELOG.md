@@ -16,8 +16,7 @@ as one, so a change to either is worth reading about.
 - Each career's rating is recorded: shown in the Statistics tab (per career and on average)
   and in the Discord career message.
 - Spark reroll (Automation tab): after a career rated SS, or at any rating, the bot
-  rerolls the sparks when a required blue, pink or white spark is missing. Sparks the
-  career cannot produce (a skill never bought, an aptitude below A) are not rerolled for.
+  rerolls the sparks once (30 TP).
 - Which set to keep is asked by Discord DM: both sets are sent as pictures, with the
   priority skills bought, and you react 1 or 2. Needs your own Discord bot, added to
   your account with the install link the Automation tab builds (Spark Choice Bot).

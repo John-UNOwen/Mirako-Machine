@@ -13,7 +13,8 @@ beside both sets, which is what a rule for choosing on its own can later be test
 against.
 
 The whole thing is off -- Sparks is confirmed as it always was -- unless a trigger is on,
-a colour is required with sparks chosen, and a Discord bot is set up to ask through.
+a colour is required with sparks chosen (while the colour rules are on), and a Discord
+bot is set up to ask through.
 """
 
 import io
@@ -84,7 +85,8 @@ def active():
   """Whether this career's sparks are the bot's to reroll at all."""
   wanted = independent_sparks.settings()
   asked, skipped = independent_sparks.requirements(wanted)
-  if not ((wanted["at_ss_rating"] or wanted["any_rating"]) and (asked or skipped)):
+  needs_colour = independent_sparks.COLOUR_RULES and not (asked or skipped)
+  if not (wanted["at_ss_rating"] or wanted["any_rating"]) or needs_colour:
     return False
   if not asker.backend().configured():
     if not _warned_unconfigured["done"]:
@@ -234,6 +236,10 @@ def decide(state):
   if not independent_sparks.may_reroll(state.career_rating, wanted):
     state.spark_decision = "keep"
     debug(f"No reroll: rating {state.career_rating} does not meet a trigger.")
+    return
+  if not independent_sparks.COLOUR_RULES:
+    state.spark_decision = "reroll"
+    info(f"Rating {state.career_rating} meets a trigger; rerolling.")
     return
   missing = independent_sparks.unmet(granted, wanted, held, state.aptitudes)
   state.spark_decision = "reroll" if missing else "keep"

@@ -35468,28 +35468,14 @@ const WHITE_GROUPS = [
   { id: "scenario", label: "Scenarios" },
   { id: "other", label: "Other" }
 ];
-const SWATCH = {
-  blue: "bg-sky-500",
-  pink: "bg-pink-400",
-  white: "bg-zinc-300 border border-zinc-400"
-};
+const SHOW_COLOURS = false;
 function SparkRerollSection({ value, onChange, botReady }) {
   const [catalogue, setCatalogue] = reactExports.useState({ blue: [], pink: [], white: [] });
   const [pickerOpen, setPickerOpen] = reactExports.useState(false);
   const [search, setSearch] = reactExports.useState("");
   const [group, setGroup] = reactExports.useState("all");
   reactExports.useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const response = await fetch("/sparks", { cache: "no-store" });
-        if (response.ok && !cancelled) setCatalogue(await response.json());
-      } catch {
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    return;
   }, []);
   reactExports.useEffect(() => {
     if (pickerOpen) setSearch("");
@@ -35501,70 +35487,12 @@ function SparkRerollSection({ value, onChange, botReady }) {
       sparks: chosen.includes(name) ? chosen.filter((n) => n !== name) : [...chosen, name]
     });
   };
-  const starPicker = (colour) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-2 text-sm", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted-foreground", children: "At least" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "inline-flex rounded-md border-1 border-border overflow-hidden", children: [1, 2, 3].map((stars) => {
-      const on = (value[colour].min_stars ?? 1) === stars;
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          type: "button",
-          "aria-pressed": on,
-          "aria-label": `At least ${stars} star${stars > 1 ? "s" : ""}`,
-          onClick: () => onChange({ ...value, [colour]: { ...value[colour], min_stars: stars } }),
-          className: `px-2.5 py-1 flex gap-0.5 ${on ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"}`,
-          children: Array.from({ length: stars }, (_, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(Star, { className: "w-3.5 h-3.5 fill-current" }, i))
-        },
-        stars
-      );
-    }) })
-  ] });
   const triggered = value.at_ss_rating || value.any_rating;
   const query = search.trim().toLowerCase();
   const shownWhite = catalogue.white.filter(
     (spark) => (group === "all" || spark.group === group) && (!query || spark.name.toLowerCase().includes(query))
   );
-  const chips = (colour) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2 mt-2", children: catalogue[colour].map((name) => {
-    const on = value[colour].sparks.includes(name);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "button",
-      {
-        type: "button",
-        "aria-pressed": on,
-        onClick: () => toggleSpark(colour, name),
-        className: `px-3 py-1 rounded-full border text-sm transition-colors ${on ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"}`,
-        children: [
-          on && /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "inline w-3.5 h-3.5 mr-1 -mt-0.5" }),
-          name
-        ]
-      },
-      name
-    );
-  }) });
-  const colourRow = (colour, title, hint) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Checkbox,
-        {
-          checked: value[colour].required,
-          onCheckedChange: () => setColour(colour, { required: !value[colour].required })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `inline-block w-3 h-3 rounded-sm ${SWATCH[colour]}`, "aria-hidden": true }),
-      "Require a ",
-      title,
-      " Spark",
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: hint })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: value[colour].required ? "" : "disabled", children: [
-      colour === "white" ? whitePicker : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        chips(colour),
-        starPicker(colour)
-      ] }),
-      value[colour].required && value[colour].sparks.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground mt-1", children: "Nothing chosen yet, so this colour asks for nothing." })
-    ] })
-  ] });
-  const whitePicker = /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2", children: [
+  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2", children: [
     value.white.sparks.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2 mb-2", children: value.white.sparks.map((name) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "span",
       {
@@ -35656,7 +35584,7 @@ function SparkRerollSection({ value, onChange, botReady }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("h3", { className: "text-xl font-semibold mt-6 mb-2 flex items-center gap-2", children: [
       "Spark Reroll",
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "After a career the game grants sparks, and they can be rerolled once for 30 TP before choosing which set to keep. The bot rerolls when a trigger below allows it and the sparks granted miss a colour you require. A required colour is met by any one of the sparks chosen for it; every required colour has to be met." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "After a career the game grants sparks, and they can be rerolled once for 30 TP before choosing which set to keep. The bot rerolls every career a trigger below allows, then asks you in Discord which set to keep." })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid lg:grid-cols-2 grid-cols-1 gap-2 mb-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
@@ -35679,24 +35607,13 @@ function SparkRerollSection({ value, onChange, botReady }) {
           }
         ),
         "Reroll at Any Rating",
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "Overrides the rating: a career below SS is rerolled too when it misses a required spark." })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "Overrides the rating: every career is rerolled, whatever it rated." })
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: triggered ? "" : "disabled", children: [
       !triggered && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mb-3", children: "Neither trigger is on, so the sparks are never rerolled." }),
       triggered && !botReady && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-destructive mb-3", children: "After a reroll you choose the set to keep in Discord, which needs the Spark Choice Bot under Discord Notifications. Until it is set up the sparks are kept as granted." }),
-      colourRow("blue", "Blue", "A stat spark: one of the five stats."),
-      colourRow(
-        "pink",
-        "Pink",
-        /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "An aptitude spark. The trainee can only be granted one for an aptitude it has at A or better. A chosen aptitude the trainee has below A is left out for that career, and if none of the chosen ones is possible, pink is not rerolled for." })
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground -mt-3 mb-4", children: "Only aptitudes the trainee has at A or better can come up as a pink spark." }),
-      colourRow(
-        "white",
-        "White",
-        /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "Race, skill and scenario sparks; a career usually grants several. A skill's spark only comes from a skill the trainee holds — one bought, or brought along by one bought, as Superstan brings Uma Stan. Chosen skills the career did not end with are left out, and if none is possible, white is not rerolled for." })
-      )
+      SHOW_COLOURS
     ] })
   ] });
 }
