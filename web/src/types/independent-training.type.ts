@@ -103,6 +103,9 @@ export const IndependentTrainingSchema = z.looseObject({
   // test repeats for free. While it is on, no refill can complete -- including a real
   // one.
   debug_force_tp_refill: z.boolean().default(false),
+  // Debug: read the sparks and decide on a reroll, then stop before pressing Reroll
+  // Sparks, so the reading and the decision can be checked without spending 30 TP.
+  debug_stop_before_spark_reroll: z.boolean().default(false),
   // Running out of TP: a wait, or the end of the session. The task queue defers the
   // career by the shortfall and runs something else -- usually Team Trials -- rather
   // than stopping. Off restores the old behaviour exactly.

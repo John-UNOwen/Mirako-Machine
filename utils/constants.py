@@ -181,6 +181,11 @@ INDEPENDENT_CAREER_SKILL_PTS_REGION = convert_xyxy_to_xywh(INDEPENDENT_CAREER_SK
 # The "Rating 17,811" figure on the Career Rank screen right after Complete Career: the
 # number alone, not the label beside it.
 INDEPENDENT_CAREER_RATING_BBOX = add_tuple_elements(GAME_WINDOW_BBOX, (385, 530, -240, -495))
+# The spark lists (Sparks, Sparks Rerolled, Spark Selection): where the wheel scrolls
+# them, mid-list and clear of the buttons, and the right-hand page arrow on Spark
+# Selection, which flips between its two pages (Rerolled, Original) either way round.
+INDEPENDENT_SPARK_LIST_MOUSE_POS = (GAME_WINDOW_BBOX[0] + 400, 450)
+INDEPENDENT_SPARK_PAGE_ARROW_POS = (GAME_WINDOW_BBOX[0] + 653, 128)
 
 # Skill point balance on the Learn screen (the number only, not the "Skill Points" label).
 # The number is right-aligned and grows leftwards, so the right edge is the one that

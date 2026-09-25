@@ -18,6 +18,7 @@ export default function DebugSection({ config, updateConfig }: Props) {
   const selectOnly = independent.debug_select_skills_only;
   const stopBeforeStart = independent.debug_stop_before_start;
   const forceRefill = independent.debug_force_tp_refill;
+  const stopBeforeReroll = independent.debug_stop_before_spark_reroll;
   const pretendShort = independent.debug_pretend_tp_short;
   const waitSeconds = independent.debug_tp_wait_seconds;
   const refillOff = !independent.tp_refill_enabled;
@@ -106,6 +107,25 @@ export default function DebugSection({ config, updateConfig }: Props) {
         <code className="mx-1">--select-skills-only</code>, which does the same thing
         but only for that run.
       </p>
+
+      <h3 className="text-xl font-semibold mt-8 mb-2">Spark Reroll</h3>
+
+      <label className={`uma-label col-span-3 ${stopBeforeReroll ? "text-amber-600 dark:text-amber-400" : ""}`}>
+        <Checkbox
+          id="debug-stop-before-spark-reroll"
+          checked={stopBeforeReroll}
+          onCheckedChange={() =>
+            update({ debug_stop_before_spark_reroll: !stopBeforeReroll })
+          }
+        />
+        Decide Without Rerolling
+        <Tooltips>
+          Reads the sparks after a career and decides whether they need a reroll, then
+          stops on the Sparks screen instead of pressing Reroll Sparks, so the reading and
+          the decision can be checked in the log without spending 30 TP. When it decides
+          no reroll is needed, the sparks are confirmed as usual.
+        </Tooltips>
+      </label>
 
       <h3 className="text-xl font-semibold mt-8 mb-2">TP Refill</h3>
 

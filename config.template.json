@@ -14,7 +14,9 @@
     "url": "",
     "skills_enabled": true,
     "career_summary_enabled": true,
-    "recovery_enabled": true
+    "recovery_enabled": true,
+    "bot_token": "",
+    "choice_channel_id": ""
   },
   "skill": {
     "is_auto_buy_skill": false,
@@ -217,6 +219,7 @@
     "debug_select_skills_only": false,
     "debug_stop_before_start": false,
     "debug_force_tp_refill": false,
+    "debug_stop_before_spark_reroll": false,
     "tp_refill_max_per_session": 0,
     "tp_refill_min_carats_remaining": 0,
     "session_conflict_wait_minutes": 60,

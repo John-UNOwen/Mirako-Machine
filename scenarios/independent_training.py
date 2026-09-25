@@ -73,6 +73,7 @@ from scenarios.tasks.tp_recovery import (DEFAULT_TP_COST, TP_SECONDS_PER_POINT,
                                          handle_tp_too_low, handle_tp_use_carats,
                                          handle_tp_use_item, read_confirm_tp, read_home_tp,
                                          read_tp_cost)
+from scenarios.tasks import spark_reroll
 from scenarios.tasks.daily_races import (_daily_already_done, _daily_races_check,
                                          _daily_races_enabled, _daily_races_enter,
                                          _daily_stand_down, handle_daily_difficulty,
@@ -357,6 +358,8 @@ class RunState:
     # which comes before any buying, saw every purchase -- one restarted part-way through
     # the Learn screen did not, and an empty list would claim it bought nothing.
     self.skills_bought = None
+    # The spark reroll's own per-career fields: what was read, decided and answered.
+    spark_reroll.reset(self)
     # The trainee's aptitudes, read once off the Complete Career screen. Per career
     # rather than per session: nothing stops the next one using a different trainee.
     self.aptitudes = None
@@ -2640,11 +2643,19 @@ def handle_learn(state):
 
 
 def handle_sparks(state):
-  _click(f"{BUTTONS}/confirm_btn.png")
+  # Confirmed as it always was, unless the spark reroll is set up and wants this set
+  # rerolled. See scenarios/tasks/spark_reroll.py.
+  spark_reroll.handle_sparks(state)
 
 
 def handle_keep_sparks(state):
-  _click(f"{BUTTONS}/confirm_btn.png")
+  spark_reroll.handle_keep_sparks(state)
+
+
+def handle_spark_selection(state):
+  # The wait for the answer runs inside the handler, as the TP wait does: a pass per
+  # poll would spend MAX_ACTIONS_PER_RUN in a few hours of waiting on a person.
+  spark_reroll.handle_spark_selection(state, wait=_wait_on_screen)
 
 
 def handle_uma_details(state):
@@ -3006,6 +3017,10 @@ HANDLERS = {
   Screen.EPITHET_AWARD: handle_epithet_award,
   Screen.SPARKS: handle_sparks,
   Screen.KEEP_SPARKS: handle_keep_sparks,
+  Screen.SPARK_REROLL_CONFIRM: spark_reroll.handle_reroll_confirm,
+  Screen.SPARKS_REROLLED: spark_reroll.handle_sparks_rerolled,
+  Screen.SPARK_SELECTION_NOTICE: spark_reroll.handle_selection_notice,
+  Screen.SPARK_SELECTION: handle_spark_selection,
   Screen.UMA_DETAILS: handle_uma_details,
   Screen.REWARDS: handle_next,
   Screen.FOLLOW_TRAINER: handle_follow_trainer,

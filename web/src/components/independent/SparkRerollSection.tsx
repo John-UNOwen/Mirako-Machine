@@ -38,9 +38,12 @@ const SWATCH: Record<Colour, string> = {
 type Props = {
   value: SparkReroll;
   onChange: (value: SparkReroll) => void;
+  // Whether a Discord bot is set up to ask which set to keep. Without one the bot has
+  // nobody to ask, so it never rerolls.
+  botReady: boolean;
 };
 
-export default function SparkRerollSection({ value, onChange }: Props) {
+export default function SparkRerollSection({ value, onChange, botReady }: Props) {
   const [catalogue, setCatalogue] = useState<Catalogue>({ blue: [], pink: [], white: [] });
   const [pickerOpen, setPickerOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -316,6 +319,13 @@ export default function SparkRerollSection({ value, onChange }: Props) {
         {!triggered && (
           <p className="text-sm text-muted-foreground mb-3">
             Neither trigger is on, so the sparks are never rerolled.
+          </p>
+        )}
+        {triggered && !botReady && (
+          <p className="text-sm text-destructive mb-3">
+            After a reroll you choose the set to keep in Discord, which needs the Spark
+            Choice Bot under Discord Notifications. Until it is set up the sparks are
+            kept as granted.
           </p>
         )}
         {colourRow("blue", "Blue", "A stat spark: one of the five stats.")}

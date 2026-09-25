@@ -63,6 +63,27 @@ export default function IndependentSection({ config, updateConfig }: Props) {
     }
   };
 
+  const [botTesting, setBotTesting] = useState(false);
+  const [botResult, setBotResult] = useState<{ ok: boolean; detail: string } | null>(null);
+  // What is typed, not what is saved, as with the webhook test.
+  const testBot = async () => {
+    setBotTesting(true);
+    setBotResult(null);
+    try {
+      const res = await fetch("/discord/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: webhook.bot_token, channel: webhook.choice_channel_id }),
+      });
+      const data = await res.json();
+      setBotResult({ ok: data.status === "success", detail: data.detail });
+    } catch {
+      setBotResult({ ok: false, detail: "Could not reach the bot's server." });
+    } finally {
+      setBotTesting(false);
+    }
+  };
+
   const teamTrials = config.team_trials;
   const updateTeamTrials = (patch: Partial<typeof teamTrials>) =>
     updateConfig("team_trials", { ...teamTrials, ...patch });
@@ -596,6 +617,7 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       <SparkRerollSection
         value={independent.spark_reroll}
         onChange={(spark_reroll) => update({ spark_reroll })}
+        botReady={Boolean(webhook.bot_token && webhook.choice_channel_id)}
       />
 
       <h3 className="text-xl font-semibold mt-6 mb-2 flex items-center gap-2">
@@ -689,6 +711,68 @@ export default function IndependentSection({ config, updateConfig }: Props) {
           </Tooltips>
         </label>
       </div>
+
+      <h4 className="text-base font-semibold mt-5 mb-2 flex items-center gap-2">
+        Spark Choice Bot
+        <Tooltips>
+          After a spark reroll you choose which set to keep, and the question is asked in
+          Discord: both sets are posted as pictures and you react 1 or 2. A webhook can
+          only post, so this needs a Discord bot. In the Developer Portal: New
+          Application, then Bot, Reset Token and copy it here; then OAuth2, URL
+          Generator, tick "bot" and the permissions View Channel, Send Messages, Attach
+          Files, Add Reactions and Read Message History, and open the link to invite it to
+          your server. The bot waits for your answer as long as it takes.
+        </Tooltips>
+      </h4>
+      <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+        <label className="uma-label">
+          <span className="whitespace-nowrap">Bot Token</span>
+          <Input
+            type="password"
+            className="grow"
+            placeholder="From the Bot page"
+            value={webhook.bot_token}
+            onChange={(e) => {
+              updateWebhook({ bot_token: e.target.value });
+              setBotResult(null);
+            }}
+          />
+        </label>
+        <label className="uma-label">
+          <span className="whitespace-nowrap">Channel ID</span>
+          <Input
+            className="grow"
+            placeholder="Right-click the channel, Copy Channel ID"
+            value={webhook.choice_channel_id}
+            onChange={(e) => {
+              updateWebhook({ choice_channel_id: e.target.value.trim() });
+              setBotResult(null);
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!webhook.bot_token || !webhook.choice_channel_id || botTesting}
+            onClick={testBot}
+          >
+            {botTesting ? "Testing…" : "Test"}
+          </Button>
+        </label>
+      </div>
+      {botResult && (
+        <p
+          className={`text-sm mt-2 flex items-start gap-2 ${
+            botResult.ok ? "text-primary" : "text-destructive"
+          }`}
+        >
+          {botResult.ok ? (
+            <Check className="w-4 h-4 mt-0.5 shrink-0" />
+          ) : (
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          )}
+          {botResult.detail}
+        </p>
+      )}
 
       <h3 className="text-xl font-semibold mt-6 mb-2 flex items-center gap-2">
         TP Refill

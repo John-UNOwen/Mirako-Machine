@@ -204,6 +204,10 @@ def reload_config():
              webhook_conf.get("career_summary_enabled", True))
     load_var('WEBHOOK_RECOVERY_ENABLED', webhook_conf.get("recovery_enabled", True))
     load_var('WEBHOOK_SKILLS_ENABLED', webhook_conf.get("skills_enabled", True))
+    # The Discord bot the spark choice is asked through. See core/discord_choice.py.
+    load_var('WEBHOOK_BOT_TOKEN', str(webhook_conf.get("bot_token", "")).strip())
+    load_var('WEBHOOK_CHOICE_CHANNEL_ID',
+             str(webhook_conf.get("choice_channel_id", "")).strip())
     load_var('SLEEP_TIME_MULTIPLIER', config["sleep_time_multiplier"])
     load_var('WINDOW_NAME', config["window_name"])
     load_var('CONFIG_NAME', config["config_name"])
@@ -361,6 +365,8 @@ def reload_config():
              independent.get("debug_select_skills_only", False))
     load_var('INDEPENDENT_DEBUG_FORCE_TP_REFILL',
              independent.get("debug_force_tp_refill", False))
+    load_var('INDEPENDENT_DEBUG_STOP_BEFORE_SPARK_REROLL',
+             independent.get("debug_stop_before_spark_reroll", False))
 
   except KeyError as e:
     raise RuntimeError(f"Missing config key: {e.args[0]}, please copy it to config.json from config.template.json and try again")

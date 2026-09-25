@@ -294,6 +294,14 @@ EXPECTED = {
   # career_rank.png is the same screen from another career (rating 17,837 and 17,811).
   "post_career_next.png": Screen.CAREER_RANK,
   "career_rank.png": Screen.CAREER_RANK,
+  # The spark reroll, 2026-09-24: the confirm dialog, the rerolled set, the notice, both
+  # pages of Spark Selection, and the final keep dialog for the original set.
+  "spark_reroll_confirm.png": Screen.SPARK_REROLL_CONFIRM,
+  "sparks_rerolled.png": Screen.SPARKS_REROLLED,
+  "spark_selection_notice.png": Screen.SPARK_SELECTION_NOTICE,
+  "spark_selection_rerolled.png": Screen.SPARK_SELECTION,
+  "spark_selection_original.png": Screen.SPARK_SELECTION,
+  "keep_sparks_original.png": Screen.KEEP_SPARKS,
   "career_complete.png": Screen.CAREER_COMPLETE,
   "career_complete_close.png": Screen.CAREER_COMPLETE,
   "story_unlocked_tt.png": Screen.STORY_UNLOCKED,
@@ -427,7 +435,7 @@ ADB_ONLY = frozenset(("story_unlocked_tt.png", "missions.png", "present_box.png"
                       "home_career_in_progress.png",
                       "tt_race_menu.png", "tt_lobby.png", "tt_matchup.png", "tt_item_select.png", "tt_racing.png", "tt_race_finished.png", "tt_result.png", "tt_result_no_rematch.png", "tt_winnings.png", "tt_not_enough_rp.png",
                       "continue_training.png", "training_log.png", "training_log_career.png", "complete_career.png", "learn.png", "learn_confirm.png", "skills_learned.png", "uma_details.png",
-                      "sparks.png", "rewards.png", "post_career_next.png", "career_rank.png", "career_complete.png", "career_complete_close.png",
+                      "sparks.png", "rewards.png", "post_career_next.png", "career_rank.png", "spark_reroll_confirm.png", "sparks_rerolled.png", "spark_selection_notice.png", "spark_selection_rerolled.png", "spark_selection_original.png", "keep_sparks_original.png", "career_complete.png", "career_complete_close.png",
                       "story_unlocked.png", "date_changed.png",
                       "sales.png", "outing_gauge_up.png",
                       "outing_gauge_max.png"))

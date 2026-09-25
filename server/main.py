@@ -1193,6 +1193,25 @@ async def test_webhook(request: Request):
   return {"status": "success" if ok else "fail", "detail": detail}
 
 
+@app.post("/discord/test")
+async def test_discord_bot(request: Request):
+  """Check the spark-choice bot: the token works and it can post in the channel.
+
+  Like the webhook test, it takes what is typed rather than what is saved.
+  """
+  from core.discord_choice import test
+  try:
+    body = await request.json()
+  except Exception:  # noqa: BLE001
+    body = {}
+  token = str(body.get("token", "")).strip()
+  channel = str(body.get("channel", "")).strip()
+  if not token or not channel:
+    return {"status": "fail", "detail": "Both the bot token and the channel ID are needed."}
+  ok, detail = test(token, channel)
+  return {"status": "success" if ok else "fail", "detail": detail}
+
+
 @app.get("/stats/runs")
 def get_stat_runs():
   """Every recorded career, oldest first.

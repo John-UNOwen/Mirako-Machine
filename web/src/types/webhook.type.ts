@@ -7,6 +7,11 @@ export const WebhookSchema = z.looseObject({
   skills_enabled: z.boolean().default(true),
   career_summary_enabled: z.boolean().default(true),
   recovery_enabled: z.boolean().default(true),
+  // The spark choice after a reroll is asked through a Discord bot, not the webhook: a
+  // webhook can only post, and the answer is a reaction the bot reads back. Both empty
+  // means no bot, and the reroll is not attempted.
+  bot_token: z.string().default(""),
+  choice_channel_id: z.string().default(""),
 });
 
 export type Webhook = z.infer<typeof WebhookSchema>;

@@ -65,6 +65,13 @@ class Screen:
   SKILLS_LEARNED = "skills_learned"
   SPARKS = "sparks"
   KEEP_SPARKS = "keep_sparks"
+  # The spark reroll, in the order the game shows it: the "Spend 30 TP to reroll
+  # Sparks?" dialog, the new set, a notice that a set has to be chosen, and the two-page
+  # Spark Selection screen (Rerolled, Original) whose Confirm leads to KEEP_SPARKS.
+  SPARK_REROLL_CONFIRM = "spark_reroll_confirm"
+  SPARKS_REROLLED = "sparks_rerolled"
+  SPARK_SELECTION_NOTICE = "spark_selection_notice"
+  SPARK_SELECTION = "spark_selection"
   UMA_DETAILS = "uma_details"
   CAREER_COMPLETE = "career_complete"
   # Bond with a trainee crossing a threshold unlocks a story episode, and the game says
@@ -613,6 +620,19 @@ SCREEN_ORDER = (
              search_region=(155, 785, 641, 1053)),
   ScreenSpec(Screen.LEARN, [f"{ASSETS}/learn_skill_points_label.png"],
              search_region=(227, 217, 627, 496)),
+  # The reroll's screens. The two dialogs are drawn over a blurred Sparks screen, and
+  # each is anchored on its own body line rather than the green header every dialog
+  # wears. "30 TP" is left out of the first: the cost may move with events, as the
+  # career's does. The notice's line also appears at the foot of Spark Selection, so its
+  # search stops well above that.
+  ScreenSpec(Screen.SPARK_REROLL_CONFIRM, [f"{ASSETS}/spark_reroll_confirm_body.png"],
+             search_region=(350, 420, 600, 510)),
+  ScreenSpec(Screen.SPARK_SELECTION_NOTICE, [f"{ASSETS}/spark_selection_notice_body.png"],
+             search_region=(200, 470, 600, 570)),
+  ScreenSpec(Screen.SPARKS_REROLLED, [f"{ASSETS}/sparks_rerolled_title.png"],
+             search_region=(300, 0, 680, 110)),
+  ScreenSpec(Screen.SPARK_SELECTION, [f"{ASSETS}/spark_selection_title.png"],
+             search_region=(300, 0, 680, 110)),
   ScreenSpec(Screen.SPARKS, [f"{ASSETS}/sparks_title.png"],
              search_region=(135, 0, 667, 196)),
   ScreenSpec(Screen.COMPLETE_CAREER, [f"{BUTTONS}/complete_career_btn.png"],
@@ -991,6 +1011,12 @@ CLICK_TARGETS = {
   Screen.COMPLETE_CAREER_CONFIRM: (f"{ASSETS}/finish_btn.png",),
   Screen.SPARKS: (f"{BUTTONS}/confirm_btn.png",),
   Screen.KEEP_SPARKS: (f"{BUTTONS}/confirm_btn.png",),
+  # Cancel as well as the Reroll button: a reroll the bot decides against after all is
+  # backed out of.
+  Screen.SPARK_REROLL_CONFIRM: (f"{BUTTONS}/cancel_btn.png",),
+  Screen.SPARKS_REROLLED: (f"{BUTTONS}/next_btn.png",),
+  Screen.SPARK_SELECTION_NOTICE: (f"{BUTTONS}/next_btn.png",),
+  Screen.SPARK_SELECTION: (f"{BUTTONS}/confirm_btn.png",),
   Screen.UMA_DETAILS: (f"{BUTTONS}/close_btn.png",),
   Screen.REWARDS: (f"{BUTTONS}/next_btn.png",),
   # Cancel is the only button this screen may ever be given, for the same reason the
