@@ -36224,6 +36224,52 @@ function IndependentSection({ config: config2, updateConfig }) {
       "Spark Choice Bot",
       /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: 'After a spark reroll you choose which set to keep, and the question is asked in Discord: both sets are posted as pictures and you react 1 or 2. A webhook can only post, so this needs a Discord bot. In the Developer Portal: New Application, then Bot, Reset Token and copy it here; then OAuth2, URL Generator, tick "bot" and the permissions View Channel, Send Messages, Attach Files, Add Reactions and Read Message History, and open the link to invite it to your server. The bot waits for your answer as long as it takes.' })
     ] }),
+    !(webhook2.bot_token && webhook2.choice_channel_id) && /* @__PURE__ */ jsxRuntimeExports.jsxs("ol", { className: "text-sm text-muted-foreground list-decimal pl-5 mb-3 space-y-1", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
+        "Open the",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "a",
+          {
+            className: "underline",
+            href: "https://discord.com/developers/applications",
+            target: "_blank",
+            rel: "noreferrer",
+            children: "Discord Developer Portal"
+          }
+        ),
+        " ",
+        "and press ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "New Application" }),
+        ". Any name will do."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
+        "On its ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Bot" }),
+        " page, press ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Reset Token" }),
+        " and paste the token into Bot Token below."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
+        "On ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "OAuth2 → URL Generator" }),
+        ", tick ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "bot" }),
+        ", then the permissions View Channels, Send Messages, Attach Files, Add Reactions and Read Message History. Open the link at the bottom and add the bot to your server."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
+        "In Discord, turn on ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Developer Mode" }),
+        " (User Settings → Advanced), then right-click the channel to use and ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Copy Channel ID" }),
+        ". Paste it below."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
+        "Press ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Test" }),
+        ". A message from the bot in that channel means it is ready."
+      ] })
+    ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid lg:grid-cols-2 grid-cols-1 gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "whitespace-nowrap", children: "Bot Token" }),

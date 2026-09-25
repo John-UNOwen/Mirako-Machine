@@ -724,6 +724,34 @@ export default function IndependentSection({ config, updateConfig }: Props) {
           your server. The bot waits for your answer as long as it takes.
         </Tooltips>
       </h4>
+      {!(webhook.bot_token && webhook.choice_channel_id) && (
+        <ol className="text-sm text-muted-foreground list-decimal pl-5 mb-3 space-y-1">
+          <li>
+            Open the{" "}
+            <a className="underline" href="https://discord.com/developers/applications"
+               target="_blank" rel="noreferrer">
+              Discord Developer Portal
+            </a>{" "}
+            and press <b>New Application</b>. Any name will do.
+          </li>
+          <li>
+            On its <b>Bot</b> page, press <b>Reset Token</b> and paste the token into Bot
+            Token below.
+          </li>
+          <li>
+            On <b>OAuth2 &rarr; URL Generator</b>, tick <b>bot</b>, then the permissions
+            View Channels, Send Messages, Attach Files, Add Reactions and Read Message
+            History. Open the link at the bottom and add the bot to your server.
+          </li>
+          <li>
+            In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then
+            right-click the channel to use and <b>Copy Channel ID</b>. Paste it below.
+          </li>
+          <li>
+            Press <b>Test</b>. A message from the bot in that channel means it is ready.
+          </li>
+        </ol>
+      )}
       <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
         <label className="uma-label">
           <span className="whitespace-nowrap">Bot Token</span>

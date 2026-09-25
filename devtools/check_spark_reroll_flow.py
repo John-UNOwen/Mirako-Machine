@@ -281,7 +281,9 @@ def handler_cases():
           and fakes.clicks == ["next_btn.png"], "the rerolled set is read, then Next")
 
     print("\nAsking, and keeping the answer:")
-    state = State(bought=held)
+    saved_list = getattr(config, "SKILL_LIST", [])
+    config.SKILL_LIST = ["Groundwork", "Uma Stan", "Superstan", "Long Corners ◎"]
+    state = State(bought=["Long Corners ○", "Superstan", "Slipstream", "Groundwork"])
     state.spark_sets = {"original": (rows_of(ORIGINAL), b"\x89PNG-o"),
                         "rerolled": (rows_of(REROLLED), b"\x89PNG-r")}
     fakes.clicks.clear()
@@ -293,6 +295,9 @@ def handler_cases():
           "one question, with both sets as pictures")
     check("Power" in fakes.posts[0][0] and "Turf" in fakes.posts[0][0],
           "the message lists both sets too")
+    check("Priority skills bought (2): Groundwork, Superstan" in fakes.posts[0][0],
+          "and the priority skills bought, in the list's order, tiers matched exactly")
+    config.SKILL_LIST = saved_list
     check(state.spark_choice == "original",
           "the answer is taken once a reaction arrives, however many polls it takes")
     check(fakes.points and not fakes.clicks,

@@ -294,9 +294,32 @@ def _have_both_sets(state, showing):
   return True
 
 
+def priority_bought(state):
+  """The skills bought this career that are on the priority list, in the list's order.
+
+  Matched the way buying matches them (tiers must agree), so this is the list the purchase
+  itself worked from. Empty when what was bought is not known.
+  """
+  from core.independent_skill import priority_index
+  wanted = list(getattr(config, "SKILL_LIST", None) or [])
+  placed = []
+  for name in state.skills_bought or []:
+    index = priority_index(name, wanted)
+    if index is not None:
+      placed.append((index, name))
+  return [name for _, name in sorted(placed)]
+
+
 def _message(state):
   lines = [f"🔁 **Spark choice**: rating {state.career_rating:,}" if state.career_rating
            else "🔁 **Spark choice**"]
+  # Near the top: Discord cuts a message at 2,000 characters, and the white lists below
+  # are what should go first.
+  bought = priority_bought(state)
+  if bought:
+    lines.append(f"Priority skills bought ({len(bought)}): {', '.join(bought)}")
+  elif state.skills_bought is None:
+    lines.append("Priority skills bought: not known (the bot joined after the purchase).")
   for which in ("original", "rerolled"):
     rows = state.spark_sets[which][0]
     lines.append(f"\n**{EMOJI[which]} {LABEL[which]}**")
