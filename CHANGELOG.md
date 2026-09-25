@@ -8,7 +8,7 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
-## 1.0.5 (2026-09-24)
+## 1.0.5 (2026-09-25)
 
 - Skill costs are double-checked against the hint badge (list price less its discount), so a
   price OCR misreads (for example 71 read as 7) is corrected to the exact price and the
@@ -18,8 +18,10 @@ as one, so a change to either is worth reading about.
 - Spark reroll (Automation tab): after a career rated SS, or at any rating, the bot
   rerolls the sparks when a required blue, pink or white spark is missing. Sparks the
   career cannot produce (a skill never bought, an aptitude below A) are not rerolled for.
-- Which set to keep is asked in Discord: both sets are posted and you react 1 or 2.
-  Needs a Discord bot (Automation tab, Spark Choice Bot).
+- Which set to keep is asked by Discord DM: both sets are sent as pictures, with the
+  priority skills bought, and you react 1 or 2. Needs your own Discord bot, added to
+  your account with the install link the Automation tab builds (Spark Choice Bot).
+- Once that bot is set up, notifications come by DM too, in place of the webhook.
 
 ## 1.0.4 (2026-09-24)
 
