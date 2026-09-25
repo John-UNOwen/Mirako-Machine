@@ -7,7 +7,7 @@ two pages (Rerolled, Original) with one Confirm that keeps the page showing -> a
 
 Whether to reroll is decided here, by the rules in core/independent_sparks.py, from the
 sparks read off the first screen. Which set to keep is not: that is asked in Discord
-(core/discord_choice.py), with both sets posted as pictures, and the bot waits for the
+(core/asker.py, today the player's own Discord bot), with both sets posted as pictures, and the bot waits for the
 answer however long it takes. Every answer is written to stats/.../spark_choices.jsonl
 beside both sets, which is what a rule for choosing on its own can later be tested
 against.
@@ -28,7 +28,7 @@ import numpy as np
 import core.config as config
 import utils.constants as constants
 import utils.device_action_wrapper as device_action
-from core import discord_choice, independent_sparks, spark_reader
+from core import asker, independent_sparks, spark_reader
 from core.independent_stats import runs_path
 from core.ocr import extract_text
 from scenarios.independent_common import _click, _click_point
@@ -75,8 +75,7 @@ def reset(state):
   state.spark_sets = {}            # "original"/"rerolled" -> (rows, png bytes)
   state.spark_reroll_presses = 0
   state.spark_choice = None        # "original"/"rerolled", once answered
-  state.spark_message_id = None
-  state.spark_bot_id = None
+  state.spark_question_id = None
   state.spark_post_failures = 0
   state.spark_choice_recorded = False
 
@@ -87,7 +86,7 @@ def active():
   asked, skipped = independent_sparks.requirements(wanted)
   if not ((wanted["at_ss_rating"] or wanted["any_rating"]) and (asked or skipped)):
     return False
-  if not discord_choice.configured():
+  if not asker.backend().configured():
     if not _warned_unconfigured["done"]:
       warning("Spark reroll is set up but no Discord bot is, so there is no one to ask "
               "which set to keep. Keeping the sparks as granted.")
@@ -311,6 +310,8 @@ def priority_bought(state):
 
 
 def _message(state):
+  """The question: rating, priority skills bought, and both sets. How to answer is the
+  asker's to add, since a reaction and a button are asked for differently."""
   lines = [f"🔁 **Spark choice**: rating {state.career_rating:,}" if state.career_rating
            else "🔁 **Spark choice**"]
   # Near the top: Discord cuts a message at 2,000 characters, and the white lists below
@@ -325,31 +326,24 @@ def _message(state):
     lines.append(f"\n**{EMOJI[which]} {LABEL[which]}**")
     for colour, line in describe(rows).items():
       lines.append(f"{colour.title()}: {line}")
-  lines.append(f"\nReact {EMOJI['original']} to keep the original, {EMOJI['rerolled']} to "
-               "keep the reroll.")
-  return "\n".join(lines)[:1990]
+  return "\n".join(lines)[:1900]
+
+
+OPTIONS = [asker.Option("original", "Keep the original", EMOJI["original"]),
+           asker.Option("rerolled", "Keep the reroll", EMOJI["rerolled"])]
 
 
 def ask(state, wait):
-  """Post the question if it is not up yet, then wait for the answer. True once answered."""
+  """Send the question if it is not out yet, then wait for the answer. True once answered."""
+  way = asker.backend()
   try:
-    if state.spark_message_id is None:
-      # Who the bot is comes first: its own reactions are not answers, and without its id
-      # a question already posted could never be read back.
-      state.spark_bot_id = discord_choice.whoami()["id"]
+    if state.spark_question_id is None:
       images = [(f"{which}.png", state.spark_sets[which][1])
                 for which in ("original", "rerolled") if state.spark_sets[which][1]]
-      state.spark_message_id = discord_choice.post(_message(state), images)
+      state.spark_question_id = way.ask(_message(state), images, OPTIONS)
       info("Asked in Discord which sparks to keep; waiting for the answer.")
-      # After posting, and not fatal: without the bot's own reactions a person can still
-      # add 1 or 2 by hand, and that is read the same way.
-      try:
-        discord_choice.offer(state.spark_message_id, [EMOJI["original"], EMOJI["rerolled"]])
-      except discord_choice.DiscordError as error:
-        warning(f"Posted, but could not add the answer reactions ({error}); react with "
-                f"{EMOJI['original']} or {EMOJI['rerolled']} by hand.")
     state.spark_post_failures = 0
-  except discord_choice.DiscordError as error:
+  except asker.AskError as error:
     state.spark_post_failures += 1
     warning(f"Could not ask in Discord ({error}); trying again shortly.")
     if state.spark_post_failures >= MAX_POST_FAILURES:
@@ -361,15 +355,13 @@ def ask(state, wait):
 
   def unanswered():
     try:
-      picked = discord_choice.answer(state.spark_message_id,
-                                     [EMOJI["original"], EMOJI["rerolled"]],
-                                     state.spark_bot_id)
-    except discord_choice.DiscordError as error:
+      picked = way.answer(state.spark_question_id, OPTIONS)
+    except asker.AskError as error:
       debug(f"Could not read the answer yet ({error}).")
       return True
     if picked is None:
       return True
-    state.spark_choice = next(which for which, emoji in EMOJI.items() if emoji == picked)
+    state.spark_choice = picked
     return False
 
   wait(WAIT_SECONDS, Screen.SPARK_SELECTION, "the spark choice in Discord",
@@ -377,12 +369,8 @@ def ask(state, wait):
   if state.spark_choice is None:
     return False
   info(f"Keeping the {LABEL[state.spark_choice].lower()}, as answered in Discord.")
-  try:
-    discord_choice.edit(state.spark_message_id,
-                        _message(state).split("\nReact")[0]
-                        + f"\n\n✅ Kept the {LABEL[state.spark_choice].lower()}.")
-  except discord_choice.DiscordError:
-    pass
+  way.finish(state.spark_question_id,
+             f"{_message(state)}\n\n✅ Kept the {LABEL[state.spark_choice].lower()}.")
   return True
 
 

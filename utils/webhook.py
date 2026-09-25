@@ -55,11 +55,11 @@ def _delivery_worker():
         url, payload = _delivery_queue.get()
         try:
             if url is _DM:
-                # To the user's DMs through the spark-choice bot, which replaces the
-                # webhook while DMs are set up. The webhook's own display name is left
+                # To the player through core.asker -- their bot's DMs -- which replaces
+                # the webhook once it is set up. The webhook's own display name is left
                 # off: a bot posts as itself.
-                from core import discord_choice
-                discord_choice.send_embeds(json.loads(payload)["embeds"])
+                from core import asker
+                asker.backend().notify(json.loads(payload)["embeds"])
                 continue
             req = urllib.request.Request(url, data=payload, method="POST")
             req.add_header("Content-Type", "application/json")
@@ -108,9 +108,9 @@ def _post(embed):
     bot's messages in one place, and the webhook is the older, channel-bound route to
     the same person.
     """
-    from core import discord_choice
+    from core import asker
     payload = json.dumps({"username": _USERNAME, "embeds": [embed]}).encode("utf-8")
-    if discord_choice.dm_active():
+    if asker.backend().configured():
         _delivery_queue.put((_DM, payload))
         return
     url = _url()

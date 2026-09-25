@@ -297,6 +297,10 @@ def handler_cases():
           "the message lists both sets too")
     check("Priority skills bought (2): Groundwork, Superstan" in fakes.posts[0][0],
           "and the priority skills bought, in the list's order, tiers matched exactly")
+    check(fakes.posts[0][0].rstrip().endswith(
+          f"React to answer: {spark_reroll.EMOJI['original']} keep the original, "
+          f"{spark_reroll.EMOJI['rerolled']} keep the reroll."),
+          "the player's own bot says how to answer: one reaction per option")
     config.SKILL_LIST = saved_list
     check(state.spark_choice == "original",
           "the answer is taken once a reaction arrives, however many polls it takes")
@@ -462,6 +466,23 @@ def discord_cases():
   ok, detail = discord_choice.test("t", user="9", opener=closed)
   check(not ok and "Add to My Apps" in detail,
         f"a user the bot cannot message is told why: {detail!r}")
+
+  print("\nThe asker:")
+  from core import asker
+  check(isinstance(asker.backend(), asker.OwnBot),
+        "questions go through the player's own bot: the only way built so far")
+  check(not asker.SharedBot().configured(),
+        "the shared bot is never configured until the relay exists, so nothing reaches it")
+  saved_fns = {name: getattr(discord_choice, name) for name in ("answer",)}
+  try:
+    discord_choice.answer = lambda message, emojis, bot, **k: (
+        emojis[1] if (message, bot) == ("m9", "b7") else None)
+    picked = asker.OwnBot().answer("m9:b7", spark_reroll.OPTIONS)
+    check(picked == "rerolled",
+          "a question id carries what reading it back needs, and a reaction maps to its option")
+  finally:
+    for name, value in saved_fns.items():
+      setattr(discord_choice, name, value)
 
   print("\nNotifications, when DMs are set up:")
   import utils.notifications as notifications

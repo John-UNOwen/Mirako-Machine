@@ -40,11 +40,6 @@ def configured():
   return bool(_token() and _user())
 
 
-def dm_active():
-  """Whether the bot can DM its person -- which then takes the notifications too."""
-  return configured()
-
-
 def send_embeds(embeds, opener=urllib.request.urlopen):
   """Post notification embeds where the questions go. Used when DMs replace the webhook."""
   _request("POST", f"/channels/{_channel(opener)}/messages",
