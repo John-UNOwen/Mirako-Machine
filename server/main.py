@@ -1193,25 +1193,6 @@ async def test_webhook(request: Request):
   return {"status": "success" if ok else "fail", "detail": detail}
 
 
-@app.post("/discord/test")
-async def test_discord_bot(request: Request):
-  """Check the spark-choice bot: the token works and it can DM the user.
-
-  Like the webhook test, it takes what is typed rather than what is saved.
-  """
-  from core.discord_choice import test
-  try:
-    body = await request.json()
-  except Exception:  # noqa: BLE001
-    body = {}
-  token = str(body.get("token", "")).strip()
-  user = str(body.get("user", "")).strip()
-  if not token or not user:
-    return {"status": "fail", "detail": "Both the bot token and your user ID are needed."}
-  ok, detail = test(token, user)
-  return {"status": "success" if ok else "fail", "detail": detail}
-
-
 async def _json_body(request: Request):
   try:
     body = await request.json()

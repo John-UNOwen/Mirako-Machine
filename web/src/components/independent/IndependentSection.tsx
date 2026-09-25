@@ -28,9 +28,10 @@ type BorrowCard = {
   file: string;
 };
 
-// The "Add to My Apps" link for the Mirako bot. Empty until the relay's application ID
-// is filled in; the steps then say to add the bot without a link.
-const MIRAKO_INSTALL_URL = "";
+// The "Add to My Apps" link for the Mirako bot: a user install, so it can DM the player
+// with no server in common.
+const MIRAKO_INSTALL_URL =
+  "https://discord.com/oauth2/authorize?client_id=1552918836192481310&integration_type=1&scope=applications.commands";
 
 type Props = {
   config: Config;

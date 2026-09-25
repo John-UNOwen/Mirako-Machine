@@ -204,10 +204,6 @@ def reload_config():
              webhook_conf.get("career_summary_enabled", True))
     load_var('WEBHOOK_RECOVERY_ENABLED', webhook_conf.get("recovery_enabled", True))
     load_var('WEBHOOK_SKILLS_ENABLED', webhook_conf.get("skills_enabled", True))
-    # The Discord bot the spark choice is asked through. See core/discord_choice.py.
-    load_var('WEBHOOK_BOT_TOKEN', str(webhook_conf.get("bot_token", "")).strip())
-    # The person the spark question is sent to, by DM.
-    load_var('WEBHOOK_CHOICE_USER_ID', str(webhook_conf.get("choice_user_id", "")).strip())
     # The link to the shared Mirako bot, from /link. See core/relay_client.py.
     load_var('WEBHOOK_RELAY_TOKEN', str(webhook_conf.get("relay_token", "")).strip())
     load_var('SLEEP_TIME_MULTIPLIER', config["sleep_time_multiplier"])

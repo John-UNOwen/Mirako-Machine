@@ -57,9 +57,9 @@ RETIRED_KEYS = (
 # between turns; Independent Training buys once, on the Learn screen.
 RETIRED_NESTED = {
   "skill": ("skill_check_turns", "check_skill_before_races", "skill_pts_check"),
-  # The spark choice briefly offered a server channel beside DMs (2026-09-25). DMs only,
-  # for now: a user-installed app needs no server at all.
-  "webhook": ("choice_target", "choice_channel_id"),
+  # The spark choice briefly offered a server channel beside DMs, then was asked through
+  # the player's own Discord bot (2026-09-25). The shared Mirako bot replaced both.
+  "webhook": ("choice_target", "choice_channel_id", "bot_token", "choice_user_id"),
 }
 
 

@@ -3,7 +3,7 @@ of their own.
 
 The relay holds the bot's token; this side holds only a link token, got once by pasting
 the code `/link` gives in the bot's DMs. The contract is API.md in the Mirako-Relay
-repository beside this one. Plain urllib, like core/discord_choice.py.
+repository beside this one. Plain urllib, no Discord library.
 """
 
 import io

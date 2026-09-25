@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import core.config as config  # noqa: E402
-from core import asker, discord_choice, independent_sparks, relay_client, spark_reader  # noqa: E402,E501
+from core import asker, independent_sparks, relay_client, spark_reader  # noqa: E402
 from core.spark_reader import SparkRow  # noqa: E402
 from scenarios.tasks import spark_reroll  # noqa: E402
 from utils.device_action_wrapper import BotStopException  # noqa: E402
@@ -410,7 +410,7 @@ def handler_cases():
     config.INDEPENDENT_SPARK_REROLL, config.INDEPENDENT_DEBUG_STOP_BEFORE_SPARK_REROLL = saved
 
 
-# --- the Discord client -------------------------------------------------------------------
+# --- the relay and notifications -------------------------------------------------------------------
 
 class Reply:
   def __init__(self, body):
@@ -426,116 +426,11 @@ class Reply:
     return False
 
 
-def discord_cases():
-  print("\nThe Discord client:")
-  sent = []
-
-  def opener(request, timeout=None):
-    sent.append(request)
-    url = request.full_url
-    if url.endswith("/users/@me"):
-      return Reply(b'{"id": "bot", "username": "Tazuna"}')
-    if "/reactions/" in url and request.get_method() == "GET":
-      if "1%EF%B8%8F%E2%83%A3" in url:
-        return Reply(json.dumps([{"id": "bot"}, {"id": "me"}]).encode())
-      return Reply(json.dumps([{"id": "bot"}]).encode())
-    if request.get_method() == "POST":
-      return Reply(b'{"id": "m1"}')
-    return Reply(b"")
-
-  message = discord_choice.post("hello", [("original.png", b"\x89PNGxx")], channel="c",
-                                token="t", opener=opener)
-  body = sent[-1].data
-  check(message == "m1" and b"payload_json" in body and b'name="files[0]"' in body
-        and b"\x89PNGxx" in body and sent[-1].get_header("Authorization") == "Bot t",
-        "a post carries the text, the picture and the bot's token")
-  discord_choice.offer("m1", list(spark_reroll.EMOJI.values()), channel="c", token="t",
-                       opener=opener, pause=lambda _: None)
-  check([r.get_method() for r in sent[-2:]] == ["PUT", "PUT"]
-        and "%E2%83%A3/@me" in sent[-1].full_url, "each answer is put on as a reaction")
-  picked = discord_choice.answer("m1", list(spark_reroll.EMOJI.values()), "bot",
-                                 channel="c", token="t", opener=opener)
-  check(picked == spark_reroll.EMOJI["original"],
-        "a person's reaction is the answer; the bot's own reactions are not")
-
-  def both(request, timeout=None):
-    return Reply(json.dumps([{"id": "bot"}, {"id": "me"}]).encode())
-  check(discord_choice.answer("m1", list(spark_reroll.EMOJI.values()), "bot", channel="c",
-                              token="t", opener=both) is None,
-        "two answers at once are not an answer yet")
-
-  calls = {"n": 0}
-
-  def limited(request, timeout=None):
-    calls["n"] += 1
-    if calls["n"] == 1:
-      raise urllib.error.HTTPError(request.full_url, 429, "slow down", {},
-                                   io.BytesIO(b'{"retry_after": 0.01}'))
-    return Reply(b'{"id": "bot"}')
-  check(discord_choice.whoami(token="t", opener=limited) == {"id": "bot"},
-        "told to slow down, it waits and asks again")
-
-  def refused(request, timeout=None):
-    raise urllib.error.HTTPError(request.full_url, 401, "no", {}, io.BytesIO(b"{}"))
-  ok, detail = discord_choice.test("bad", "c", opener=refused)
-  check(not ok and "token" in detail, f"a bad token is reported in words: {detail!r}")
-
-  print("\nDirect messages:")
-  opened = []
-
-  def dm(request, timeout=None):
-    if request.full_url.endswith("/users/@me/channels"):
-      opened.append(json.loads(request.data))
-      return Reply(b'{"id": "dm-channel"}')
-    sent.append(request)
-    if request.full_url.endswith("/users/@me"):
-      return Reply(b'{"id": "bot", "username": "Tazuna"}')
-    return Reply(b'{"id": "m2"}')
-  saved = {name: getattr(config, name, None) for name in
-           ("WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_USER_ID")}
-  discord_choice._dm_channels.clear()
-  try:
-    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", ""
-    check(not discord_choice.configured(), "DMs with no user ID set is not set up")
-    config.WEBHOOK_CHOICE_USER_ID = "42"
-    check(discord_choice.configured(), "a token and a user ID are enough for DMs")
-    discord_choice.post("hi", opener=dm)
-    discord_choice.post("again", opener=dm)
-    check(opened == [{"recipient_id": "42"}] and sent[-1].full_url.endswith(
-        "/channels/dm-channel/messages"),
-          "the DM with that user is opened once and posted in, like a channel")
-    ok, detail = discord_choice.test("t2", user="7", opener=dm)
-    check(ok and "DMs" in detail and opened[-1] == {"recipient_id": "7"},
-          "the test goes to the user's DMs when a user is given")
-  finally:
-    for name, value in saved.items():
-      setattr(config, name, value)
-    discord_choice._dm_channels.clear()
-
-  def closed(request, timeout=None):
-    if request.full_url.endswith("/users/@me"):
-      return Reply(b'{"id": "bot", "username": "Tazuna"}')
-    raise urllib.error.HTTPError(request.full_url, 403, "no", {}, io.BytesIO(
-        b'{"message": "Cannot send messages to this user", "code": 50007}'))
-  ok, detail = discord_choice.test("t", user="9", opener=closed)
-  check(not ok and "Add to My Apps" in detail,
-        f"a user the bot cannot message is told why: {detail!r}")
-
+def notification_cases():
   print("\nThe asker:")
   from core import asker
   check(isinstance(asker.backend(), asker.SharedBot),
-        "questions go through the Mirako bot, whatever own-bot token an old config holds")
-  saved_fns = {name: getattr(discord_choice, name) for name in ("answer",)}
-  try:
-    discord_choice.answer = lambda message, emojis, bot, **k: (
-        emojis[1] if (message, bot) == ("m9", "b7") else None)
-    picked = asker.OwnBot().answer("m9:b7", spark_reroll.OPTIONS)
-    check(picked == "rerolled",
-          "a question id carries what reading it back needs, and a reaction maps to its option")
-  finally:
-    for name, value in saved_fns.items():
-      setattr(discord_choice, name, value)
-
+        "questions go through the Mirako bot")
   print("\nNotifications, when DMs are set up:")
   import utils.notifications as notifications
   import utils.webhook as webhook
@@ -547,20 +442,18 @@ def discord_cases():
     def put(self, item):
       self.items.append(item)
 
-  names = ("WEBHOOK_URL", "WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_USER_ID",
-           "WEBHOOK_CAREER_SUMMARY_ENABLED", "WEBHOOK_RELAY_TOKEN")
+  names = ("WEBHOOK_URL", "WEBHOOK_CAREER_SUMMARY_ENABLED", "WEBHOOK_RELAY_TOKEN")
   saved = {name: getattr(config, name, None) for name in names}
   real_queue = webhook._delivery_queue
   queued = Recorder()
   webhook._delivery_queue = queued
   try:
     config.WEBHOOK_URL = "https://discord.com/api/webhooks/1/x"
-    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
     config.WEBHOOK_RELAY_TOKEN = ""
     config.WEBHOOK_CAREER_SUMMARY_ENABLED = True
     webhook.send_started()
     check(queued.items and queued.items[-1][0] == config.WEBHOOK_URL,
-          "not linked, notifications use the webhook, an own-bot token or not")
+          "not linked, notifications use the webhook as before")
     config.WEBHOOK_RELAY_TOKEN = "tok"
     webhook.send_started()
     check(queued.items[-1][0] is webhook._DM,
@@ -578,26 +471,6 @@ def discord_cases():
     webhook._delivery_queue = real_queue
     for name, value in saved.items():
       setattr(config, name, value)
-
-  delivered = []
-
-  def dm_embeds(request, timeout=None):
-    if request.full_url.endswith("/users/@me/channels"):
-      return Reply(b'{"id": "dm-channel"}')
-    delivered.append((request.full_url, json.loads(request.data)))
-    return Reply(b'{"id": "m3"}')
-  saved = {name: getattr(config, name, None) for name in names}
-  discord_choice._dm_channels.clear()
-  try:
-    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
-    discord_choice.send_embeds([{"title": "Career 1 Complete"}], opener=dm_embeds)
-    check(delivered and delivered[0][0].endswith("/channels/dm-channel/messages")
-          and delivered[0][1] == {"embeds": [{"title": "Career 1 Complete"}]},
-          "a notification is posted in the DM as the bot, embed and all")
-  finally:
-    for name, value in saved.items():
-      setattr(config, name, value)
-    discord_choice._dm_channels.clear()
 
 
 class Script:
@@ -752,7 +625,7 @@ def relay_cases():
 def main():
   reader_cases()
   handler_cases()
-  discord_cases()
+  notification_cases()
   relay_cases()
   print()
   if failures:

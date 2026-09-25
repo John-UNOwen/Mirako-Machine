@@ -131,6 +131,29 @@ def retired_cases():
 LAST_CAREER_TEMPLATE = "47162c2"
 
 
+# The last template with the player's own spark-choice bot, before the Mirako bot replaced it.
+LAST_OWN_BOT_TEMPLATE = "9edf61e"
+
+
+def own_bot_heal_cases():
+  print("\nA config from the own-bot days loses that bot's settings")
+  shown = subprocess.run(["git", "show", f"{LAST_OWN_BOT_TEMPLATE}:config.template.json"],
+                         capture_output=True, text=True, encoding="utf-8")
+  check(shown.returncode == 0, f"the own-bot template is readable at {LAST_OWN_BOT_TEMPLATE}")
+  if shown.returncode != 0:
+    return
+  with tempfile.TemporaryDirectory() as folder:
+    path = os.path.join(folder, "preset.json")
+    old = json.loads(shown.stdout)
+    old["webhook"].update(bot_token="t", choice_user_id="42", relay_token="linked")
+    io.open(path, "w", encoding="utf-8").write(json.dumps(old))
+    updater.update_config(path)
+    healed = json.load(io.open(path, encoding="utf-8"))["webhook"]
+    check("bot_token" not in healed and "choice_user_id" not in healed,
+          f"the bot token and user ID are gone: {sorted(healed)}")
+    check(healed.get("relay_token") == "linked", "while the Mirako bot's link is kept")
+
+
 def heal_cases():
   print("\nAn existing file loses the retired settings, and only those")
   shown = subprocess.run(["git", "show", f"{LAST_CAREER_TEMPLATE}:config.template.json"],
@@ -202,6 +225,7 @@ def main():
   loader_cases()
   template_cases()
   retired_cases()
+  own_bot_heal_cases()
   heal_cases()
   notification_cases()
   print()

@@ -55,7 +55,7 @@ def _delivery_worker():
         url, payload = _delivery_queue.get()
         try:
             if url is _DM:
-                # To the player through core.asker -- their bot's DMs -- which replaces
+                # To the player through core.asker -- the Mirako bot's DMs -- which replaces
                 # the webhook once it is set up. The webhook's own display name is left
                 # off: a bot posts as itself.
                 from core import asker
@@ -104,8 +104,7 @@ def _embed(title, color, fields, footer=None):
 def _post(embed):
     """Queue one notification: to the user's DMs when those are set up, else the webhook.
 
-    DMs win. Someone who has pointed the spark-choice bot at their own DMs wants the
-    bot's messages in one place, and the webhook is the older, channel-bound route to
+    DMs win. Someone who has linked the Mirako bot wants its messages in one place, and the webhook is the older, channel-bound route to
     the same person.
     """
     from core import asker

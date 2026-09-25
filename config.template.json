@@ -15,8 +15,6 @@
     "skills_enabled": true,
     "career_summary_enabled": true,
     "recovery_enabled": true,
-    "bot_token": "",
-    "choice_user_id": "",
     "relay_token": ""
   },
   "skill": {
