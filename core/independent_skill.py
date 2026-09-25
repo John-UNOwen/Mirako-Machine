@@ -1086,6 +1086,103 @@ def parse_cost(text):
   return int(digits) if digits else None
 
 
+# What can come off a list price, in percent: the hint levels, and Fast Learner on top.
+# A price on the Learn screen is always the list price less one of these, floored -- which
+# makes the set of prices a skill can show small and knowable, so an OCR reading outside
+# it is a misread rather than a price. Checked against 14,571 logged purchases: every one
+# charged a price this set allows, once tiers and gold chains are counted (below).
+HINT_DISCOUNTS = (0, 10, 20, 30, 35, 40)
+FAST_LEARNER_DISCOUNT = 10
+# Below half the cheapest list price (40) no skill can cost anything, whatever it is. The
+# floor for skills the table has no price for.
+MIN_PLAUSIBLE_COST = 20
+
+_valid_price_cache = {}
+
+
+def _list_prices(name):
+  """Every price `name` alone can show, or an empty set when its list price is unknown."""
+  base = base_costs().get(name)
+  if not base:
+    return set()
+  return {base * (100 - hint - fast) // 100
+          for hint in HINT_DISCOUNTS for fast in (0, FAST_LEARNER_DISCOUNT)}
+
+
+def _family_prices(family):
+  """A tiered family's prices: either tier, or both at once when the circle is unbought."""
+  circle = _list_prices(f"{family} {CIRCLE}")
+  double = _list_prices(f"{family} {DOUBLE}")
+  return circle | double | {c + d for c in circle for d in double}
+
+
+def valid_prices(name):
+  """The prices a row named `name` can show, or None when there is nothing to check by.
+
+  A tiered name accepts either tier's price, because the glyph is the least reliable part
+  of the reading: a "Fall Runner circle" charged 99 is its double's price, read with the
+  wrong glyph. A gold that hands over a differently named skill can also be carrying that
+  skill's price -- or, when it is a tiered family (Refraction Arc over Medium Corners),
+  either tier of it or both. A removal ("x") is not a discounted list price at all and is
+  not checked.
+  """
+  if name in _valid_price_cache:
+    return _valid_price_cache[name]
+  tier = _tier_of(name)
+  if tier == CROSS:
+    prices = set()
+  elif tier or is_tiered_family(name):
+    family = base_name(name)
+    prices = _list_prices(f"{family} {CIRCLE}") | _list_prices(f"{family} {DOUBLE}")
+  else:
+    prices = _list_prices(name)
+    granted = upgrade_grants().get(name)
+    if prices and granted and base_name(granted) != base_name(name):
+      carried = (_family_prices(base_name(granted)) if _tier_of(granted)
+                 else _list_prices(granted))
+      prices = prices | {own + extra for own in prices for extra in carried}
+  _valid_price_cache[name] = prices or None
+  return _valid_price_cache[name]
+
+
+def _holds_digits(reading, price):
+  """Whether `reading`'s digits appear in `price` in order, i.e. OCR dropped the rest."""
+  remaining = iter(str(price))
+  return all(digit in remaining for digit in str(reading))
+
+
+def checked_cost(name, cost):
+  """`cost` as read for `name`, or a correction when it is not a price the skill can show.
+
+  The misread this exists for drops a narrow digit: "71" read as "7". One such reading
+  priced Pace Chaser Savvy's double at 8 points instead of 155, the solver bought it as the
+  best value on the screen, and two skills fell off the end of the plan. A correction takes
+  the valid prices that still contain the digits that were read, the shortest of those
+  (one dropped digit is likelier than several), and of those the dearest: reserving too
+  much leaves points unspent, reserving too little is what broke that plan. With nothing
+  to go by, the list price itself.
+  """
+  if cost is None:
+    return None
+  prices = valid_prices(name)
+  if prices is None:
+    if cost < MIN_PLAUSIBLE_COST:
+      warning(f"'{name}': read a cost of {cost}, which no skill can cost; treating it as "
+              "unreadable.")
+      return None
+    return cost
+  if cost in prices:
+    return cost
+  fits = [price for price in prices if _holds_digits(cost, price)]
+  if fits:
+    shortest = min(len(str(price)) for price in fits)
+    corrected = max(price for price in fits if len(str(price)) == shortest)
+  else:
+    corrected = max(prices)
+  warning(f"'{name}': read a cost of {cost}, which it cannot cost; using {corrected}.")
+  return corrected
+
+
 def find_buy_icons(region_rgb):
   """Every "+" buy icon in the scroll region, as (x, y, w, h) boxes local to it."""
   template = cv2.imread(BUY_ICON, cv2.IMREAD_COLOR)
@@ -1177,6 +1274,8 @@ def parse_skill_rows(region_rgb, check_affordable=True):
     if cost_crop is not None:
       cost = parse_cost(extract_text(_enhance_for_ocr(cost_crop), use_recognize=True,
                                    allowlist="0123456789"))
+    if name:
+      cost = checked_cost(name, cost)
     return name, cost, affordable, icon_box
 
   get_reader()  # initialize the model once, in this thread, before fanning out

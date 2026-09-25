@@ -8,6 +8,11 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.5 (2026-09-24)
+
+- Skill costs misread by OCR (for example 71 read as 7) are caught and corrected, so the
+  purchase plan no longer comes up short and drops skills at the end.
+
 ## 1.0.4 (2026-09-24)
 
 - The bot restarts itself after an update or a rollback, other instances included, and
