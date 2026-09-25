@@ -45,13 +45,21 @@ def check(condition, message):
     failures.append(message)
 
 
-def wanted(at_ss=False, any_rating=False, **colours):
-  """A setting: colours given as name lists are required with those sparks chosen."""
+def wanted(at_ss=False, any_rating=False, stars=None, **colours):
+  """A setting: colours given as name lists are required with those sparks chosen.
+  `stars` is {colour: min_stars} for blue and pink."""
   setting = {"at_ss_rating": at_ss, "any_rating": any_rating}
   for colour in sparks.COLOURS:
     chosen = colours.get(colour)
-    setting[colour] = {"required": chosen is not None, "sparks": list(chosen or [])}
+    setting[colour] = {"required": chosen is not None, "sparks": list(chosen or []),
+                       "min_stars": (stars or {}).get(colour, 1)}
   return setting
+
+
+def got(**colours):
+  """Granted sparks, {colour: {name: stars}}: names given alone count as three stars."""
+  return {colour: (names if isinstance(names, dict) else {name: 3 for name in names})
+          for colour, names in colours.items()}
 
 
 def catalogue_cases():
@@ -71,17 +79,24 @@ def catalogue_cases():
 def rule_cases():
   print("\nWhen the sparks are good enough:")
   both = wanted(at_ss=True, blue=["Power", "Speed"], white=["Long Corners ○"])
-  check(sparks.unmet({"blue": ["Speed"], "white": ["Long Corners ○", "Groundwork"]}, both) == [],
+  check(sparks.unmet(got(blue=["Speed"], white=["Long Corners ○", "Groundwork"]), both) == [],
         "any one chosen spark meets its colour")
-  check(sparks.unmet({"blue": ["Power"], "white": ["Groundwork"]}, both) == ["white"],
+  check(sparks.unmet(got(blue=["Power"], white=["Groundwork"]), both) == ["white"],
         "every required colour has to be met")
   check(sparks.unmet({}, wanted(at_ss=True, pink=[])) == [],
         "a required colour with nothing chosen asks for nothing")
-  check(sparks.unmet({"blue": ["Guts"]}, wanted(at_ss=True, white=["Groundwork"])) == ["white"],
+  check(sparks.unmet(got(blue=["Guts"]), wanted(at_ss=True, white=["Groundwork"])) == ["white"],
         "a colour not required is never counted")
 
+  print("\nStars:")
+  two_star = wanted(at_ss=True, blue=["Power"], stars={"blue": 2})
+  check(sparks.unmet(got(blue={"Power": 2}), two_star) == [], "two stars meet a two-star minimum")
+  check(sparks.unmet(got(blue={"Power": 1}), two_star) == ["blue"],
+        "one star does not: the right spark with too few stars is still a miss")
+  check(sparks.unmet(got(blue={"Power": 3}), two_star) == [], "and three is more than enough")
+
   print("\nWhen a reroll may be spent:")
-  miss = {"blue": ["Guts"]}
+  miss = got(blue=["Guts"])
   ss_only = wanted(at_ss=True, blue=["Power"])
   check(sparks.should_reroll(17_500, miss, ss_only), "SS (17,500) allows it")
   check(not sparks.should_reroll(17_499, miss, ss_only), "17,499 is not SS, so it does not")
@@ -90,12 +105,51 @@ def rule_cases():
   anyway = wanted(any_rating=True, blue=["Power"])
   check(sparks.should_reroll(9_000, miss, anyway) and sparks.should_reroll(None, miss, anyway),
         "any_rating allows it at whatever rating, read or not")
-  check(not sparks.should_reroll(20_000, {"blue": ["Power"]}, ss_only),
+  check(not sparks.should_reroll(20_000, got(blue=["Power"]), ss_only),
         "sparks already good enough are kept, not rerolled")
   check(not sparks.should_reroll(20_000, miss, wanted(blue=["Power"])),
         "with no trigger on, nothing is rerolled")
   check(not sparks.should_reroll(20_000, miss, wanted(at_ss=True, any_rating=True)),
         "with nothing required, nothing is rerolled")
+
+
+def possible_cases():
+  print("\nOnly what this career could be granted:")
+  # The skills the 2026-09-24 career bought that matter here: three golds and a tier.
+  held = sparks.held_skills(["See Ya Later!", "I Wanna Win with You", "Unstoppable",
+                             "Refraction Arc", "Groundwork"])
+  check({"On the Attack", "Playtime's Over!", "Medium Corners ○"} <= held,
+        "a gold hands over its white, and a named top tier its circle")
+  check("Uma Stan" in sparks.held_skills(["Superstan"]), "Superstan brings Uma Stan")
+  check(sparks.spark_skill("Ignited Spirit: Wit +") == "Ignited Spirit WIT"
+        and sparks.spark_skill("Racing Spirit: Mood +") == "Racing Spirit: Mood",
+        "the scenario stat sparks are named differently from their skills")
+
+  stan = wanted(at_ss=True, white=["Uma Stan"])
+  check(sparks.requirements(stan, held=held) == ({}, {"white": ["Uma Stan"]}),
+        "a skill never bought cannot come up, so white is skipped, not required")
+  check(not sparks.should_reroll(20_000, got(white=["Groundwork"]), stan, held=held),
+        "and is no reason to reroll")
+  check(sparks.should_reroll(20_000, got(white=["Groundwork"]), stan,
+                             held=sparks.held_skills(["Superstan"])),
+        "the same wish with Superstan bought is a reason")
+  mixed = wanted(at_ss=True, white=["Uma Stan", "On the Attack"])
+  asked, _ = sparks.requirements(mixed, held=held)
+  check(asked == {"white": ({"On the Attack"}, 1)}, "of several, only the possible ones are asked")
+  check(sparks.requirements(wanted(at_ss=True, white=["Arima Kinen"]), held=set())[0],
+        "races are always possible: nothing bought rules them out")
+  check(sparks.requirements(stan, held=None)[0] == {"white": ({"Uma Stan"}, 1)},
+        "an unknown purchase list rules nothing out")
+
+  aptitudes = {"turf": "S", "dirt": "F", "mile": "A", "long": "B"}
+  pink = wanted(at_ss=True, pink=["Turf", "Dirt", "Mile", "Long"])
+  asked, _ = sparks.requirements(pink, aptitudes=aptitudes)
+  check(asked == {"pink": ({"Turf", "Mile"}, 1)},
+        "a pink spark needs its aptitude at A or better")
+  check(sparks.requirements(wanted(at_ss=True, pink=["Dirt"]), aptitudes=aptitudes)[1]
+        == {"pink": ["Dirt"]}, "and with none possible, pink is skipped")
+  check(sparks.requirements(wanted(at_ss=True, pink=["Sprint"]), aptitudes=aptitudes)[0],
+        "an aptitude that was not read rules nothing out")
 
 
 def settings_cases():
@@ -107,8 +161,13 @@ def settings_cases():
                                        "pink": "nonsense"}
     read = sparks.settings()
     check(read["blue"]["sparks"] == ["Power"], "junk in a list of names is dropped")
-    check(read["pink"] == {"required": False, "sparks": []} and read["any_rating"] is False,
+    check(read["pink"] == {"required": False, "sparks": [], "min_stars": 1}
+          and read["any_rating"] is False,
           "a mangled or missing part reads as off")
+    config.INDEPENDENT_SPARK_REROLL = {"blue": {"min_stars": 9}, "pink": {"min_stars": "x"}}
+    read = sparks.settings()
+    check(read["blue"]["min_stars"] == 3 and read["pink"]["min_stars"] == 1,
+          "a star minimum outside 1-3 is brought back into it")
     config.INDEPENDENT_SPARK_REROLL = None
     check(not sparks.should_reroll(20_000, {}), "no setting at all rerolls nothing")
   finally:
@@ -118,6 +177,7 @@ def settings_cases():
 def main():
   catalogue_cases()
   rule_cases()
+  possible_cases()
   settings_cases()
   print()
   if failures:

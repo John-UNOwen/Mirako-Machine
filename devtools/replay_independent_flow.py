@@ -342,7 +342,16 @@ def main():
   install_fakes(remaining_seconds_sequence=(120, 60, 0))
 
   state = independent.RunState()
-  run_flow(state)
+  # What the Sparks screen will have to go on: the skills bought this career. Captured
+  # there, because the state resets once the career completes.
+  bought_at_sparks = []
+  real_sparks = independent.HANDLERS[Screen.SPARKS]
+  independent.HANDLERS[Screen.SPARKS] = (
+    lambda st: (bought_at_sparks.append(st.skills_bought), real_sparks(st))[1])
+  try:
+    run_flow(state)
+  finally:
+    independent.HANDLERS[Screen.SPARKS] = real_sparks
 
   print(f"Simulated one career: {len(clicks)} click(s).")
   for index, click in enumerate(clicks):
@@ -366,6 +375,21 @@ def main():
 
   if state.runs_completed != 1:
     failures.append(f"expected runs_completed == 1, got {state.runs_completed}")
+
+  # Both Learn passes counted -- the first bought "a skill", the second nothing -- since
+  # this run read the Training Log and so saw every purchase.
+  if bought_at_sparks != [["a skill"]]:
+    failures.append(f"the Sparks screen should know the career bought ['a skill'], got "
+                    f"{bought_at_sparks}")
+  # A run that joins at the Learn screen did not see what was bought before it came, so
+  # it must not claim to know: an empty list would rule out every white spark.
+  joined = independent.RunState()
+  purchases.extend([[], []])
+  independent.HANDLERS[Screen.LEARN](joined)
+  if joined.skills_bought is not None:
+    failures.append(f"a run that never read the Training Log should not know what was "
+                    f"bought, got {joined.skills_bought}")
+  purchases.clear()
 
   # The rating is read on the Career Rank screen, after the Training Log started the
   # record and before it is written, so it has to land in the record that is written.

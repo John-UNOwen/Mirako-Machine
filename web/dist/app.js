@@ -12519,7 +12519,7 @@ const notification_volume = 0.3;
 const webhook = { "url": "", "skills_enabled": true, "career_summary_enabled": true, "recovery_enabled": true };
 const skill = { "is_auto_buy_skill": false, "skill_blacklist": ["Certain Victory", "Legacy of the Strong", "Warning Shot!", "Xceleration", "Red Ace", "Focused Mind", "Corazón ☆ Ardiente", "Empress's Pride", "1st Place Kiss☆", "V Is for Victory!", "Class Rep + Speed = Bakushin", "Luck Be with Me!", "I Can Win Sometimes, Right?", "Call Me King", "Shooting Star", "The View from the Lead Is Mine!", "Sky-High Teio Step", "Triumphant Pulse", "Anchors Aweigh!", "Cut and Drive!", "Resplendent Red Ace", "Where There's a Will, There's a Way", "The Duty of Dignity Calls", "Victoria por plancha ☆", "This Dance Is for Vittoria!", "Behold Thine Emperor's Divine Might", "Blazing Pride", "∴win Q.E.D.", "Flashy☆Landing", "G00 1st. F∞;", "Blue Rose Closer", "Our Ticket to Win!", "Genius x Bakushin = Victory", "I See Victory in My Future!", "Just a Little Farther!", "Prideful King", "#LookatCurren", "Nemesis", "SPARKLY☆STARDOM", "Shadow Break", "Eternal Moments", "Flowery☆Maneuver", "You and Me! One-on-One!", "Lights of Vaudeville", "KEEP IT REAL.", "A Kiss for Courage", "I Never Goof Up!", "Schwarzes Schwert", "Bountiful Harvest", "YUMMY☆SPEED!", "OMG! (ﾟ∀ﾟ)  The Final Sprint! ☆", "Give Mummy a Hug ♡", "A Princess Must Seize Victory!", "Chasing After You", "Arrows Whistle, Shadows Disperse", "Dancing in the Leaves", "Pop & Polish", "Festive Miracle", "Presents from X", "Fairy Tale", "White Lightning Comin' Through!", "Barcarole of Blessings", "114th Time's the Charm", "Ambition to Surpass the Sakura", "A Lifelong Dream, A Moment's Flight", "Operation Cacao", "Guten Appetit ♪", "Shooting Star of Dioskouroi", "Victory Cheer!", "Eternal Encompassing Shine", "Lovely Spring Breeze", "Ravissant", "Break It Down!", "Peerless Dance of Flowering Flames", "Go☆Go☆Goal!", "All Charged! It's Go Time!", "Best Day Ever", "One True Color", "Now We're Cruisin'!", "Victory belongs to me—Strelitzia! ☆", "Joyful Voyage!", "Wherever This Wonder Leads", "trigger:BEAT", "Dreams Donned with Pride!", "Ruler of Japan", "564 Escapades", "Your Smile Sparkles as the Waves", "Luck Runs My Way", "α-star*", "Ticket to Your Dreams!", "Hephaestus", "Snow Bright, Snow Flight", "I'm Possible!", "THE MOE AAAA Thanks for My Life", "Spooky, Scary, Happy", "Silent Letter", "Lightning Flare", "Firelight", "Laugh at the Odds", "Never Say Never", "Into High Gear!", "Queen's Lumination", "Raise My Soul's Blade!", "Free From the Ashes", "Rain Cloud Bolt", "Bring on the Banquet!", "Hands in the Air Like Ya Don't Care!", "A Warm Cup for You", "Fresh☆Parlor", "Ding Dong, Boo!", "Engines LIT!", "Lyrical Journey", "Turbo BLAST!", "Ever Supreme", "Mission: Triumph", "Danser le Présent", "World in Bloom", "Ad Astra", "Tumbly Power Drive!", "Bang! Miracle Shot ☆", "Sublimated Thunder", "First Bite of the Feast!", "Flowering Dreams", "Magical☆Marvelous★World", "Us Girlies Keep Winnin'! ♪", "Scorching Summer Tech!", "Sunrise Banner—Katsuragi Ace!", "Ahead of the Horizon", "Summer Halation", "Introduction to Physiology", "Clear Heart", "Super-Duper Stoked", "U=ma2", "Pure Heart", "Super-Duper Climax", "Superior Heal", "Dazzl'n ♪ Diver", "Every Rose Has Its Fangs", "Ready, Go!", "Go, Go, Mun!", "Keep Pushing Ahead", "Disorient", "Restart", "Trick (Front)", "Trick (Rear)", "Flustered Front Runners", "Subdued Pace Chasers", "Flustered Pace Chasers", "Subdued Late Surgers", "Flustered Late Surgers", "Subdued End Closers", "Flustered End Closers", "Murmur", "Sharp Gaze", "Smoke Screen", "Dust Cloud", "Oppression", "Intense Gaze", "Tether", "Intimidate", "Maverick ○"], "skill_list": [] };
 const team_trials = { "enabled": false, "keep_charges": 0, "prioritise_reward": true };
-const independent_training = { "max_runs": 0, "after_max_runs": "stop", "wait_poll_seconds": 60, "training_minutes": 50, "borrow_cards": [], "borrow_warn_every_refreshes": 10, "spark_reroll": { "at_ss_rating": false, "any_rating": false, "blue": { "required": false, "sparks": [] }, "pink": { "required": false, "sparks": [] }, "white": { "required": false, "sparks": [] } }, "spend_leftover_points": false, "leftover_strategy": "bottom_up", "maximize_rating": false, "training_focus": "default", "scenario": "default", "deck": 0, "deck_name": "", "agenda_slot": 1, "agenda_name": "", "racing_style": "default", "tp_refill_enabled": false, "tp_refill_strategy": "toughness_first", "debug_select_skills_only": false, "debug_stop_before_start": false, "debug_force_tp_refill": false, "tp_refill_max_per_session": 0, "tp_refill_min_carats_remaining": 0, "session_conflict_wait_minutes": 60, "collect_missions": true, "collect_presents": true, "daily_races_enabled": false, "daily_race_program": "moonlight_sho", "daily_race_difficulty": "very_hard", "daily_race_tickets_per_day": 6, "wait_for_tp": true, "debug_pretend_tp_short": false, "debug_tp_wait_seconds": 0, "restart_on_stuck": true, "restart_max_per_session": 10, "restart_max_same_kind": 5, "game_package": "" };
+const independent_training = { "max_runs": 0, "after_max_runs": "stop", "wait_poll_seconds": 60, "training_minutes": 50, "borrow_cards": [], "borrow_warn_every_refreshes": 10, "spark_reroll": { "at_ss_rating": false, "any_rating": false, "blue": { "required": false, "sparks": [], "min_stars": 1 }, "pink": { "required": false, "sparks": [], "min_stars": 1 }, "white": { "required": false, "sparks": [] } }, "spend_leftover_points": false, "leftover_strategy": "bottom_up", "maximize_rating": false, "training_focus": "default", "scenario": "default", "deck": 0, "deck_name": "", "agenda_slot": 1, "agenda_name": "", "racing_style": "default", "tp_refill_enabled": false, "tp_refill_strategy": "toughness_first", "debug_select_skills_only": false, "debug_stop_before_start": false, "debug_force_tp_refill": false, "tp_refill_max_per_session": 0, "tp_refill_min_carats_remaining": 0, "session_conflict_wait_minutes": 60, "collect_missions": true, "collect_presents": true, "daily_races_enabled": false, "daily_race_program": "moonlight_sho", "daily_race_difficulty": "very_hard", "daily_race_tickets_per_day": 6, "wait_for_tp": true, "debug_pretend_tp_short": false, "debug_tp_wait_seconds": 0, "restart_on_stuck": true, "restart_max_per_session": 10, "restart_max_same_kind": 5, "game_package": "" };
 const window_name = "Bluestacks Umamusume";
 const preset_id = "default";
 const rawConfig = {
@@ -16886,6 +16886,9 @@ const SparkWantSchema = object({
   required: boolean().default(false),
   sparks: array(string()).default([])
 });
+const StarredSparkWantSchema = SparkWantSchema.extend({
+  min_stars: number().int().min(1).max(3).default(1)
+});
 const IndependentTrainingSchema = looseObject({
   max_runs: number().default(0),
   after_max_runs: _enum(["stop", "dailies"]).default("stop"),
@@ -16901,14 +16904,14 @@ const IndependentTrainingSchema = looseObject({
   spark_reroll: object({
     at_ss_rating: boolean().default(false),
     any_rating: boolean().default(false),
-    blue: SparkWantSchema.default(SparkWantSchema.parse({})),
-    pink: SparkWantSchema.default(SparkWantSchema.parse({})),
+    blue: StarredSparkWantSchema.default(StarredSparkWantSchema.parse({})),
+    pink: StarredSparkWantSchema.default(StarredSparkWantSchema.parse({})),
     white: SparkWantSchema.default(SparkWantSchema.parse({}))
   }).default({
     at_ss_rating: false,
     any_rating: false,
-    blue: { required: false, sparks: [] },
-    pink: { required: false, sparks: [] },
+    blue: { required: false, sparks: [], min_stars: 1 },
+    pink: { required: false, sparks: [], min_stars: 1 },
     white: { required: false, sparks: [] }
   }),
   spend_leftover_points: boolean().default(false),
@@ -35487,6 +35490,24 @@ function SparkRerollSection({ value, onChange }) {
       sparks: chosen.includes(name) ? chosen.filter((n) => n !== name) : [...chosen, name]
     });
   };
+  const starPicker = (colour) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-2 text-sm", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted-foreground", children: "At least" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "inline-flex rounded-md border-1 border-border overflow-hidden", children: [1, 2, 3].map((stars) => {
+      const on = (value[colour].min_stars ?? 1) === stars;
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          "aria-pressed": on,
+          "aria-label": `At least ${stars} star${stars > 1 ? "s" : ""}`,
+          onClick: () => onChange({ ...value, [colour]: { ...value[colour], min_stars: stars } }),
+          className: `px-2.5 py-1 flex gap-0.5 ${on ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"}`,
+          children: Array.from({ length: stars }, (_, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(Star, { className: "w-3.5 h-3.5 fill-current" }, i))
+        },
+        stars
+      );
+    }) })
+  ] });
   const triggered = value.at_ss_rating || value.any_rating;
   const query = search.trim().toLowerCase();
   const shownWhite = catalogue.white.filter(
@@ -35525,7 +35546,10 @@ function SparkRerollSection({ value, onChange }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: hint })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: value[colour].required ? "" : "disabled", children: [
-      colour === "white" ? whitePicker : chips(colour),
+      colour === "white" ? whitePicker : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        chips(colour),
+        starPicker(colour)
+      ] }),
       value[colour].required && value[colour].sparks.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground mt-1", children: "Nothing chosen yet, so this colour asks for nothing." })
     ] })
   ] });
@@ -35653,13 +35677,13 @@ function SparkRerollSection({ value, onChange }) {
       colourRow(
         "pink",
         "Pink",
-        /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "An aptitude spark. The trainee can only be granted one for an aptitude it has at A or better, so choosing one the trainee does not have at A cannot be met however often the sparks are rerolled." })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "An aptitude spark. The trainee can only be granted one for an aptitude it has at A or better. A chosen aptitude the trainee has below A is left out for that career, and if none of the chosen ones is possible, pink is not rerolled for." })
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground -mt-3 mb-4", children: "Only aptitudes the trainee has at A or better can come up as a pink spark." }),
       colourRow(
         "white",
         "White",
-        "Race, skill and scenario sparks. A career usually grants several."
+        /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "Race, skill and scenario sparks; a career usually grants several. A skill's spark only comes from a skill the trainee holds — one bought, or brought along by one bought, as Superstan brings Uma Stan. Chosen skills the career did not end with are left out, and if none is possible, white is not rerolled for." })
       )
     ] })
   ] });

@@ -2,14 +2,23 @@
 
 After Complete Career the game grants sparks: a blue one (a stat), a pink one (an
 aptitude), the trainee's green unique, and a list of white ones (races, skills, the
-scenario). They can be rerolled once for 30 TP, and then either set kept. This module is
-the settings half of that: data/sparks.json is every spark there is, and the
-spark_reroll setting says which ones are wanted.
+scenario), each with one to three stars. They can be rerolled once for 30 TP, and then
+either set kept. This module is the settings half of that: data/sparks.json is every
+spark there is, and the spark_reroll setting says which ones are wanted.
 
 The rule, per colour: a colour whose `required` is on is met when any one of its chosen
-sparks was granted. A set of sparks is good enough when every required colour is met.
-A reroll is worth spending only when a trigger allows it -- the rating reached SS, or
-"any_rating" is on -- and the sparks granted are not already good enough.
+sparks was granted -- for blue and pink, with at least that colour's `min_stars`. A set
+of sparks is good enough when every required colour is met. A reroll is worth spending
+only when a trigger allows it -- the rating reached SS, or "any_rating" is on -- and the
+sparks granted are not already good enough.
+
+Only what the career could actually be granted is asked for. A skill's white spark comes
+from a skill the trainee holds, so a chosen skill it never bought -- nor anything that
+brings it along, as Superstan brings Uma Stan -- cannot come up however often the sparks
+are rerolled. A pink spark needs the aptitude at A or better. A required colour left with
+nothing possible is skipped for that career rather than rerolled for. What the career
+holds is only known when the bot saw it: an unknown purchase list or aptitude rules
+nothing out.
 """
 
 import io
@@ -20,8 +29,24 @@ import core.config as config
 
 SPARKS_PATH = os.path.join("data", "sparks.json")
 COLOURS = ("blue", "pink", "white")
+STARRED = ("blue", "pink")
 # The rating the SS rank starts at. The at_ss_rating trigger needs at least this.
 SS_RATING = 17_500
+MAX_STARS = 3
+
+# A pink spark's name -> the aptitude it is for, keyed as read_aptitudes keys them.
+PINK_APTITUDE = {
+  "Turf": "turf", "Dirt": "dirt",
+  "Front Runner": "front", "Pace Chaser": "pace", "Late Surger": "late", "End Closer": "end",
+  "Sprint": "sprint", "Mile": "mile", "Medium": "medium", "Long": "long",
+}
+# The grades a pink spark can come from.
+PINK_GRADES = {"S", "A"}
+
+# White sparks whose name is not the skill's. Only the scenario stat skills differ:
+# the spark reads "Ignited Spirit: Speed +" for the skill "Ignited Spirit SPD".
+_STAT_ABBREVIATION = {"Speed": "SPD", "Stamina": "STA", "Power": "PWR", "Guts": "GUTS",
+                      "Wit": "WIT"}
 
 _catalogue = None
 
@@ -38,6 +63,13 @@ def catalogue():
   return _catalogue
 
 
+def _stars(value):
+  try:
+    return min(MAX_STARS, max(1, int(value)))
+  except (TypeError, ValueError):
+    return 1
+
+
 def settings():
   """The spark_reroll setting with every part filled in, whatever the file held."""
   raw = getattr(config, "INDEPENDENT_SPARK_REROLL", None)
@@ -47,23 +79,91 @@ def settings():
     want = raw.get(colour) if isinstance(raw.get(colour), dict) else {}
     sparks = want.get("sparks") if isinstance(want.get("sparks"), list) else []
     wants[colour] = {"required": bool(want.get("required")),
-                     "sparks": [name for name in sparks if isinstance(name, str) and name]}
+                     "sparks": [name for name in sparks if isinstance(name, str) and name],
+                     "min_stars": _stars(want.get("min_stars", 1)) if colour in STARRED else 1}
   return {"at_ss_rating": bool(raw.get("at_ss_rating")),
           "any_rating": bool(raw.get("any_rating")), **wants}
 
 
-def required_colours(wanted=None):
-  """The colours that must be met, as {colour: set of names}. A required colour with
-  nothing chosen is left out: there is nothing it could be met by, so it asks nothing."""
+def spark_skill(name):
+  """The skill a white spark comes from: its own name, bar the scenario stat skills."""
+  if name.startswith("Ignited Spirit: ") and name.endswith(" +"):
+    stat = name[len("Ignited Spirit: "):-2]
+    return f"Ignited Spirit {_STAT_ABBREVIATION.get(stat, stat)}"
+  if name.startswith("Racing Spirit: ") and name.endswith(" +"):
+    return name[:-2]
+  return name
+
+
+def held_skills(bought):
+  """Every skill `bought` leaves the trainee holding, or None when it is not known.
+
+  A purchase can hand over more than itself: a gold brings its white (Superstan, Uma
+  Stan), a double circle its circle, and a named top tier both (Refraction Arc, Medium
+  Corners). Followed to the end, since those chains run three deep.
+  """
+  if bought is None:
+    return None
+  from core.independent_skill import upgrade_grants
+  grants = upgrade_grants()
+  held, pending = set(), list(bought)
+  while pending:
+    name = pending.pop()
+    if name in held:
+      continue
+    held.add(name)
+    granted = grants.get(name)
+    if granted:
+      pending.append(granted)
+  return held
+
+
+def possible(colour, names, held=None, aptitudes=None):
+  """Of `names`, the sparks of `colour` this career could be granted at all."""
+  if colour == "pink" and aptitudes:
+    return [name for name in names
+            if PINK_APTITUDE.get(name) not in aptitudes
+            or aptitudes[PINK_APTITUDE[name]] in PINK_GRADES]
+  if colour == "white" and held is not None:
+    groups = {spark["name"]: spark.get("group") for spark in catalogue().get("white", [])}
+    return [name for name in names
+            if groups.get(name) != "skill" or spark_skill(name) in held]
+  return list(names)
+
+
+def requirements(wanted=None, held=None, aptitudes=None):
+  """What each required colour asks of this career: ({colour: (names, min_stars)}, skipped).
+
+  A required colour with nothing chosen asks nothing. One whose every choice is
+  impossible for this career lands in `skipped` as {colour: [those choices]} instead:
+  it could never be met, so it is no reason to reroll.
+  """
   wanted = wanted or settings()
-  return {colour: set(wanted[colour]["sparks"]) for colour in COLOURS
-          if wanted[colour]["required"] and wanted[colour]["sparks"]}
+  asked, skipped = {}, {}
+  for colour in COLOURS:
+    want = wanted[colour]
+    if not (want["required"] and want["sparks"]):
+      continue
+    names = possible(colour, want["sparks"], held, aptitudes)
+    if names:
+      asked[colour] = (set(names), want["min_stars"])
+    else:
+      skipped[colour] = list(want["sparks"])
+  return asked, skipped
 
 
-def unmet(granted, wanted=None):
-  """The required colours `granted` does not meet. `granted` is {colour: [names]}."""
-  return [colour for colour, names in required_colours(wanted).items()
-          if not names & set((granted or {}).get(colour) or ())]
+def unmet(granted, wanted=None, held=None, aptitudes=None):
+  """The required colours `granted` does not meet.
+
+  `granted` is {colour: {name: stars}}, as read off the Sparks screen.
+  """
+  asked, _ = requirements(wanted, held, aptitudes)
+  missing = []
+  for colour, (names, min_stars) in asked.items():
+    got = (granted or {}).get(colour) or {}
+    if not any(name in names and (stars or 0) >= min_stars for name, stars in got.items()):
+      missing.append(colour)
+  return missing
 
 
 def may_reroll(rating, wanted=None):
@@ -78,8 +178,9 @@ def may_reroll(rating, wanted=None):
   return bool(wanted["at_ss_rating"] and rating is not None and rating >= SS_RATING)
 
 
-def should_reroll(rating, granted, wanted=None):
+def should_reroll(rating, granted, wanted=None, held=None, aptitudes=None):
   """Whether to reroll: a trigger allows it and a required colour is not met. With
-  nothing required nothing can be unmet, so an empty wish list never rerolls."""
+  nothing required -- or nothing required this career could meet -- nothing is unmet,
+  so it never rerolls."""
   wanted = wanted or settings()
-  return bool(may_reroll(rating, wanted) and unmet(granted, wanted))
+  return bool(may_reroll(rating, wanted) and unmet(granted, wanted, held, aptitudes))

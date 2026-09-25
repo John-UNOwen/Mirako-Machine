@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Search, Sparkles, X } from "lucide-react";
+import { Check, Search, Sparkles, Star, X } from "lucide-react";
 import type { IndependentTraining } from "@/types/independent-training.type";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
@@ -75,6 +75,36 @@ export default function SparkRerollSection({ value, onChange }: Props) {
     });
   };
 
+  // Blue and pink sparks come with one to three stars; a colour asks for at least this many.
+  const starPicker = (colour: "blue" | "pink") => (
+    <div className="flex items-center gap-2 mt-2 text-sm">
+      <span className="text-muted-foreground">At least</span>
+      <div className="inline-flex rounded-md border-1 border-border overflow-hidden">
+        {[1, 2, 3].map((stars) => {
+          // A config saved before the star minimum existed has none: that is one star,
+          // which is also what the bot reads it as.
+          const on = (value[colour].min_stars ?? 1) === stars;
+          return (
+            <button
+              key={stars}
+              type="button"
+              aria-pressed={on}
+              aria-label={`At least ${stars} star${stars > 1 ? "s" : ""}`}
+              onClick={() => onChange({ ...value, [colour]: { ...value[colour], min_stars: stars } })}
+              className={`px-2.5 py-1 flex gap-0.5 ${
+                on ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
+              }`}
+            >
+              {Array.from({ length: stars }, (_, i) => (
+                <Star key={i} className="w-3.5 h-3.5 fill-current" />
+              ))}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const triggered = value.at_ss_rating || value.any_rating;
   const query = search.trim().toLowerCase();
   const shownWhite = catalogue.white.filter(
@@ -119,7 +149,12 @@ export default function SparkRerollSection({ value, onChange }: Props) {
         <Tooltips>{hint}</Tooltips>
       </label>
       <div className={value[colour].required ? "" : "disabled"}>
-        {colour === "white" ? whitePicker : chips(colour)}
+        {colour === "white" ? whitePicker : (
+          <>
+            {chips(colour)}
+            {starPicker(colour)}
+          </>
+        )}
         {value[colour].required && value[colour].sparks.length === 0 && (
           <p className="text-xs text-muted-foreground mt-1">
             Nothing chosen yet, so this colour asks for nothing.
@@ -289,8 +324,8 @@ export default function SparkRerollSection({ value, onChange }: Props) {
           "Pink",
           <>
             An aptitude spark. The trainee can only be granted one for an aptitude it has
-            at A or better, so choosing one the trainee does not have at A cannot be met
-            however often the sparks are rerolled.
+            at A or better. A chosen aptitude the trainee has below A is left out for that
+            career, and if none of the chosen ones is possible, pink is not rerolled for.
           </>,
         )}
         <p className="text-xs text-muted-foreground -mt-3 mb-4">
@@ -299,7 +334,12 @@ export default function SparkRerollSection({ value, onChange }: Props) {
         {colourRow(
           "white",
           "White",
-          "Race, skill and scenario sparks. A career usually grants several.",
+          <>
+            Race, skill and scenario sparks; a career usually grants several. A skill's
+            spark only comes from a skill the trainee holds &mdash; one bought, or brought
+            along by one bought, as Superstan brings Uma Stan. Chosen skills the career did
+            not end with are left out, and if none is possible, white is not rerolled for.
+          </>,
         )}
       </div>
     </>

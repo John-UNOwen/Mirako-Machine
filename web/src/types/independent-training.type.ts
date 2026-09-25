@@ -6,6 +6,11 @@ export const SparkWantSchema = z.object({
   required: z.boolean().default(false),
   sparks: z.array(z.string()).default([]),
 });
+// Blue and pink sparks also carry a star minimum: a granted spark with fewer stars
+// does not meet the colour.
+export const StarredSparkWantSchema = SparkWantSchema.extend({
+  min_stars: z.number().int().min(1).max(3).default(1),
+});
 
 // Independent Training is opt-in and self-contained, so every field carries a default.
 // A preset saved before the mode existed then parses cleanly with the mode simply off,
@@ -26,15 +31,15 @@ export const IndependentTrainingSchema = z.looseObject({
     .object({
       at_ss_rating: z.boolean().default(false),
       any_rating: z.boolean().default(false),
-      blue: SparkWantSchema.default(SparkWantSchema.parse({})),
-      pink: SparkWantSchema.default(SparkWantSchema.parse({})),
+      blue: StarredSparkWantSchema.default(StarredSparkWantSchema.parse({})),
+      pink: StarredSparkWantSchema.default(StarredSparkWantSchema.parse({})),
       white: SparkWantSchema.default(SparkWantSchema.parse({})),
     })
     .default({
       at_ss_rating: false,
       any_rating: false,
-      blue: { required: false, sparks: [] },
-      pink: { required: false, sparks: [] },
+      blue: { required: false, sparks: [], min_stars: 1 },
+      pink: { required: false, sparks: [], min_stars: 1 },
       white: { required: false, sparks: [] },
     }),
   spend_leftover_points: z.boolean().default(false),

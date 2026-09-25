@@ -352,6 +352,11 @@ class RunState:
     self.carats_earned = None
     # The rating the Career Rank screen showed, read once per career.
     self.career_rating = None
+    # Every skill the bot bought this career, which decides which white sparks the
+    # career could be granted. None while unknown: only a run that read the Training Log,
+    # which comes before any buying, saw every purchase -- one restarted part-way through
+    # the Learn screen did not, and an empty list would claim it bought nothing.
+    self.skills_bought = None
     # The trainee's aptitudes, read once off the Complete Career screen. Per career
     # rather than per session: nothing stops the next one using a different trainee.
     self.aptitudes = None
@@ -2598,6 +2603,8 @@ def handle_learn(state):
     try:
       bought = buy_skills_by_priority(dry_run=_dry_run(),
                                       aptitudes=state.aptitudes) or []
+      if state.pending_record is not None:
+        state.skills_bought = (state.skills_bought or []) + list(bought)
       if bought:
         on_skills_bought(bought)
     except BotStopException:
