@@ -66,11 +66,9 @@ export default function IndependentSection({ config, updateConfig }: Props) {
   const [botTesting, setBotTesting] = useState(false);
   const [botResult, setBotResult] = useState<{ ok: boolean; detail: string } | null>(null);
   // What is typed, not what is saved, as with the webhook test.
-  // The invite link, built from the token. A bot token's first part is its application ID
-  // in base64, so the link needs nothing else -- which spares the Developer Portal's URL
-  // Generator, a page it is easy to come away from with nothing but the ID. The
-  // permissions are View Channels, Send Messages, Attach Files, Add Reactions and Read
-  // Message History, and nothing more.
+  // The application ID, read out of the token: a bot token's first part is the ID in
+  // base64, which is all the install link needs -- sparing the Developer Portal's URL
+  // Generator, a page it is easy to come away from with nothing but the ID.
   const appId = (() => {
     try {
       const head = webhook.bot_token.trim().split(".")[0];
@@ -82,20 +80,14 @@ export default function IndependentSection({ config, updateConfig }: Props) {
     }
   })();
 
-  // Where the spark question goes, and whether that is filled in.
-  const toDm = webhook.choice_target === "dm";
-  // For DMs the app is added to the person's own account (a user install), after which it
-  // can DM them with no server in common; for a channel it joins the server instead.
-  const inviteLink = !appId
-    ? ""
-    : toDm
-      ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands`
-      : `https://discord.com/oauth2/authorize?client_id=${appId}&scope=bot&permissions=101440`;
-  const botReady = Boolean(
-    webhook.bot_token && (toDm ? webhook.choice_user_id : webhook.choice_channel_id),
-  );
-  // DMs set up take the notifications too, in place of the webhook (utils/webhook.py).
-  const dmActive = toDm && botReady;
+  // The app is added to the person's own account (a user install), after which it can
+  // DM them with no server in common.
+  const inviteLink = appId
+    ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands`
+    : "";
+  const botReady = Boolean(webhook.bot_token && webhook.choice_user_id);
+  // The bot set up takes the notifications too, in place of the webhook (utils/webhook.py).
+  const dmActive = botReady;
 
   const testBot = async () => {
     setBotTesting(true);
@@ -104,11 +96,7 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       const res = await fetch("/discord/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          toDm
-            ? { token: webhook.bot_token, user: webhook.choice_user_id }
-            : { token: webhook.bot_token, channel: webhook.choice_channel_id },
-        ),
+        body: JSON.stringify({ token: webhook.bot_token, user: webhook.choice_user_id }),
       });
       const data = await res.json();
       setBotResult({ ok: data.status === "success", detail: data.detail });
@@ -706,8 +694,8 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       </p>
       {dmActive && (
         <p className="text-sm text-primary mb-3">
-          Spark Choice Bot is sending to your DMs, so these messages go there too, in place
-          of the webhook.
+          The Spark Choice Bot is set up, so these messages come by DM, in place of the
+          webhook.
         </p>
       )}
 
@@ -756,13 +744,11 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       <h4 className="text-base font-semibold mt-5 mb-2 flex items-center gap-2">
         Spark Choice Bot
         <Tooltips>
-          After a spark reroll you choose which set to keep, and the question is asked in
-          Discord: both sets are posted as pictures and you react 1 or 2. A webhook can
-          only post, so this needs a Discord bot. In the Developer Portal: New
-          Application, then Bot, Reset Token and copy it here; then OAuth2, URL
-          Generator, tick "bot" and the permissions View Channel, Send Messages, Attach
-          Files, Add Reactions and Read Message History, and open the link to invite it to
-          your server. The bot waits for your answer as long as it takes.
+          After a spark reroll you choose which set to keep, and the bot asks you by
+          Discord DM: both sets are sent as pictures and you react 1 or 2. A webhook can
+          only post, so this needs a Discord bot of your own. Once it is set up, the
+          notifications above come by DM too, in place of the webhook. The bot waits for
+          your answer as long as it takes.
         </Tooltips>
       </h4>
       {!botReady && (
@@ -784,41 +770,22 @@ export default function IndependentSection({ config, updateConfig }: Props) {
               <>
                 Open{" "}
                 <a className="underline" href={inviteLink} target="_blank" rel="noreferrer">
-                  this {toDm ? "install" : "invite"} link
+                  this install link
                 </a>{" "}
-                {toDm ? (
-                  <>
-                    and choose <b>Add to My Apps</b>. That lets it DM you with no server in
-                    common. If Discord does not offer it, turn on <b>User Install</b> on the
-                    app's Installation page first.
-                  </>
-                ) : (
-                  <>
-                    and add the bot to your server. It asks for exactly the permissions the
-                    bot uses: View Channels, Send Messages, Attach Files, Add Reactions and
-                    Read Message History.
-                  </>
-                )}
+                and choose <b>Add to My Apps</b>. That lets it DM you with no server in
+                common. If Discord does not offer it, turn on <b>User Install</b> on the
+                app's Installation page first.
               </>
             ) : (
-              <>Paste the token first: the invite link for step 3 appears here.</>
+              <>Paste the token first: the install link for step 3 appears here.</>
             )}
           </li>
           <li>
-            In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then{" "}
-            {toDm ? (
-              <>
-                right-click your own name and <b>Copy User ID</b>. Paste it below.
-              </>
-            ) : (
-              <>
-                right-click the channel to use and <b>Copy Channel ID</b>. Paste it below.
-              </>
-            )}
+            In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then
+            right-click your own name and <b>Copy User ID</b>. Paste it below.
           </li>
           <li>
-            Press <b>Test</b>. A message from the bot {toDm ? "in your DMs" : "in that channel"}{" "}
-            means it is ready.
+            Press <b>Test</b>. A DM from the bot means it is ready.
           </li>
         </ol>
       )}
@@ -837,44 +804,13 @@ export default function IndependentSection({ config, updateConfig }: Props) {
           />
         </label>
         <label className="uma-label">
-          <span className="whitespace-nowrap">Send To</span>
-          <div className="inline-flex rounded-md border-1 border-border overflow-hidden">
-            {(["dm", "channel"] as const).map((target) => (
-              <button
-                key={target}
-                type="button"
-                aria-pressed={(webhook.choice_target ?? "channel") === target}
-                onClick={() => {
-                  updateWebhook({ choice_target: target });
-                  setBotResult(null);
-                }}
-                className={`px-3 py-1.5 text-sm ${
-                  (webhook.choice_target ?? "channel") === target
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted/50"
-                }`}
-              >
-                {target === "dm" ? "My DMs" : "A Channel"}
-              </button>
-            ))}
-          </div>
-        </label>
-        <label className="uma-label lg:col-span-2">
-          <span className="whitespace-nowrap">{toDm ? "Your User ID" : "Channel ID"}</span>
+          <span className="whitespace-nowrap">Your User ID</span>
           <Input
             className="grow"
-            placeholder={
-              toDm
-                ? "Right-click your own name, Copy User ID"
-                : "Right-click the channel, Copy Channel ID"
-            }
-            value={(toDm ? webhook.choice_user_id : webhook.choice_channel_id) ?? ""}
+            placeholder="Right-click your own name, Copy User ID"
+            value={webhook.choice_user_id ?? ""}
             onChange={(e) => {
-              updateWebhook(
-                toDm
-                  ? { choice_user_id: e.target.value.trim() }
-                  : { choice_channel_id: e.target.value.trim() },
-              );
+              updateWebhook({ choice_user_id: e.target.value.trim() });
               setBotResult(null);
             }}
           />

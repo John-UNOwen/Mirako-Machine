@@ -7,8 +7,9 @@ whichever of those reactions a person (anyone but the bot itself) has added, rea
 polling. Buttons would need the gateway's open connection to be delivered at all, and a
 reaction is the same single tap on a phone.
 
-Used for the spark choice after a reroll: both sets are posted as pictures, and the
-reaction says which to keep. There is deliberately no timeout here -- the caller decides
+Used for the spark choice after a reroll: both sets are sent to one person by DM as
+pictures, and the reaction says which to keep. The person adds the app to their own
+account (a user install), which is what lets it DM them with no server in common. There is deliberately no timeout here -- the caller decides
 how long to wait.
 """
 
@@ -35,15 +36,13 @@ class DiscordError(Exception):
 
 
 def configured():
-  """Whether a bot token is set, and somewhere to ask: a channel, or a person to DM."""
-  if not _token():
-    return False
-  return bool(_user() if _target() == "dm" else _configured_channel())
+  """Whether a bot token and the person to DM are both set."""
+  return bool(_token() and _user())
 
 
 def dm_active():
-  """Whether questions go to one person's DMs -- which then takes the notifications too."""
-  return bool(_token() and _target() == "dm" and _user())
+  """Whether the bot can DM its person -- which then takes the notifications too."""
+  return configured()
 
 
 def send_embeds(embeds, opener=urllib.request.urlopen):
@@ -54,14 +53,6 @@ def send_embeds(embeds, opener=urllib.request.urlopen):
 
 def _token():
   return str(getattr(config, "WEBHOOK_BOT_TOKEN", "") or "").strip()
-
-
-def _target():
-  return "dm" if getattr(config, "WEBHOOK_CHOICE_TARGET", "channel") == "dm" else "channel"
-
-
-def _configured_channel():
-  return str(getattr(config, "WEBHOOK_CHOICE_CHANNEL_ID", "") or "").strip()
 
 
 def _user():
@@ -84,10 +75,8 @@ def dm_channel(user_id, token=None, opener=urllib.request.urlopen):
 
 
 def _channel(opener=urllib.request.urlopen):
-  """Where questions go, as a channel id: the configured one, or the DM with the user."""
-  if _target() == "dm":
-    return dm_channel(_user(), opener=opener)
-  return _configured_channel()
+  """Where questions go, as a channel id: the bot's DM with its person."""
+  return dm_channel(_user(), opener=opener)
 
 
 def _request(method, path, body=None, content_type="application/json", token=None,
@@ -119,8 +108,8 @@ def _request(method, path, body=None, content_type="application/json", token=Non
 
 
 def _explain(code, detail):
-  # Before the bare 403 below: a DM Discord refuses is also a 403, and the channel
-  # advice that follows would send someone to fix permissions they do not need.
+  # Before the bare 403 below: a DM Discord refuses is also a 403, and this one has an
+  # answer a person can act on.
   if '"code": 50007' in detail or '"code":50007' in detail:
     return ("Discord will not let the bot message you. Add the app to your account (the "
             "install link, Add to My Apps), or share a server with it that allows direct "
@@ -128,10 +117,7 @@ def _explain(code, detail):
   if code == 401:
     return "Discord rejected the bot token. Copy it again from the Developer Portal's Bot page."
   if code == 403:
-    return ("The bot cannot use that channel. Invite it to the server, and give it View "
-            "Channel, Send Messages, Attach Files, Add Reactions and Read Message History there.")
-  if code == 404:
-    return "No channel with that ID. Right-click the channel and Copy Channel ID."
+    return f"Discord refused the bot (403): {detail}"
   if code == 400 and "recipient_id" in detail:
     return "That is not a user ID. Right-click your own name and Copy User ID."
   return f"Discord answered {code}: {detail}"
@@ -216,23 +202,20 @@ def answer(message_id, emojis, bot_id, channel=None, token=None,
   return None
 
 
-def test(token, channel=None, user=None, opener=urllib.request.urlopen):
-  """Check a token and where to ask, from the page: (ok, what to tell the person).
+def test(token, user, opener=urllib.request.urlopen):
+  """Check a token and a user from the page: (ok, what to tell the person).
 
-  Given `user`, the test goes to that person's DMs, which is also the only way to find
-  out whether Discord lets the bot message them at all.
+  Sent as a DM, which is also the only way to find out whether Discord lets the bot
+  message that person at all.
   """
   try:
     me = whoami(token=token, opener=opener)
-    where = "your DMs" if user else "this channel"
-    if user:
-      channel = dm_channel(user, token=token, opener=opener)
-    post(f"✅ {me.get('username', 'The bot')} can post spark choices in {where}.",
+    channel = dm_channel(user, token=token, opener=opener)
+    post(f"✅ {me.get('username', 'The bot')} can send you spark choices here.",
          channel=channel, token=token, opener=opener)
   except DiscordError as error:
     warning(f"Discord bot test failed: {error}")
     return False, str(error)
   except (KeyError, TypeError, ValueError) as error:
     return False, f"Discord sent something unexpected: {error}"
-  return True, (f"Connected as {me.get('username')}; a test message was sent to "
-                f"{'your DMs' if user else 'the channel'}.")
+  return True, f"Connected as {me.get('username')}; a test message was sent to your DMs."

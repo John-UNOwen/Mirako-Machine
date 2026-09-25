@@ -206,10 +206,7 @@ def reload_config():
     load_var('WEBHOOK_SKILLS_ENABLED', webhook_conf.get("skills_enabled", True))
     # The Discord bot the spark choice is asked through. See core/discord_choice.py.
     load_var('WEBHOOK_BOT_TOKEN', str(webhook_conf.get("bot_token", "")).strip())
-    load_var('WEBHOOK_CHOICE_CHANNEL_ID',
-             str(webhook_conf.get("choice_channel_id", "")).strip())
-    # "dm" sends the question to one person's direct messages instead of a channel.
-    load_var('WEBHOOK_CHOICE_TARGET', webhook_conf.get("choice_target", "channel"))
+    # The person the spark question is sent to, by DM.
     load_var('WEBHOOK_CHOICE_USER_ID', str(webhook_conf.get("choice_user_id", "")).strip())
     load_var('SLEEP_TIME_MULTIPLIER', config["sleep_time_multiplier"])
     load_var('WINDOW_NAME', config["window_name"])

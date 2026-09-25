@@ -434,12 +434,10 @@ def discord_cases():
       return Reply(b'{"id": "bot", "username": "Tazuna"}')
     return Reply(b'{"id": "m2"}')
   saved = {name: getattr(config, name, None) for name in
-           ("WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_TARGET", "WEBHOOK_CHOICE_USER_ID",
-            "WEBHOOK_CHOICE_CHANNEL_ID")}
+           ("WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_USER_ID")}
   discord_choice._dm_channels.clear()
   try:
-    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_CHANNEL_ID = "t", ""
-    config.WEBHOOK_CHOICE_TARGET, config.WEBHOOK_CHOICE_USER_ID = "dm", ""
+    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", ""
     check(not discord_choice.configured(), "DMs with no user ID set is not set up")
     config.WEBHOOK_CHOICE_USER_ID = "42"
     check(discord_choice.configured(), "a token and a user ID are enough for DMs")
@@ -476,21 +474,20 @@ def discord_cases():
     def put(self, item):
       self.items.append(item)
 
-  names = ("WEBHOOK_URL", "WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_TARGET",
-           "WEBHOOK_CHOICE_USER_ID", "WEBHOOK_CAREER_SUMMARY_ENABLED")
+  names = ("WEBHOOK_URL", "WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_USER_ID",
+           "WEBHOOK_CAREER_SUMMARY_ENABLED")
   saved = {name: getattr(config, name, None) for name in names}
   real_queue = webhook._delivery_queue
   queued = Recorder()
   webhook._delivery_queue = queued
   try:
     config.WEBHOOK_URL = "https://discord.com/api/webhooks/1/x"
-    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
-    config.WEBHOOK_CHOICE_TARGET = "channel"
+    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", ""
     config.WEBHOOK_CAREER_SUMMARY_ENABLED = True
     webhook.send_started()
     check(queued.items and queued.items[-1][0] == config.WEBHOOK_URL,
-          "with the question going to a channel, notifications use the webhook as before")
-    config.WEBHOOK_CHOICE_TARGET = "dm"
+          "with no one to DM, notifications use the webhook as before")
+    config.WEBHOOK_CHOICE_USER_ID = "42"
     webhook.send_started()
     check(queued.items[-1][0] is webhook._DM,
           "with DMs set up, they go to the DMs instead of the webhook")
@@ -519,7 +516,6 @@ def discord_cases():
   discord_choice._dm_channels.clear()
   try:
     config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
-    config.WEBHOOK_CHOICE_TARGET = "dm"
     discord_choice.send_embeds([{"title": "Career 1 Complete"}], opener=dm_embeds)
     check(delivered and delivered[0][0].endswith("/channels/dm-channel/messages")
           and delivered[0][1] == {"embeds": [{"title": "Career 1 Complete"}]},

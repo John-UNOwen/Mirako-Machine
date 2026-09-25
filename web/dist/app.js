@@ -12516,7 +12516,7 @@ const notifications_enabled = true;
 const error_notification = "sfx_02.mp3";
 const success_notification = "sfx_03.mp3";
 const notification_volume = 0.3;
-const webhook = { "url": "", "skills_enabled": true, "career_summary_enabled": true, "recovery_enabled": true, "bot_token": "", "choice_target": "channel", "choice_channel_id": "", "choice_user_id": "" };
+const webhook = { "url": "", "skills_enabled": true, "career_summary_enabled": true, "recovery_enabled": true, "bot_token": "", "choice_user_id": "" };
 const skill = { "is_auto_buy_skill": false, "skill_blacklist": ["Certain Victory", "Legacy of the Strong", "Warning Shot!", "Xceleration", "Red Ace", "Focused Mind", "Corazón ☆ Ardiente", "Empress's Pride", "1st Place Kiss☆", "V Is for Victory!", "Class Rep + Speed = Bakushin", "Luck Be with Me!", "I Can Win Sometimes, Right?", "Call Me King", "Shooting Star", "The View from the Lead Is Mine!", "Sky-High Teio Step", "Triumphant Pulse", "Anchors Aweigh!", "Cut and Drive!", "Resplendent Red Ace", "Where There's a Will, There's a Way", "The Duty of Dignity Calls", "Victoria por plancha ☆", "This Dance Is for Vittoria!", "Behold Thine Emperor's Divine Might", "Blazing Pride", "∴win Q.E.D.", "Flashy☆Landing", "G00 1st. F∞;", "Blue Rose Closer", "Our Ticket to Win!", "Genius x Bakushin = Victory", "I See Victory in My Future!", "Just a Little Farther!", "Prideful King", "#LookatCurren", "Nemesis", "SPARKLY☆STARDOM", "Shadow Break", "Eternal Moments", "Flowery☆Maneuver", "You and Me! One-on-One!", "Lights of Vaudeville", "KEEP IT REAL.", "A Kiss for Courage", "I Never Goof Up!", "Schwarzes Schwert", "Bountiful Harvest", "YUMMY☆SPEED!", "OMG! (ﾟ∀ﾟ)  The Final Sprint! ☆", "Give Mummy a Hug ♡", "A Princess Must Seize Victory!", "Chasing After You", "Arrows Whistle, Shadows Disperse", "Dancing in the Leaves", "Pop & Polish", "Festive Miracle", "Presents from X", "Fairy Tale", "White Lightning Comin' Through!", "Barcarole of Blessings", "114th Time's the Charm", "Ambition to Surpass the Sakura", "A Lifelong Dream, A Moment's Flight", "Operation Cacao", "Guten Appetit ♪", "Shooting Star of Dioskouroi", "Victory Cheer!", "Eternal Encompassing Shine", "Lovely Spring Breeze", "Ravissant", "Break It Down!", "Peerless Dance of Flowering Flames", "Go☆Go☆Goal!", "All Charged! It's Go Time!", "Best Day Ever", "One True Color", "Now We're Cruisin'!", "Victory belongs to me—Strelitzia! ☆", "Joyful Voyage!", "Wherever This Wonder Leads", "trigger:BEAT", "Dreams Donned with Pride!", "Ruler of Japan", "564 Escapades", "Your Smile Sparkles as the Waves", "Luck Runs My Way", "α-star*", "Ticket to Your Dreams!", "Hephaestus", "Snow Bright, Snow Flight", "I'm Possible!", "THE MOE AAAA Thanks for My Life", "Spooky, Scary, Happy", "Silent Letter", "Lightning Flare", "Firelight", "Laugh at the Odds", "Never Say Never", "Into High Gear!", "Queen's Lumination", "Raise My Soul's Blade!", "Free From the Ashes", "Rain Cloud Bolt", "Bring on the Banquet!", "Hands in the Air Like Ya Don't Care!", "A Warm Cup for You", "Fresh☆Parlor", "Ding Dong, Boo!", "Engines LIT!", "Lyrical Journey", "Turbo BLAST!", "Ever Supreme", "Mission: Triumph", "Danser le Présent", "World in Bloom", "Ad Astra", "Tumbly Power Drive!", "Bang! Miracle Shot ☆", "Sublimated Thunder", "First Bite of the Feast!", "Flowering Dreams", "Magical☆Marvelous★World", "Us Girlies Keep Winnin'! ♪", "Scorching Summer Tech!", "Sunrise Banner—Katsuragi Ace!", "Ahead of the Horizon", "Summer Halation", "Introduction to Physiology", "Clear Heart", "Super-Duper Stoked", "U=ma2", "Pure Heart", "Super-Duper Climax", "Superior Heal", "Dazzl'n ♪ Diver", "Every Rose Has Its Fangs", "Ready, Go!", "Go, Go, Mun!", "Keep Pushing Ahead", "Disorient", "Restart", "Trick (Front)", "Trick (Rear)", "Flustered Front Runners", "Subdued Pace Chasers", "Flustered Pace Chasers", "Subdued Late Surgers", "Flustered Late Surgers", "Subdued End Closers", "Flustered End Closers", "Murmur", "Sharp Gaze", "Smoke Screen", "Dust Cloud", "Oppression", "Intense Gaze", "Tether", "Intimidate", "Maverick ○"], "skill_list": [] };
 const team_trials = { "enabled": false, "keep_charges": 0, "prioritise_reward": true };
 const independent_training = { "max_runs": 0, "after_max_runs": "stop", "wait_poll_seconds": 60, "training_minutes": 50, "borrow_cards": [], "borrow_warn_every_refreshes": 10, "spark_reroll": { "at_ss_rating": false, "any_rating": false, "blue": { "required": false, "sparks": [], "min_stars": 1 }, "pink": { "required": false, "sparks": [], "min_stars": 1 }, "white": { "required": false, "sparks": [] } }, "spend_leftover_points": false, "leftover_strategy": "bottom_up", "maximize_rating": false, "training_focus": "default", "scenario": "default", "deck": 0, "deck_name": "", "agenda_slot": 1, "agenda_name": "", "racing_style": "default", "tp_refill_enabled": false, "tp_refill_strategy": "toughness_first", "debug_select_skills_only": false, "debug_stop_before_start": false, "debug_force_tp_refill": false, "debug_stop_before_spark_reroll": false, "tp_refill_max_per_session": 0, "tp_refill_min_carats_remaining": 0, "session_conflict_wait_minutes": 60, "collect_missions": true, "collect_presents": true, "daily_races_enabled": false, "daily_race_program": "moonlight_sho", "daily_race_difficulty": "very_hard", "daily_race_tickets_per_day": 6, "wait_for_tp": true, "debug_pretend_tp_short": false, "debug_tp_wait_seconds": 0, "restart_on_stuck": true, "restart_max_per_session": 10, "restart_max_same_kind": 5, "game_package": "" };
@@ -17030,11 +17030,9 @@ const WebhookSchema = looseObject({
   // webhook can only post, and the answer is a reaction the bot reads back. Both empty
   // means no bot, and the reroll is not attempted.
   bot_token: string().default(""),
-  // Where the question goes: a server channel, or a direct message to one person. For a DM
-  // the person adds the app to their own account (a user install), or shares a server
-  // with it: Discord refuses a bot's DM to anyone else.
-  choice_target: _enum(["channel", "dm"]).default("channel"),
-  choice_channel_id: string().default(""),
+  // Who the question goes to, as a direct message. The person adds the app to their own
+  // account (a user install): Discord refuses a bot's DM to anyone who has not, unless
+  // they share a server.
   choice_user_id: string().default("")
 });
 const ConfigSchema = looseObject({
@@ -35686,7 +35684,7 @@ function SparkRerollSection({ value, onChange, botReady }) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: triggered ? "" : "disabled", children: [
       !triggered && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mb-3", children: "Neither trigger is on, so the sparks are never rerolled." }),
-      triggered && !botReady && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-destructive mb-3", children: "After a reroll you choose the set to keep in Discord, which needs the Spark Choice Bot under Discord Notifications (a channel or your DMs). Until it is set up the sparks are kept as granted." }),
+      triggered && !botReady && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-destructive mb-3", children: "After a reroll you choose the set to keep in Discord, which needs the Spark Choice Bot under Discord Notifications. Until it is set up the sparks are kept as granted." }),
       colourRow("blue", "Blue", "A stat spark: one of the five stats."),
       colourRow(
         "pink",
@@ -35737,12 +35735,9 @@ function IndependentSection({ config: config2, updateConfig }) {
       return "";
     }
   })();
-  const toDm = webhook2.choice_target === "dm";
-  const inviteLink = !appId ? "" : toDm ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands` : `https://discord.com/oauth2/authorize?client_id=${appId}&scope=bot&permissions=101440`;
-  const botReady = Boolean(
-    webhook2.bot_token && (toDm ? webhook2.choice_user_id : webhook2.choice_channel_id)
-  );
-  const dmActive = toDm && botReady;
+  const inviteLink = appId ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands` : "";
+  const botReady = Boolean(webhook2.bot_token && webhook2.choice_user_id);
+  const dmActive = botReady;
   const testBot = async () => {
     setBotTesting(true);
     setBotResult(null);
@@ -35750,9 +35745,7 @@ function IndependentSection({ config: config2, updateConfig }) {
       const res = await fetch("/discord/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          toDm ? { token: webhook2.bot_token, user: webhook2.choice_user_id } : { token: webhook2.bot_token, channel: webhook2.choice_channel_id }
-        )
+        body: JSON.stringify({ token: webhook2.bot_token, user: webhook2.choice_user_id })
       });
       const data = await res.json();
       setBotResult({ ok: data.status === "success", detail: data.detail });
@@ -36208,7 +36201,7 @@ function IndependentSection({ config: config2, updateConfig }) {
       }
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground mt-1 mb-3", children: "In Discord: Server Settings → Integrations → Webhooks → New Webhook, then Copy Webhook URL. Treat it like a password — anyone with it can post to that channel." }),
-    dmActive && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-primary mb-3", children: "Spark Choice Bot is sending to your DMs, so these messages go there too, in place of the webhook." }),
+    dmActive && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-primary mb-3", children: "The Spark Choice Bot is set up, so these messages come by DM, in place of the webhook." }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `grid lg:grid-cols-3 grid-cols-1 gap-2 ${webhook2.url || dmActive ? "" : "disabled"}`, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -36246,7 +36239,7 @@ function IndependentSection({ config: config2, updateConfig }) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("h4", { className: "text-base font-semibold mt-5 mb-2 flex items-center gap-2", children: [
       "Spark Choice Bot",
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: 'After a spark reroll you choose which set to keep, and the question is asked in Discord: both sets are posted as pictures and you react 1 or 2. A webhook can only post, so this needs a Discord bot. In the Developer Portal: New Application, then Bot, Reset Token and copy it here; then OAuth2, URL Generator, tick "bot" and the permissions View Channel, Send Messages, Attach Files, Add Reactions and Read Message History, and open the link to invite it to your server. The bot waits for your answer as long as it takes.' })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "After a spark reroll you choose which set to keep, and the bot asks you by Discord DM: both sets are sent as pictures and you react 1 or 2. A webhook can only post, so this needs a Discord bot of your own. Once it is set up, the notifications above come by DM too, in place of the webhook. The bot waits for your answer as long as it takes." })
     ] }),
     !botReady && /* @__PURE__ */ jsxRuntimeExports.jsxs("ol", { className: "text-sm text-muted-foreground list-decimal pl-5 mb-3 space-y-1", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
@@ -36277,42 +36270,25 @@ function IndependentSection({ config: config2, updateConfig }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: inviteLink ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
         "Open",
         " ",
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("a", { className: "underline", href: inviteLink, target: "_blank", rel: "noreferrer", children: [
-          "this ",
-          toDm ? "install" : "invite",
-          " link"
-        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { className: "underline", href: inviteLink, target: "_blank", rel: "noreferrer", children: "this install link" }),
         " ",
-        toDm ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          "and choose ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Add to My Apps" }),
-          ". That lets it DM you with no server in common. If Discord does not offer it, turn on ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "User Install" }),
-          " on the app's Installation page first."
-        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "and add the bot to your server. It asks for exactly the permissions the bot uses: View Channels, Send Messages, Attach Files, Add Reactions and Read Message History." })
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "Paste the token first: the invite link for step 3 appears here." }) }),
+        "and choose ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Add to My Apps" }),
+        ". That lets it DM you with no server in common. If Discord does not offer it, turn on ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "User Install" }),
+        " on the app's Installation page first."
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "Paste the token first: the install link for step 3 appears here." }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
         "In Discord, turn on ",
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Developer Mode" }),
-        " (User Settings → Advanced), then",
-        " ",
-        toDm ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          "right-click your own name and ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Copy User ID" }),
-          ". Paste it below."
-        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          "right-click the channel to use and ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Copy Channel ID" }),
-          ". Paste it below."
-        ] })
+        " (User Settings → Advanced), then right-click your own name and ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Copy User ID" }),
+        ". Paste it below."
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
         "Press ",
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Test" }),
-        ". A message from the bot ",
-        toDm ? "in your DMs" : "in that channel",
-        " ",
-        "means it is ready."
+        ". A DM from the bot means it is ready."
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid lg:grid-cols-2 grid-cols-1 gap-2", children: [
@@ -36333,34 +36309,15 @@ function IndependentSection({ config: config2, updateConfig }) {
         )
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "whitespace-nowrap", children: "Send To" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "inline-flex rounded-md border-1 border-border overflow-hidden", children: ["dm", "channel"].map((target) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-pressed": (webhook2.choice_target ?? "channel") === target,
-            onClick: () => {
-              updateWebhook({ choice_target: target });
-              setBotResult(null);
-            },
-            className: `px-3 py-1.5 text-sm ${(webhook2.choice_target ?? "channel") === target ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"}`,
-            children: target === "dm" ? "My DMs" : "A Channel"
-          },
-          target
-        )) })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label lg:col-span-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "whitespace-nowrap", children: toDm ? "Your User ID" : "Channel ID" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "whitespace-nowrap", children: "Your User ID" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           Input,
           {
             className: "grow",
-            placeholder: toDm ? "Right-click your own name, Copy User ID" : "Right-click the channel, Copy Channel ID",
-            value: (toDm ? webhook2.choice_user_id : webhook2.choice_channel_id) ?? "",
+            placeholder: "Right-click your own name, Copy User ID",
+            value: webhook2.choice_user_id ?? "",
             onChange: (e) => {
-              updateWebhook(
-                toDm ? { choice_user_id: e.target.value.trim() } : { choice_channel_id: e.target.value.trim() }
-              );
+              updateWebhook({ choice_user_id: e.target.value.trim() });
               setBotResult(null);
             }
           }

@@ -16,8 +16,6 @@
     "career_summary_enabled": true,
     "recovery_enabled": true,
     "bot_token": "",
-    "choice_target": "channel",
-    "choice_channel_id": "",
     "choice_user_id": ""
   },
   "skill": {
