@@ -11,8 +11,9 @@ export const WebhookSchema = z.looseObject({
   // webhook can only post, and the answer is a reaction the bot reads back. Both empty
   // means no bot, and the reroll is not attempted.
   bot_token: z.string().default(""),
-  // Where the question goes: a server channel, or a direct message to one person. A bot
-  // can only DM someone it shares a server with -- Discord's rule, not this one's.
+  // Where the question goes: a server channel, or a direct message to one person. For a DM
+  // the person adds the app to their own account (a user install), or shares a server
+  // with it: Discord refuses a bot's DM to anyone else.
   choice_target: z.enum(["channel", "dm"]).default("channel"),
   choice_channel_id: z.string().default(""),
   choice_user_id: z.string().default(""),

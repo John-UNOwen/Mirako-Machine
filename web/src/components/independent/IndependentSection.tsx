@@ -71,14 +71,12 @@ export default function IndependentSection({ config, updateConfig }: Props) {
   // Generator, a page it is easy to come away from with nothing but the ID. The
   // permissions are View Channels, Send Messages, Attach Files, Add Reactions and Read
   // Message History, and nothing more.
-  const inviteLink = (() => {
+  const appId = (() => {
     try {
       const head = webhook.bot_token.trim().split(".")[0];
       const padded = head.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((head.length + 3) % 4);
       const id = atob(padded);
-      return /^\d{15,22}$/.test(id)
-        ? `https://discord.com/oauth2/authorize?client_id=${id}&scope=bot&permissions=101440`
-        : "";
+      return /^\d{15,22}$/.test(id) ? id : "";
     } catch {
       return "";
     }
@@ -86,6 +84,13 @@ export default function IndependentSection({ config, updateConfig }: Props) {
 
   // Where the spark question goes, and whether that is filled in.
   const toDm = webhook.choice_target === "dm";
+  // For DMs the app is added to the person's own account (a user install), after which it
+  // can DM them with no server in common; for a channel it joins the server instead.
+  const inviteLink = !appId
+    ? ""
+    : toDm
+      ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands`
+      : `https://discord.com/oauth2/authorize?client_id=${appId}&scope=bot&permissions=101440`;
   const botReady = Boolean(
     webhook.bot_token && (toDm ? webhook.choice_user_id : webhook.choice_channel_id),
   );
@@ -779,11 +784,21 @@ export default function IndependentSection({ config, updateConfig }: Props) {
               <>
                 Open{" "}
                 <a className="underline" href={inviteLink} target="_blank" rel="noreferrer">
-                  this invite link
+                  this {toDm ? "install" : "invite"} link
                 </a>{" "}
-                and add the bot to your server. It asks for exactly the permissions the bot
-                uses: View Channels, Send Messages, Attach Files, Add Reactions and Read
-                Message History.
+                {toDm ? (
+                  <>
+                    and choose <b>Add to My Apps</b>. That lets it DM you with no server in
+                    common. If Discord does not offer it, turn on <b>User Install</b> on the
+                    app's Installation page first.
+                  </>
+                ) : (
+                  <>
+                    and add the bot to your server. It asks for exactly the permissions the
+                    bot uses: View Channels, Send Messages, Attach Files, Add Reactions and
+                    Read Message History.
+                  </>
+                )}
               </>
             ) : (
               <>Paste the token first: the invite link for step 3 appears here.</>
@@ -793,9 +808,7 @@ export default function IndependentSection({ config, updateConfig }: Props) {
             In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then{" "}
             {toDm ? (
               <>
-                right-click your own name and <b>Copy User ID</b>. Paste it below. The bot can
-                only DM someone it shares a server with, so step 3 has to be a server you are
-                in, and it has to allow direct messages from members.
+                right-click your own name and <b>Copy User ID</b>. Paste it below.
               </>
             ) : (
               <>

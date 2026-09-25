@@ -122,9 +122,9 @@ def _explain(code, detail):
   # Before the bare 403 below: a DM Discord refuses is also a 403, and the channel
   # advice that follows would send someone to fix permissions they do not need.
   if '"code": 50007' in detail or '"code":50007' in detail:
-    return ("Discord will not let the bot message you. A bot can only DM someone it shares "
-            "a server with: invite it to one of yours (a private server with just you "
-            "works), and check that server allows direct messages from members.")
+    return ("Discord will not let the bot message you. Add the app to your account (the "
+            "install link, Add to My Apps), or share a server with it that allows direct "
+            "messages from members.")
   if code == 401:
     return "Discord rejected the bot token. Copy it again from the Developer Portal's Bot page."
   if code == 403:

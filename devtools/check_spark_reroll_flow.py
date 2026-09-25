@@ -462,7 +462,7 @@ def discord_cases():
     raise urllib.error.HTTPError(request.full_url, 403, "no", {}, io.BytesIO(
         b'{"message": "Cannot send messages to this user", "code": 50007}'))
   ok, detail = discord_choice.test("t", user="9", opener=closed)
-  check(not ok and "shares" in detail,
+  check(not ok and "Add to My Apps" in detail,
         f"a user the bot cannot message is told why: {detail!r}")
 
   print("\nNotifications, when DMs are set up:")

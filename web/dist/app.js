@@ -17030,8 +17030,9 @@ const WebhookSchema = looseObject({
   // webhook can only post, and the answer is a reaction the bot reads back. Both empty
   // means no bot, and the reroll is not attempted.
   bot_token: string().default(""),
-  // Where the question goes: a server channel, or a direct message to one person. A bot
-  // can only DM someone it shares a server with -- Discord's rule, not this one's.
+  // Where the question goes: a server channel, or a direct message to one person. For a DM
+  // the person adds the app to their own account (a user install), or shares a server
+  // with it: Discord refuses a bot's DM to anyone else.
   choice_target: _enum(["channel", "dm"]).default("channel"),
   choice_channel_id: string().default(""),
   choice_user_id: string().default("")
@@ -35726,17 +35727,18 @@ function IndependentSection({ config: config2, updateConfig }) {
   };
   const [botTesting, setBotTesting] = reactExports.useState(false);
   const [botResult, setBotResult] = reactExports.useState(null);
-  const inviteLink = (() => {
+  const appId = (() => {
     try {
       const head = webhook2.bot_token.trim().split(".")[0];
       const padded = head.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((head.length + 3) % 4);
       const id = atob(padded);
-      return /^\d{15,22}$/.test(id) ? `https://discord.com/oauth2/authorize?client_id=${id}&scope=bot&permissions=101440` : "";
+      return /^\d{15,22}$/.test(id) ? id : "";
     } catch {
       return "";
     }
   })();
   const toDm = webhook2.choice_target === "dm";
+  const inviteLink = !appId ? "" : toDm ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands` : `https://discord.com/oauth2/authorize?client_id=${appId}&scope=bot&permissions=101440`;
   const botReady = Boolean(
     webhook2.bot_token && (toDm ? webhook2.choice_user_id : webhook2.choice_channel_id)
   );
@@ -36275,9 +36277,19 @@ function IndependentSection({ config: config2, updateConfig }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: inviteLink ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
         "Open",
         " ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { className: "underline", href: inviteLink, target: "_blank", rel: "noreferrer", children: "this invite link" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("a", { className: "underline", href: inviteLink, target: "_blank", rel: "noreferrer", children: [
+          "this ",
+          toDm ? "install" : "invite",
+          " link"
+        ] }),
         " ",
-        "and add the bot to your server. It asks for exactly the permissions the bot uses: View Channels, Send Messages, Attach Files, Add Reactions and Read Message History."
+        toDm ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          "and choose ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Add to My Apps" }),
+          ". That lets it DM you with no server in common. If Discord does not offer it, turn on ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "User Install" }),
+          " on the app's Installation page first."
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "and add the bot to your server. It asks for exactly the permissions the bot uses: View Channels, Send Messages, Attach Files, Add Reactions and Read Message History." })
       ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "Paste the token first: the invite link for step 3 appears here." }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
         "In Discord, turn on ",
@@ -36287,7 +36299,7 @@ function IndependentSection({ config: config2, updateConfig }) {
         toDm ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           "right-click your own name and ",
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Copy User ID" }),
-          ". Paste it below. The bot can only DM someone it shares a server with, so step 3 has to be a server you are in, and it has to allow direct messages from members."
+          ". Paste it below."
         ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           "right-click the channel to use and ",
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Copy Channel ID" }),
