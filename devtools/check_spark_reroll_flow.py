@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import core.config as config  # noqa: E402
-from core import discord_choice, independent_sparks, spark_reader  # noqa: E402
+from core import asker, discord_choice, independent_sparks, relay_client, spark_reader  # noqa: E402,E501
 from core.spark_reader import SparkRow  # noqa: E402
 from scenarios.tasks import spark_reroll  # noqa: E402
 from utils.device_action_wrapper import BotStopException  # noqa: E402
@@ -122,8 +122,9 @@ class Fakes:
   def install(self):
     self.saved = {name: getattr(spark_reroll, name) for name in
                   ("_click", "_click_point", "_stop", "read_list", "_ocr_box", "sleep")}
-    self.saved_discord = {name: getattr(discord_choice, name) for name in
-                          ("post", "offer", "whoami", "answer", "edit", "configured")}
+    self.saved_relay = {name: getattr(relay_client, name) for name in
+                        ("token", "ask", "status", "settle")}
+    self.saved_poll = asker.SharedBot.POLL_SECONDS
     spark_reroll._click = lambda template, *a, **k: self.clicks.append(
         os.path.basename(template)) or True
     spark_reroll._click_point = lambda x, y, text="": self.points.append(text) or True
@@ -136,19 +137,33 @@ class Fakes:
     spark_reroll._ocr_box = lambda box: (self.page if box == spark_reroll.PAGE_TITLE_BOX
                                          else self.header)
     spark_reroll.sleep = lambda *a, **k: None
-    discord_choice.configured = lambda: True
-    discord_choice.whoami = lambda **k: {"id": "bot"}
-    discord_choice.post = lambda text, images=(), **k: self.posts.append((text, images)) or "m1"
-    discord_choice.offer = lambda *a, **k: None
-    discord_choice.edit = lambda *a, **k: None
-    discord_choice.answer = lambda *a, **k: self.answers.pop(0) if self.answers else None
+    relay_client.token = lambda: "tok"
+    self.keys = []
+
+    def ask(text, images, options, key, **k):
+      self.keys.append(key)
+      self.posts.append((text, images, options))
+      return f"q{len(self.posts)}"
+    relay_client.ask = ask
+
+    def status(question_id, **k):
+      picked = self.answers.pop(0) if self.answers else None
+      if picked is None:
+        return {"status": "pending"}
+      if picked == "expired":
+        return {"status": "expired"}
+      return {"status": "answered", "answer": picked}
+    relay_client.status = status
+    relay_client.settle = lambda *a, **k: None
+    asker.SharedBot.POLL_SECONDS = 0
     return self
 
   def restore(self):
     for name, value in self.saved.items():
       setattr(spark_reroll, name, value)
-    for name, value in self.saved_discord.items():
-      setattr(discord_choice, name, value)
+    for name, value in self.saved_relay.items():
+      setattr(relay_client, name, value)
+    asker.SharedBot.POLL_SECONDS = self.saved_poll
 
 
 class State:
@@ -281,13 +296,13 @@ def handler_cases():
           and fakes.clicks[-1] == "confirm_btn.png",
           "Reroll Sparks is not pressed for ever when the sparks never change")
 
-    discord_choice.configured = lambda: False
+    relay_client.token = lambda: ""
     fakes.clicks.clear()
     state = State(bought=held)
     run(spark_reroll.handle_sparks, state)
     check(fakes.clicks == ["confirm_btn.png"],
-          "with no Discord bot to ask, the sparks are kept, not rerolled")
-    discord_choice.configured = lambda: True
+          "with the Mirako bot not linked, the sparks are kept, not rerolled")
+    relay_client.token = lambda: "tok"
 
     print("\nThe screens in between:")
     fakes.clicks.clear()
@@ -313,7 +328,7 @@ def handler_cases():
     fakes.clicks.clear()
     fakes.posts.clear()
     fakes.page = "rerolled sparks"
-    fakes.answers = [None, None, spark_reroll.EMOJI["original"]]
+    fakes.answers = [None, None, "original"]
     run(spark_reroll.handle_spark_selection, state, fake_wait)
     check(len(fakes.posts) == 1 and len(fakes.posts[0][1]) == 2,
           "one question, with both sets as pictures")
@@ -321,13 +336,13 @@ def handler_cases():
           "the message lists both sets too")
     check("Priority skills bought (2): Groundwork, Superstan" in fakes.posts[0][0],
           "and the priority skills bought, in the list's order, tiers matched exactly")
-    check(fakes.posts[0][0].rstrip().endswith(
-          f"React to answer: {spark_reroll.EMOJI['original']} keep the original, "
-          f"{spark_reroll.EMOJI['rerolled']} keep the reroll."),
-          "the player's own bot says how to answer: one reaction per option")
+    check("React to answer" not in fakes.posts[0][0]
+          and [o["id"] for o in fakes.posts[0][2]] == ["original", "rerolled"]
+          and fakes.posts[0][2][0]["label"] == "Keep the original",
+          "the Mirako bot is given the options as buttons, not reaction instructions")
     config.SKILL_LIST = saved_list
     check(state.spark_choice == "original",
-          "the answer is taken once a reaction arrives, however many polls it takes")
+          "the answer is taken once a button is pressed, however many polls it takes")
     check(fakes.points and not fakes.clicks,
           "showing the reroll page, it turns to the original rather than confirming")
     fakes.page = "original sparks"
@@ -371,10 +386,25 @@ def handler_cases():
           "the set on screen is read, then the page turned for the other")
     fakes.page = "original sparks"
     fakes.reads[spark_reroll.SELECTION_BAND] = (rows_of(ORIGINAL), b"\x89PNG-o")
-    fakes.answers = [spark_reroll.EMOJI["rerolled"]]
+    fakes.answers = ["rerolled"]
     run(spark_reroll.handle_spark_selection, state, fake_wait)
     check(len(fakes.posts) == 1 and state.spark_choice == "rerolled",
           "with both read, the question is asked and answered")
+
+    print("\nA question that can no longer be answered:")
+    state = State()
+    state.spark_sets = {"original": (rows_of(ORIGINAL), b"\x89PNG-o"),
+                        "rerolled": (rows_of(REROLLED), b"\x89PNG-r")}
+    fakes.page = "original sparks"
+    fakes.posts.clear()
+    fakes.answers = [None, "expired"]
+    run(spark_reroll.handle_spark_selection, state, fake_wait)
+    check(state.spark_question_id is None and state.spark_choice is None,
+          "an expired question is dropped, with nothing chosen")
+    fakes.answers = ["original"]
+    run(spark_reroll.handle_spark_selection, state, fake_wait)
+    check(len(fakes.posts) == 2 and state.spark_choice == "original",
+          "and the next pass asks again and takes that answer")
   finally:
     fakes.restore()
     config.INDEPENDENT_SPARK_REROLL, config.INDEPENDENT_DEBUG_STOP_BEFORE_SPARK_REROLL = saved
@@ -493,10 +523,8 @@ def discord_cases():
 
   print("\nThe asker:")
   from core import asker
-  check(isinstance(asker.backend(), asker.OwnBot),
-        "questions go through the player's own bot: the only way built so far")
-  check(not asker.SharedBot().configured(),
-        "the shared bot is never configured until the relay exists, so nothing reaches it")
+  check(isinstance(asker.backend(), asker.SharedBot),
+        "questions go through the Mirako bot, whatever own-bot token an old config holds")
   saved_fns = {name: getattr(discord_choice, name) for name in ("answer",)}
   try:
     discord_choice.answer = lambda message, emojis, bot, **k: (
@@ -520,22 +548,23 @@ def discord_cases():
       self.items.append(item)
 
   names = ("WEBHOOK_URL", "WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_USER_ID",
-           "WEBHOOK_CAREER_SUMMARY_ENABLED")
+           "WEBHOOK_CAREER_SUMMARY_ENABLED", "WEBHOOK_RELAY_TOKEN")
   saved = {name: getattr(config, name, None) for name in names}
   real_queue = webhook._delivery_queue
   queued = Recorder()
   webhook._delivery_queue = queued
   try:
     config.WEBHOOK_URL = "https://discord.com/api/webhooks/1/x"
-    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", ""
+    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
+    config.WEBHOOK_RELAY_TOKEN = ""
     config.WEBHOOK_CAREER_SUMMARY_ENABLED = True
     webhook.send_started()
     check(queued.items and queued.items[-1][0] == config.WEBHOOK_URL,
-          "with no one to DM, notifications use the webhook as before")
-    config.WEBHOOK_CHOICE_USER_ID = "42"
+          "not linked, notifications use the webhook, an own-bot token or not")
+    config.WEBHOOK_RELAY_TOKEN = "tok"
     webhook.send_started()
     check(queued.items[-1][0] is webhook._DM,
-          "with DMs set up, they go to the DMs instead of the webhook")
+          "linked, they go to the DMs instead of the webhook")
     config.WEBHOOK_URL = ""
     check(notifications._webhook_enabled(), "DMs alone count as notifications being on")
     before = len(queued.items)
@@ -571,10 +600,160 @@ def discord_cases():
     discord_choice._dm_channels.clear()
 
 
+class Script:
+  """A fake relay: answers each call with the next scripted reply, recording the calls.
+  A reply is (status, body) or an exception to raise."""
+
+  def __init__(self, *replies):
+    self.replies = list(replies)
+    self.calls = []
+
+  def __call__(self, request, timeout=None):
+    self.calls.append(request)
+    reply = self.replies.pop(0)
+    if isinstance(reply, Exception):
+      raise reply
+    status, body = reply
+    data = json.dumps(body).encode() if body is not None else b""
+    if status >= 400:
+      raise urllib.error.HTTPError(request.full_url, status, "no", {}, io.BytesIO(data))
+    return Reply(data)
+
+
+def relay_cases():
+  print("\nThe relay client:")
+  saved = getattr(config, "WEBHOOK_RELAY_TOKEN", None)
+  saved_fns = {name: getattr(relay_client, name) for name in ("ask", "status", "settle")}
+  try:
+    config.WEBHOOK_RELAY_TOKEN = ""
+    check(not asker.SharedBot().configured(), "not linked with no token saved")
+    config.WEBHOOK_RELAY_TOKEN = "tok"
+    check(asker.SharedBot().configured(), "linked once a token is saved")
+
+    relay = Script((200, {"token": "new", "user": {"id": "1", "name": "mira"}}))
+    reply = relay_client.link(" k7q2m9xa ", opener=relay)
+    request = relay.calls[0]
+    check(reply["token"] == "new" and request.full_url.endswith("/v1/link")
+          and json.loads(request.data)["code"] == "K7Q2M9XA"
+          and request.get_header("Authorization") is None,
+          "a link code is sent tidied, and without a token")
+    relay = Script((400, {"error": "bad_code", "message": "That code has expired."}))
+    try:
+      relay_client.link("x", opener=relay)
+      check(False, "a bad code is refused")
+    except relay_client.RelayError as error:
+      check(str(error) == "That code has expired." and error.permanent,
+            "a refused code comes back in the relay's own words, and is not retried")
+
+    relay = Script((200, {"user": {"name": "mira"}}))
+    relay_client.me(opener=relay)
+    check(relay.calls[0].get_header("Authorization") == "Bearer tok",
+          "every other call carries the saved token")
+    relay = Script((204, None))
+    relay_client.test(auth="typed", opener=relay)
+    check(relay.calls[0].get_header("Authorization") == "Bearer typed",
+          "or the one the page passes, before it is saved")
+
+    # Asking: the same Idempotency-Key until the question is out.
+    keys = []
+
+    def ask(text, images, options, key, **k):
+      keys.append(key)
+      if len(keys) == 1:
+        raise relay_client.RelayError("Could not reach the relay: timed out")
+      return "q7"
+    relay_client.ask = ask
+    options = spark_reroll.OPTIONS
+    try:
+      asker.SharedBot().ask("x" * 3000, [], options)
+      check(False, "a failed ask raises")
+    except asker.AskError:
+      pass
+    question = asker.SharedBot().ask("which?", [], options)
+    check(question == "q7" and len(keys) == 2 and keys[0] == keys[1],
+          "a retry after a lost reply reuses the key, so it cannot ask twice")
+    asker.SharedBot().ask("again", [], options)
+    check(keys[2] != keys[1], "and the next question gets a key of its own")
+
+    texts = []
+    relay_client.ask = lambda text, *a, **k: texts.append(text) or "q8"
+    asker.SharedBot().ask("x" * 3000, [], options)
+    check(len(texts[0]) <= asker.SharedBot.TEXT_LIMIT, "text is cut to the relay's limit")
+
+    real = relay_client.ask
+    body = {}
+
+    def capture(request, timeout=None):
+      body["data"] = request.data
+      body["key"] = request.get_header("Idempotency-key")
+      return Reply(b'{"id": "q9"}')
+    relay_client.ask = saved_fns["ask"]
+    got = relay_client.ask("t", [("original.png", b"PNGDATA")],
+                           [{"id": "original", "label": "Keep", "emoji": "1"}], "K1",
+                           opener=capture)
+    check(got == "q9" and b'name="files[0]"; filename="original.png"' in body["data"]
+          and b"PNGDATA" in body["data"] and b'"id": "original"' in body["data"]
+          and body["key"] == "K1",
+          "the question goes as multipart: payload, pictures and the key")
+    relay_client.ask = real
+
+    # Reading the answer back.
+    polls = []
+
+    def status(question_id, **k):
+      polls.append(question_id)
+      return {"status": "answered", "answer": "rerolled"}
+    relay_client.status = status
+    asker.SharedBot._last_poll.clear()
+    clock = iter([100.0, 104.0, 111.0])
+    bot = asker.SharedBot()
+    first = bot.answer("q1", options, clock=lambda: next(clock))
+    second = bot.answer("q1", options, clock=lambda: next(clock))
+    third = bot.answer("q1", options, clock=lambda: next(clock))
+    check(first == "rerolled" and second is None and third == "rerolled" and len(polls) == 2,
+          "polled no more than once every 10 seconds, as the relay allows")
+
+    def gone(question_id, **k):
+      raise relay_client.RelayError("This Mirako Machine is not linked.", 401, "unlinked")
+    relay_client.status = gone
+    asker.SharedBot._last_poll.clear()
+    try:
+      asker.SharedBot().answer("q2", options)
+      check(False, "an unlinked token ends the wait")
+    except asker.AskGone:
+      check(True, "an unlinked token ends the wait instead of polling for ever")
+    except asker.AskError:
+      check(False, "an unlinked token ends the wait instead of polling for ever")
+
+    def busy(question_id, **k):
+      raise relay_client.RelayError("The relay cannot reach Discord right now.", 503)
+    relay_client.status = busy
+    asker.SharedBot._last_poll.clear()
+    try:
+      asker.SharedBot().answer("q3", options)
+    except asker.AskGone:
+      check(False, "a relay that is only busy does not drop the question")
+    except asker.AskError:
+      check(True, "a relay that is only busy keeps the question, to poll again")
+
+    relay = Script((202, None))
+    relay_client.notify([{"title": "Career 1 Complete"}], opener=relay)
+    check(relay.calls[0].full_url.endswith("/v1/notifications")
+          and json.loads(relay.calls[0].data) == {"embeds": [{"title": "Career 1 Complete"}]},
+          "a notification is forwarded as its embeds")
+  finally:
+    config.WEBHOOK_RELAY_TOKEN = saved
+    for name, value in saved_fns.items():
+      setattr(relay_client, name, value)
+    asker.SharedBot._last_poll.clear()
+    asker.SharedBot._pending_key = None
+
+
 def main():
   reader_cases()
   handler_cases()
   discord_cases()
+  relay_cases()
   print()
   if failures:
     print(f"{len(failures)} failure(s).")

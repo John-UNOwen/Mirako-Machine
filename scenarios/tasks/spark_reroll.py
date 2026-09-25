@@ -7,7 +7,7 @@ two pages (Rerolled, Original) with one Confirm that keeps the page showing -> a
 
 Whether to reroll is decided here, by the rules in core/independent_sparks.py, from the
 sparks read off the first screen. Which set to keep is not: that is asked in Discord
-(core/asker.py, today the player's own Discord bot), with both sets posted as pictures, and the bot waits for the
+(core/asker.py: the shared Mirako bot or the player's own), with both sets posted as pictures, and the bot waits for the
 answer however long it takes. Every answer is written to stats/.../spark_choices.jsonl
 beside both sets, which is what a rule for choosing on its own can later be tested
 against.
@@ -90,8 +90,8 @@ def active():
     return False
   if not asker.backend().configured():
     if not _warned_unconfigured["done"]:
-      warning("Spark reroll is set up but no Discord bot is, so there is no one to ask "
-              "which set to keep. Keeping the sparks as granted.")
+      warning("Spark reroll is set up but the Mirako bot is not linked, so there is no "
+              "one to ask which set to keep. Keeping the sparks as granted.")
       _warned_unconfigured["done"] = True
     return False
   return True
@@ -362,6 +362,10 @@ def ask(state, wait):
   def unanswered():
     try:
       picked = way.answer(state.spark_question_id, OPTIONS)
+    except asker.AskGone as error:
+      warning(f"The spark question can no longer be answered ({error}); asking again.")
+      state.spark_question_id = None
+      return False
     except asker.AskError as error:
       debug(f"Could not read the answer yet ({error}).")
       return True

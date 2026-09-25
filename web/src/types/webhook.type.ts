@@ -15,6 +15,9 @@ export const WebhookSchema = z.looseObject({
   // account (a user install): Discord refuses a bot's DM to anyone who has not, unless
   // they share a server.
   choice_user_id: z.string().default(""),
+  // The link to the shared Mirako bot (core/relay_client.py), swapped for the code /link
+  // gives in its DMs. Set, it is used in place of the bot above.
+  relay_token: z.string().default(""),
 });
 
 export type Webhook = z.infer<typeof WebhookSchema>;

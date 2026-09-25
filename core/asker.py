@@ -6,14 +6,20 @@ player's own Discord bot -- directly. They talk to this instead, so the way the 
 travels can change without the reroll or the notifications knowing:
 
   * OwnBot: the player's own Discord bot, by DM, answered with a reaction. Works today.
-  * SharedBot: one bot everyone links to, run behind a relay the owner hosts, so no
-    player needs a bot of their own. Not built yet; its contract is the relay project's
-    API.md (Mirako-Relay, beside this repository).
+  * SharedBot: one bot everyone links to, run behind a relay the owner hosts
+    (core/relay_client.py), so no player needs a bot of their own. Answered with a
+    button. Its contract is the relay project's API.md (Mirako-Relay, beside this
+    repository).
 
 A question is text, pictures and a few options. An answer is the id of the option picked.
+Only the shared bot is used. OwnBot stays for now, unused: the web UI no longer offers
+it, so a bot token left in an older config must not quietly keep answering.
 """
 
-from core import discord_choice
+import time
+import uuid
+
+from core import discord_choice, relay_client
 
 
 class Option:
@@ -29,6 +35,10 @@ class Option:
 
 class AskError(Exception):
   """The question could not be asked or read, in words a person can act on."""
+
+
+class AskGone(AskError):
+  """The question can never be answered (expired, or the link was removed): ask again."""
 
 
 class OwnBot:
@@ -76,25 +86,67 @@ class OwnBot:
 
 
 class SharedBot:
-  """The shared bot behind the relay. Not built yet: never configured, so never used."""
+  """The shared bot behind the relay. The question is a DM with one button per option."""
   name = "shared_bot"
+  # The relay allows one status poll per question every 10 seconds.
+  POLL_SECONDS = 10
+  TEXT_LIMIT = 1900
+
+  # One Idempotency-Key per question being asked, kept until it is out, so a retry
+  # after a lost reply gets the same question back instead of a second DM.
+  _pending_key = None
+  _last_poll = {}
 
   def configured(self):
-    return False
+    return bool(relay_client.token())
 
   def ask(self, text, images, options):
-    raise AskError("The shared bot is not available yet.")
+    if SharedBot._pending_key is None:
+      SharedBot._pending_key = uuid.uuid4().hex
+    if len(text) > self.TEXT_LIMIT:
+      text = text[:self.TEXT_LIMIT - 1] + "…"
+    try:
+      question_id = relay_client.ask(
+          text, images, [{"id": o.id, "label": o.label, "emoji": o.emoji} for o in options],
+          SharedBot._pending_key)
+    except relay_client.RelayError as error:
+      if error.permanent:
+        SharedBot._pending_key = None
+      raise AskError(str(error)) from None
+    except (KeyError, TypeError) as error:
+      raise AskError(f"The relay sent something unexpected: {error}") from None
+    SharedBot._pending_key = None
+    return question_id
 
-  def answer(self, question_id, options):
-    raise AskError("The shared bot is not available yet.")
+  def answer(self, question_id, options, clock=time.monotonic):
+    now = clock()
+    last = SharedBot._last_poll.get(question_id)
+    if last is not None and now - last < self.POLL_SECONDS:
+      return None
+    SharedBot._last_poll[question_id] = now
+    try:
+      reply = relay_client.status(question_id) or {}
+    except relay_client.RelayError as error:
+      if error.status in (401, 404):
+        raise AskGone(str(error)) from None
+      raise AskError(str(error)) from None
+    if reply.get("status") == "expired":
+      raise AskGone("The question expired before it was answered.")
+    if reply.get("status") != "answered":
+      return None
+    return next((option.id for option in options if option.id == reply.get("answer")), None)
 
   def finish(self, question_id, text):
-    pass
+    SharedBot._last_poll.pop(question_id, None)
+    try:
+      relay_client.settle(question_id, text[:self.TEXT_LIMIT])
+    except relay_client.RelayError:
+      pass
 
   def notify(self, embeds):
-    raise AskError("The shared bot is not available yet.")
+    relay_client.notify(embeds)
 
 
 def backend():
-  """The way questions travel. Only the player's own bot exists so far."""
-  return OwnBot()
+  """The way questions travel: the shared Mirako bot."""
+  return SharedBot()

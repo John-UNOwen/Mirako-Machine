@@ -1212,6 +1212,65 @@ async def test_discord_bot(request: Request):
   return {"status": "success" if ok else "fail", "detail": detail}
 
 
+async def _json_body(request: Request):
+  try:
+    body = await request.json()
+  except Exception:  # noqa: BLE001
+    body = {}
+  return body if isinstance(body, dict) else {}
+
+
+@app.post("/relay/link")
+async def link_relay(request: Request):
+  """Swap a /link code from the Mirako bot's DMs for a link token.
+
+  The token goes back to the page, which saves it into the config like any other field.
+  """
+  from core import relay_client
+  code = str((await _json_body(request)).get("code", "")).strip()
+  if not code:
+    return {"status": "fail", "detail": "Paste the code /link gave you first."}
+  try:
+    reply = relay_client.link(code)
+    return {"status": "success", "token": reply["token"],
+            "name": reply.get("user", {}).get("name", ""),
+            "detail": f"Linked to {reply.get('user', {}).get('name', 'your Discord')}."}
+  except relay_client.RelayError as error:
+    return {"status": "fail", "detail": str(error)}
+  except (KeyError, TypeError, AttributeError) as error:
+    return {"status": "fail", "detail": f"The relay sent something unexpected: {error}"}
+
+
+@app.post("/relay/me")
+async def relay_me(request: Request):
+  """Who a link token belongs to, or why it no longer works."""
+  from core import relay_client
+  token = str((await _json_body(request)).get("token", "")).strip()
+  if not token:
+    return {"status": "fail", "detail": "Not linked."}
+  try:
+    reply = relay_client.me(auth=token)
+    return {"status": "success", "name": reply.get("user", {}).get("name", "")}
+  except relay_client.RelayError as error:
+    return {"status": "fail", "unlinked": error.status == 401, "detail": str(error)}
+  except (TypeError, AttributeError) as error:
+    return {"status": "fail", "detail": f"The relay sent something unexpected: {error}"}
+
+
+@app.post("/relay/test")
+async def relay_test(request: Request):
+  """Have the Mirako bot DM a test message."""
+  from core import relay_client
+  token = str((await _json_body(request)).get("token", "")).strip()
+  if not token:
+    return {"status": "fail", "detail": "Link the Mirako bot first."}
+  try:
+    relay_client.test(auth=token)
+  except relay_client.RelayError as error:
+    return {"status": "fail", "detail": str(error)}
+  return {"status": "success", "detail": "A test message was sent to your DMs."}
+
+
 @app.get("/stats/runs")
 def get_stat_runs():
   """Every recorded career, oldest first.

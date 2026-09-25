@@ -28,6 +28,10 @@ type BorrowCard = {
   file: string;
 };
 
+// The "Add to My Apps" link for the Mirako bot. Empty until the relay's application ID
+// is filled in; the steps then say to add the bot without a link.
+const MIRAKO_INSTALL_URL = "";
+
 type Props = {
   config: Config;
   updateConfig: UpdateConfigType;
@@ -63,48 +67,87 @@ export default function IndependentSection({ config, updateConfig }: Props) {
     }
   };
 
-  const [botTesting, setBotTesting] = useState(false);
-  const [botResult, setBotResult] = useState<{ ok: boolean; detail: string } | null>(null);
-  // What is typed, not what is saved, as with the webhook test.
-  // The application ID, read out of the token: a bot token's first part is the ID in
-  // base64, which is all the install link needs -- sparing the Developer Portal's URL
-  // Generator, a page it is easy to come away from with nothing but the ID.
-  const appId = (() => {
-    try {
-      const head = webhook.bot_token.trim().split(".")[0];
-      const padded = head.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((head.length + 3) % 4);
-      const id = atob(padded);
-      return /^\d{15,22}$/.test(id) ? id : "";
-    } catch {
-      return "";
-    }
-  })();
-
-  // The app is added to the person's own account (a user install), after which it can
-  // DM them with no server in common.
-  const inviteLink = appId
-    ? `https://discord.com/oauth2/authorize?client_id=${appId}&integration_type=1&scope=applications.commands`
-    : "";
-  const botReady = Boolean(webhook.bot_token && webhook.choice_user_id);
-  // The bot set up takes the notifications too, in place of the webhook (utils/webhook.py).
+  // The Mirako bot (core/asker.py's SharedBot, through the relay) asks the spark question.
+  const botReady = Boolean(webhook.relay_token);
+  // Linked, it takes the notifications too, in place of the webhook (utils/webhook.py).
   const dmActive = botReady;
 
-  const testBot = async () => {
-    setBotTesting(true);
-    setBotResult(null);
-    try {
-      const res = await fetch("/discord/test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: webhook.bot_token, user: webhook.choice_user_id }),
-      });
-      const data = await res.json();
-      setBotResult({ ok: data.status === "success", detail: data.detail });
-    } catch {
-      setBotResult({ ok: false, detail: "Could not reach the bot's server." });
-    } finally {
-      setBotTesting(false);
+  const [linkCode, setLinkCode] = useState("");
+  const [relayBusy, setRelayBusy] = useState(false);
+  const [relayResult, setRelayResult] = useState<{ ok: boolean; detail: string } | null>(null);
+  // Who the saved link belongs to, asked of the relay when the page opens, so a link
+  // removed with /unlink in Discord shows here rather than at the next reroll.
+  const [relayName, setRelayName] = useState("");
+  const [relayGone, setRelayGone] = useState(false);
+
+  const relayCall = async (path: string, body: object) => {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return res.json();
+  };
+
+  useEffect(() => {
+    if (!webhook.relay_token) {
+      setRelayName("");
+      setRelayGone(false);
+      return;
     }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await relayCall("/relay/me", { token: webhook.relay_token });
+        if (cancelled) return;
+        setRelayName(data.status === "success" ? data.name : "");
+        setRelayGone(Boolean(data.unlinked));
+      } catch {
+        // The relay being unreachable is not the link being gone; say nothing.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [webhook.relay_token]);
+
+  const linkRelay = async () => {
+    setRelayBusy(true);
+    setRelayResult(null);
+    try {
+      const data = await relayCall("/relay/link", { code: linkCode });
+      if (data.status === "success") {
+        updateWebhook({ relay_token: data.token });
+        setRelayName(data.name);
+        setLinkCode("");
+      }
+      setRelayResult({ ok: data.status === "success", detail: data.detail });
+    } catch {
+      setRelayResult({ ok: false, detail: "Could not reach the bot's server." });
+    } finally {
+      setRelayBusy(false);
+    }
+  };
+
+  const testRelay = async () => {
+    setRelayBusy(true);
+    setRelayResult(null);
+    try {
+      const data = await relayCall("/relay/test", { token: webhook.relay_token });
+      setRelayResult({ ok: data.status === "success", detail: data.detail });
+    } catch {
+      setRelayResult({ ok: false, detail: "Could not reach the bot's server." });
+    } finally {
+      setRelayBusy(false);
+    }
+  };
+
+  const unlinkRelay = () => {
+    updateWebhook({ relay_token: "" });
+    setRelayResult({
+      ok: true,
+      detail: "Unlinked here. Run /unlink in the bot's DMs to remove every link at once.",
+    });
   };
 
   const teamTrials = config.team_trials;
@@ -694,7 +737,7 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       </p>
       {dmActive && (
         <p className="text-sm text-primary mb-3">
-          The Spark Choice Bot is set up, so these messages come by DM, in place of the
+          The Mirako bot is linked, so these messages come by DM, in place of the
           webhook.
         </p>
       )}
@@ -742,100 +785,92 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       </div>
 
       <h4 className="text-base font-semibold mt-5 mb-2 flex items-center gap-2">
-        Spark Choice Bot
+        <Bot size={18} />
+        Mirako Bot
         <Tooltips>
-          After a spark reroll you choose which set to keep, and the bot asks you by
-          Discord DM: both sets are sent as pictures and you react 1 or 2. A webhook can
-          only post, so this needs a Discord bot of your own. Once it is set up, the
-          notifications above come by DM too, in place of the webhook. The bot waits for
-          your answer as long as it takes.
+          After a spark reroll you choose which set to keep, and the Mirako bot asks you by
+          Discord DM: both sets are sent as pictures and you press a button. Once linked,
+          the notifications above come by DM too, in place of the webhook. The bot waits
+          for your answer as long as it takes.
         </Tooltips>
       </h4>
-      {!botReady && (
-        <ol className="text-sm text-muted-foreground list-decimal pl-5 mb-3 space-y-1">
-          <li>
-            Open the{" "}
-            <a className="underline" href="https://discord.com/developers/applications"
-               target="_blank" rel="noreferrer">
-              Discord Developer Portal
-            </a>{" "}
-            and press <b>New Application</b>. Any name will do.
-          </li>
-          <li>
-            On its <b>Bot</b> page, press <b>Reset Token</b> and paste the token into Bot
-            Token below.
-          </li>
-          <li>
-            {inviteLink ? (
-              <>
-                Open{" "}
-                <a className="underline" href={inviteLink} target="_blank" rel="noreferrer">
-                  this install link
-                </a>{" "}
-                and choose <b>Add to My Apps</b>. That lets it DM you with no server in
-                common. If Discord does not offer it, turn on <b>User Install</b> on the
-                app's Installation page first.
-              </>
-            ) : (
-              <>Paste the token first: the install link for step 3 appears here.</>
-            )}
-          </li>
-          <li>
-            In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then
-            right-click your own name and <b>Copy User ID</b>. Paste it below.
-          </li>
-          <li>
-            Press <b>Test</b>. A DM from the bot means it is ready.
-          </li>
-        </ol>
-      )}
-      <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
-        <label className="uma-label">
-          <span className="whitespace-nowrap">Bot Token</span>
-          <Input
-            type="password"
-            className="grow"
-            placeholder="From the Bot page"
-            value={webhook.bot_token}
-            onChange={(e) => {
-              updateWebhook({ bot_token: e.target.value });
-              setBotResult(null);
-            }}
-          />
-        </label>
-        <label className="uma-label">
-          <span className="whitespace-nowrap">Your User ID</span>
-          <Input
-            className="grow"
-            placeholder="Right-click your own name, Copy User ID"
-            value={webhook.choice_user_id ?? ""}
-            onChange={(e) => {
-              updateWebhook({ choice_user_id: e.target.value.trim() });
-              setBotResult(null);
-            }}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!botReady || botTesting}
-            onClick={testBot}
-          >
-            {botTesting ? "Testing…" : "Test"}
+      {botReady ? (
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          {relayGone ? (
+            <span className="text-sm text-destructive flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4" />
+              This link was removed in Discord. Unlink, then link again with a new code.
+            </span>
+          ) : (
+            <span className="text-sm flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-primary" />
+              Linked{relayName ? ` to ${relayName}` : ""}
+            </span>
+          )}
+          <Button type="button" variant="outline" disabled={relayBusy || relayGone}
+                  onClick={testRelay}>
+            {relayBusy ? "Sending…" : "Test"}
           </Button>
-        </label>
-      </div>
-      {botResult && (
+          <Button type="button" variant="outline" onClick={unlinkRelay}>
+            Unlink
+          </Button>
+        </div>
+      ) : (
+        <>
+          <ol className="text-sm text-muted-foreground list-decimal pl-5 mb-3 space-y-1">
+            <li>
+              {MIRAKO_INSTALL_URL ? (
+                <>
+                  Open{" "}
+                  <a className="underline" href={MIRAKO_INSTALL_URL} target="_blank"
+                     rel="noreferrer">
+                    the Mirako bot's install link
+                  </a>{" "}
+                  and choose <b>Add to My Apps</b>.
+                </>
+              ) : (
+                <>Add the Mirako bot to your Discord account (<b>Add to My Apps</b>).</>
+              )}
+            </li>
+            <li>
+              In a DM with the bot, run <b>/link</b>. It replies with a code, good for 10
+              minutes.
+            </li>
+            <li>Paste the code below and press <b>Link</b>.</li>
+          </ol>
+          <label className="uma-label">
+            <span className="whitespace-nowrap">Link Code</span>
+            <Input
+              className="grow max-w-60 font-mono uppercase"
+              placeholder="K7Q2M9XA"
+              value={linkCode}
+              onChange={(e) => {
+                setLinkCode(e.target.value.trim());
+                setRelayResult(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && linkCode && !relayBusy) void linkRelay();
+              }}
+            />
+            <Button type="button" variant="outline" disabled={!linkCode || relayBusy}
+                    onClick={linkRelay}>
+              {relayBusy ? "Linking…" : "Link"}
+            </Button>
+          </label>
+        </>
+      )}
+      {relayResult && (
         <p
           className={`text-sm mt-2 flex items-start gap-2 ${
-            botResult.ok ? "text-primary" : "text-destructive"
+            relayResult.ok ? "text-primary" : "text-destructive"
           }`}
         >
-          {botResult.ok ? (
+          {relayResult.ok ? (
             <Check className="w-4 h-4 mt-0.5 shrink-0" />
           ) : (
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
           )}
-          {botResult.detail}
+          {relayResult.detail}
         </p>
       )}
 

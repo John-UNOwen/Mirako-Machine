@@ -18,9 +18,10 @@ as one, so a change to either is worth reading about.
 - Spark reroll (Automation tab): after a career rated SS, or at any rating, the bot
   rerolls the sparks once (30 TP).
 - Which set to keep is asked by Discord DM: both sets are sent as pictures, with the
-  priority skills bought, and you react 1 or 2. Needs your own Discord bot, added to
-  your account with the install link the Automation tab builds (Spark Choice Bot).
-- Once that bot is set up, notifications come by DM too, in place of the webhook.
+  priority skills bought, and you press a button. It comes from the Mirako bot: add it
+  to your Discord account, run /link in its DMs, and paste the code into the Automation
+  tab (Mirako Bot). No bot of your own is needed.
+- Once the Mirako bot is linked, notifications come by DM too, in place of the webhook.
 
 ## 1.0.4 (2026-09-24)
 
