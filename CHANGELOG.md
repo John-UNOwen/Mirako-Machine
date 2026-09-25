@@ -17,8 +17,9 @@ as one, so a change to either is worth reading about.
   and in the Discord career message.
 - Spark reroll (Automation tab): after a career rated SS, or at any rating, the bot
   rerolls the sparks once (30 TP).
-- Which set to keep is asked by Discord DM: both sets are sent as pictures, with the
-  priority skills bought, and you press a button. It comes from the Mirako bot: add it
+- Which set to keep is asked by Discord DM: both sets are sent as pictures, each with
+  the white sparks it shares with your priority skills (an Uma Stan spark counts for
+  Superstan), and you press a button. It comes from the Mirako bot: add it
   to your Discord account, run /link in its DMs, and paste the code into the Automation
   tab (Mirako Bot). No bot of your own is needed.
 - Once the Mirako bot is linked, notifications come by DM too, in place of the webhook.

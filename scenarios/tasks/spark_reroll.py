@@ -46,7 +46,7 @@ REROLL_DIALOG_BUTTON = f"{ASSETS}/spark_reroll_dialog_btn.png"
 LIST_BAND = (105, 752)            # Sparks, Sparks Rerolled
 SELECTION_BAND = (170, 752)       # Spark Selection, below its page title
 MAX_SCROLL_STEPS = 10
-SCROLL_NOTCHES = 3
+SCROLL_NOTCHES = 2               # 390px a step: a page is 647px, so pages overlap
 SETTLE_SECONDS = 1.0
 STILL_TO_END = 2
 # Spark Selection's page title, and the Keep dialog's header, both read by OCR: each
@@ -116,22 +116,16 @@ def _same(first, second, band):
 
 
 def read_list(band, frame=_frame, scroll=_scroll):
-  """Every row of the list on screen, scrolled through from the top: (rows, picture).
+  """Every row of the list on screen, scrolled down from the top: (rows, picture).
+
+  Each list opens at its top -- the Sparks screens and both Spark Selection pages alike --
+  so the read starts where it stands, with no scrolling up first.
 
   An end is only believed once the list has stayed still for STILL_TO_END scrolls in a
-  row. One unchanged frame can be a scroll that did not take, and taken as the top it
-  starts the read mid-list, taken as the bottom it ends it early -- either way rows go
-  unread and nothing says so.
+  row. One unchanged frame can be a scroll that did not take, and taken as the bottom it
+  ends the read early: rows go unread and nothing says so.
   """
   current = frame()
-  still = 0
-  for _ in range(MAX_SCROLL_STEPS):          # back to the top first: a restart can land mid-list
-    scroll(SCROLL_NOTCHES)
-    following = frame()
-    still = still + 1 if _same(current, following, band) else 0
-    current = following
-    if still >= STILL_TO_END:
-      break
   pages, crops, still = [], [], 0
   for _ in range(MAX_SCROLL_STEPS * 2):
     if still == 0:
@@ -299,39 +293,43 @@ def _have_both_sets(state, showing):
   return True
 
 
-def priority_bought(state):
-  """The skills bought this career that are on the priority list, in the list's order.
+def priority_overlap(rows):
+  """The white sparks in `rows` that come from a priority skill, in the list's order.
 
-  Matched the way buying matches them (tiers must agree), so this is the list the purchase
-  itself worked from. Empty when what was bought is not known.
+  A spark counts when its skill is on the priority list or is brought along by one that
+  is -- the Uma Stan spark comes from Superstan, a circle from its double circle. Returns
+  [(spark, stars, priority skill)]. Read off the list alone: a white skill spark means
+  the trainee held that skill, so what was bought need not be known.
   """
-  from core.independent_skill import priority_index
-  wanted = list(getattr(config, "SKILL_LIST", None) or [])
-  placed = []
-  for name in state.skills_bought or []:
-    index = priority_index(name, wanted)
-    if index is not None:
-      placed.append((index, name))
-  return [name for _, name in sorted(placed)]
+  from core.independent_sparks import held_skills, spark_skill
+  source = {}
+  for index, wanted in enumerate(getattr(config, "SKILL_LIST", None) or []):
+    for skill in held_skills([wanted]):
+      source.setdefault(skill, (index, wanted))
+  found = []
+  for row in rows:
+    if row.colour != "white":
+      continue
+    hit = source.get(spark_skill(row.name))
+    if hit:
+      found.append((hit[0], row.name, row.stars, hit[1]))
+  return [(name, stars, wanted) for _, name, stars, wanted in sorted(found)]
 
 
 def _message(state):
-  """The question: rating, priority skills bought, and both sets. How to answer is the
-  asker's to add, since a reaction and a button are asked for differently."""
+  """The question: rating, and both sets, each with the sparks it shares with the priority
+  list. The buttons are the asker's to add."""
   lines = [f"🔁 **Spark choice**: rating {state.career_rating:,}" if state.career_rating
            else "🔁 **Spark choice**"]
-  # Near the top: Discord cuts a message at 2,000 characters, and the white lists below
-  # are what should go first.
-  bought = priority_bought(state)
-  if bought:
-    lines.append(f"Priority skills bought ({len(bought)}): {', '.join(bought)}")
-  elif state.skills_bought is None:
-    lines.append("Priority skills bought: not known (the bot joined after the purchase).")
   for which in ("original", "rerolled"):
     rows = state.spark_sets[which][0]
     lines.append(f"\n**{EMOJI[which]} {LABEL[which]}**")
     for colour, line in describe(rows).items():
       lines.append(f"{colour.title()}: {line}")
+    overlap = [f"{name} {'★' * stars}" + ("" if wanted == name else f" ({wanted})")
+               for name, stars, wanted in priority_overlap(rows)]
+    lines.append(f"Priority ({len(overlap)}): {', '.join(overlap)}" if overlap
+                 else "Priority: none")
   return "\n".join(lines)[:1900]
 
 

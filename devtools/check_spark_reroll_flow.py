@@ -92,18 +92,24 @@ def reader_cases():
         os.path.join(CAPTURES, "sparks", f"{prefix}_*.png")))]
     if not frames:
       continue
-    position = {"at": len(frames) - 1}       # start scrolled down: the reader goes up first
+    position = {"at": 0}                     # a list opens at its top
+    scrolls = []
 
     def frame():
       return frames[position["at"]]
 
     def scroll(notches):
+      scrolls.append(notches)
       step = -1 if notches > 0 else 1
       position["at"] = min(len(frames) - 1, max(0, position["at"] + step))
 
     rows, image = spark_reroll.read_list(spark_reroll.LIST_BAND, frame, scroll)
-    check(as_tuples(rows) == expected,
-          f"the whole {prefix} set, scrolled through from wherever it was left, once each")
+    check(as_tuples(rows) == expected, f"the whole {prefix} set, read once each")
+    check(scrolls and all(notches < 0 for notches in scrolls),
+          f"the {prefix} list is only scrolled down, never up first: {scrolls}")
+    check(len(scrolls) <= len(frames) - 1 + spark_reroll.STILL_TO_END,
+          f"and stops within {spark_reroll.STILL_TO_END} still scrolls of the bottom: "
+          f"{len(scrolls)} scrolls for {len(frames)} frames")
     check(image[:4] == b"\x89PNG", f"and the {prefix} set comes out as one picture")
 
 
@@ -321,9 +327,10 @@ def handler_cases():
 
     print("\nAsking, and keeping the answer:")
     saved_list = getattr(config, "SKILL_LIST", [])
-    config.SKILL_LIST = ["Groundwork", "Uma Stan", "Superstan", "Long Corners ◎"]
+    config.SKILL_LIST = ["Superstan", "Groundwork", "Long Corners ◎", "Prudent Positioning"]
     state = State(bought=["Long Corners ○", "Superstan", "Slipstream", "Groundwork"])
-    state.spark_sets = {"original": (rows_of(ORIGINAL), b"\x89PNG-o"),
+    state.spark_sets = {"original": (rows_of(ORIGINAL + [("white", "Uma Stan", 1)]),
+                                     b"\x89PNG-o"),
                         "rerolled": (rows_of(REROLLED), b"\x89PNG-r")}
     fakes.clicks.clear()
     fakes.posts.clear()
@@ -334,8 +341,17 @@ def handler_cases():
           "one question, with both sets as pictures")
     check("Power" in fakes.posts[0][0] and "Turf" in fakes.posts[0][0],
           "the message lists both sets too")
-    check("Priority skills bought (2): Groundwork, Superstan" in fakes.posts[0][0],
-          "and the priority skills bought, in the list's order, tiers matched exactly")
+    text = fakes.posts[0][0]
+    check("Priority skills bought" not in text, "the list of skills bought is gone")
+    check("Priority (3): Uma Stan ★ (Superstan), Groundwork ★★, Long Corners ○ ★★ "
+          "(Long Corners ◎)" in text,
+          "the original set's overlap with the priority list, in its order, a spark "
+          "from an upgrade naming the skill it came with -- got "
+          + repr([line for line in text.splitlines() if line.startswith("Priority")]))
+    check("Priority (2): Groundwork ★★, Prudent Positioning ★★" in text,
+          "and the rerolled set's, under its own summary")
+    check(text.index("Priority (3)") < text.index("Rerolled") < text.index("Priority (2)"),
+          "each overlap sits below its own set")
     check("React to answer" not in fakes.posts[0][0]
           and [o["id"] for o in fakes.posts[0][2]] == ["original", "rerolled"]
           and fakes.posts[0][2][0]["label"] == "Keep the original",
@@ -372,7 +388,7 @@ def handler_cases():
     check(fakes.clicks == ["confirm_btn.png", "confirm_btn.png"],
           "and the one naming the chosen set is confirmed")
     check(len(lines) == 1 and entry["choice"] == "original" and entry["rating"] == 17_811
-          and len(entry["original"]) == 19 and len(entry["rerolled"]) == 14,
+          and len(entry["original"]) == 20 and len(entry["rerolled"]) == 14,
           "the choice is recorded once, beside both sets")
 
     print("\nComing back to Spark Selection after a restart:")
