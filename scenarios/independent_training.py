@@ -99,6 +99,7 @@ from utils.log import args, debug, error, info, warning, debug_window, save_inci
 from utils.notifications import (
   StopReason,
   on_career_complete,
+  on_careers_paused,
   on_recovering,
   on_skills_bought,
   reset_notification_state,
@@ -266,6 +267,10 @@ class RunState:
 
   def __init__(self):
     self.runs_completed = 0
+    # The game said the Veteran Umamusume list is full: no career can start until the
+    # player transfers some, so careers are off for the rest of this session while the
+    # daily tasks go on. Not per career, and not saved: a restart looks again.
+    self.veteran_list_full = False
     # Read off the confirmation screen at every career setup, because it changes:
     # 15 during a half-price event, 30 after. Kept between reads so the home-screen
     # gate has a number to work with before the first confirmation screen.
@@ -636,6 +641,8 @@ def _career_check(state):
   its confirmation screen, reset, and dispatched again -- and the queue would never
   empty, so the clean stop below it never had an empty dispatch to stop on.
   """
+  if getattr(state, "veteran_list_full", False):
+    return Retry(0, "the Veteran Umamusume list is full; transfer some to start careers")
   if _career_limit_reached(state):
     if _keep_dailies_after_limit():
       return Retry(0, "the careers asked for are done; only the daily tasks are left")
@@ -1265,6 +1272,12 @@ def handle_scenario_select(state):
   cannot be found stops the bot instead of falling back to Next. Not a recoverable stop:
   restarting the game brings back the same carousel.
   """
+  if getattr(state, "veteran_list_full", False):
+    # Came back here from the full-list popup. Next would only bring it up again.
+    info("The Veteran Umamusume list is full; going back home.")
+    if not _click(f"{BUTTONS}/back_btn.png", region=constants.SCREEN_BOTTOM_BBOX):
+      warning("Could not find Back on Scenario Select.")
+    return
   wanted = _scenario()
   if wanted is None:
     handle_next(state)
@@ -3000,9 +3013,37 @@ def handle_career_complete(state):
           f"Completed the requested {max_runs} career(s). Stopping.")
 
 
+def handle_veteran_max(state):
+  """The Veteran Umamusume list is full: stop starting careers, keep the daily tasks.
+
+  Transferring trainees is the player's call, so the bot does not open the list. It
+  closes the popup, which puts Scenario Select back up, and handle_scenario_select then
+  goes home instead of pressing Next. From there the career task refuses for the rest
+  of the session (_career_check) and the daily tasks carry on. With every daily task
+  switched off there would be nothing left to do, so it stops instead.
+  """
+  if not getattr(state, "veteran_list_full", False):
+    state.veteran_list_full = True
+    remaining = _other_tasks_wanted()
+    why = ("The Veteran Umamusume list is full, so no career can start. Transfer some "
+           "trainees in the game, then restart the bot.")
+    if not remaining:
+      _stop(StopReason.FINISHED, "ERROR_NOTIFICATION",
+            f"{why} Every daily task is switched off, so there is nothing else to do. "
+            "Stopping.")
+      return
+    warning(f"{why} Carrying on with the daily tasks: {', '.join(remaining)}.")
+    try:
+      on_careers_paused(why, f"Carrying on with the daily tasks: {', '.join(remaining)}.")
+    except Exception as exception:  # noqa: BLE001 - a notification never ends a session
+      error(f"Could not send the careers-paused notification: {exception}")
+  _click(f"{BUTTONS}/close_btn.png")
+
+
 HANDLERS = {
   Screen.HOME: handle_home,
   Screen.SCENARIO_SELECT: handle_scenario_select,
+  Screen.VETERAN_MAX: handle_veteran_max,
   Screen.TRAINEE_SELECT: handle_next,
   Screen.LEGACY_SELECT: handle_next,
   Screen.SUPPORT_FORMATION: handle_support_formation,

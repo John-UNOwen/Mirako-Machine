@@ -58,6 +58,12 @@ def on_recovering(what: str, attempt: int):
     webhook.send_recovering(what, attempt)
 
 
+def on_careers_paused(why: str, carrying_on: str):
+    if not _webhook_enabled():
+        return
+    webhook.send_careers_paused(why, carrying_on)
+
+
 def on_skills_bought(skills: list[str]):
     if not _webhook_enabled():
         return

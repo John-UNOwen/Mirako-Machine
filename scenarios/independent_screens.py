@@ -36,6 +36,9 @@ class Screen:
 
   HOME = "home"
   SCENARIO_SELECT = "scenario_select"
+  # "Veteran Umamusume Max": the list of finished trainees is full, so no career can
+  # start until some are transferred. Shown over Scenario Select after Next.
+  VETERAN_MAX = "veteran_max"
   TRAINEE_SELECT = "trainee_select"
   LEGACY_SELECT = "legacy_select"
   SUPPORT_FORMATION = "support_formation"
@@ -864,6 +867,12 @@ SCREEN_ORDER = (
   # are the highest either reaches on any other reference.
   ScreenSpec(Screen.MISSIONS, [f"{ASSETS}/missions_title.png"],
              search_region=(0, 0, 400, 200)),
+  # Also carries a Close button, and was being shut as a login announcement: the bot
+  # closed it, pressed Next on Scenario Select, met it again, and went round until the
+  # interstitial budget restarted the game, ten times over. Anchored on its message,
+  # which no other dialog says.
+  ScreenSpec(Screen.VETERAN_MAX, [f"{ASSETS}/veteran_max_text.png"],
+             search_region=(100, 420, 700, 540)),
   ScreenSpec(Screen.PRESENT_BOX, [f"{ASSETS}/presents_title.png"],
              search_region=(0, 0, 800, 240)),
   ScreenSpec(Screen.POST_LOGIN_CLOSE, [f"{BUTTONS}/close_btn.png"]),

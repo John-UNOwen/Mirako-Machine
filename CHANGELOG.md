@@ -14,6 +14,11 @@ as one, so a change to either is worth reading about.
   Adept, Corner Acceleration, Corner Recovery and Down in the Dirt stop at the single
   circle (their next step is a gold skill), but were being offered as a made-up double
   circle with no rating.
+- A full Veteran Umamusume list is recognised. The bot used to close the popup as a login
+  announcement and run into it again until it gave up and stopped. Now it tells you
+  (Careers Paused), stops starting careers for the session and carries on with the daily
+  tasks. Transfer some trainees in the game, then restart the bot to run careers again.
+  With every daily task switched off it stops instead.
 
 ## 1.0.8 (2026-09-25)
 

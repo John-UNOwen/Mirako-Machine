@@ -306,6 +306,9 @@ EXPECTED = {
   "career_complete_close.png": Screen.CAREER_COMPLETE,
   "story_unlocked_tt.png": Screen.STORY_UNLOCKED,
   "missions.png": Screen.MISSIONS,
+  # Veteran Umamusume Max, over Scenario Select. Carries a Close button, so without its
+  # own spec it went to POST_LOGIN_CLOSE and was shut and met again in a loop.
+  "veteran_max.png": Screen.VETERAN_MAX,
   "present_box.png": Screen.PRESENT_BOX,
   "story_unlocked.png": Screen.STORY_UNLOCKED,
   "date_changed.png": Screen.DATE_CHANGED,
@@ -420,6 +423,7 @@ _THRESHOLDS = {spec.name: spec.threshold for spec in SCREEN_ORDER}
 # other -- so there is nothing to be gained by demanding a Steam twin of each. The Steam
 # run skips them rather than reporting them missing.
 ADB_ONLY = frozenset(("story_unlocked_tt.png", "missions.png", "present_box.png",
+                      "veteran_max.png",
                       "newdata.png", "newdata2.png", "newdata3.png",
                       "tt_select_opponent.png", "tt_standby_quick_on.png",
                       "complete_career_confirm.png", "keep_sparks.png",

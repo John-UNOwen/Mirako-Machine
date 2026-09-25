@@ -245,6 +245,25 @@ def send_recovering(what: str, attempt: int):
     )
 
 
+def send_careers_paused(why: str, carrying_on: str):
+    """Careers cannot start until the player does something; the bot keeps going.
+
+    Sent whatever the notification switches say: unlike a recovery, nothing clears this
+    on its own, and a bot quietly doing only its daily tasks looks the same as one that
+    is working.
+    """
+    _post(
+        _embed(
+            title=_titled("⏸️ Careers Paused"),
+            color=_COLOR_WARNING,
+            fields=[
+                _field("Why", why, inline=False),
+                _field("Now", carrying_on, inline=False),
+            ],
+        )
+    )
+
+
 def send_skills_bought(skills: list[str]):
     skill_list = "\n".join(f"- {s}" for s in skills)
     _post(
