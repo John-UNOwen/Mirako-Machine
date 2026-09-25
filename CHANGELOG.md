@@ -10,7 +10,8 @@ as one, so a change to either is worth reading about.
 
 ## 1.0.5 (2026-09-24)
 
-- Skill costs misread by OCR (for example 71 read as 7) are caught and corrected, so the
+- Skill costs are double-checked against the hint badge (list price less its discount), so a
+  price OCR misreads (for example 71 read as 7) is corrected to the exact price and the
   purchase plan no longer comes up short and drops skills at the end.
 
 ## 1.0.4 (2026-09-24)

@@ -18,6 +18,7 @@ devtools/check_independent_isolation.py, which enforces that.
 """
 
 import json
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 
@@ -1099,6 +1100,92 @@ MIN_PLAUSIBLE_COST = 20
 
 _valid_price_cache = {}
 
+# The "Hint Lvl 3 / 30% OFF!" badge above a row's price, by the percentage it takes off.
+# Matched as images, not read: five fixed badges, ~4 ms per row for all five against
+# ~30 ms for the OCR each row already costs.
+HINT_BADGE_DIR = "assets/independent/hint"
+HINT_BADGES = {10: "hint_lvl_1.png", 20: "hint_lvl_2.png", 30: "hint_lvl_3.png",
+               35: "hint_lvl_4.png", 40: "hint_lvl_max.png"}
+# Where the badge sits relative to the "+" icon, with a few pixels of slack each way.
+HINT_BADGE_OFFSET_XYWH = (-100, -55, 92, 22)
+# A badge is orange (OpenCV hue 8-18, saturated, bright). Across 89 live rows every badge
+# was over half orange and every row without one had none, so the cut is not delicate.
+# Gold rows are yellow, which the hue range leaves out.
+HINT_BADGE_MIN_ORANGE = 0.2
+HINT_BADGE_THRESHOLD = 0.8
+# Levels scoring this close to the best are all kept. Lvl 2 and Lvl 3 differ by two digits
+# and scored within 0.004 of each other on a row near the top of the list, where the game
+# fades rows out; the price the row shows decides between the survivors.
+HINT_BADGE_TIE = 0.03
+
+_hint_templates = None
+
+
+def _hint_badge_templates():
+  global _hint_templates
+  if _hint_templates is None:
+    _hint_templates = {}
+    for percent, file_name in HINT_BADGES.items():
+      template = cv2.imread(os.path.join(HINT_BADGE_DIR, file_name), cv2.IMREAD_COLOR)
+      if template is not None:
+        _hint_templates[percent] = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
+  return _hint_templates
+
+
+def hint_discounts(badge_rgb):
+  """The hint discounts, in percent, the badge above a row could be showing.
+
+  {0} when there is no badge, the levels matching best when there is one -- usually one,
+  two when a faded badge will not choose -- and None when a badge is there but matches
+  nothing, or the crop is too small to hold one, so the price check falls back to what
+  prices the skill can show at all. Pure, so it runs against captures.
+  """
+  templates = _hint_badge_templates()
+  if badge_rgb is None or not templates:
+    return None
+  hsv = cv2.cvtColor(badge_rgb, cv2.COLOR_RGB2HSV)
+  orange = ((hsv[..., 0] >= 8) & (hsv[..., 0] <= 18)
+            & (hsv[..., 1] >= 120) & (hsv[..., 2] >= 180)).mean()
+  if orange < HINT_BADGE_MIN_ORANGE:
+    return {0}
+  scores = {}
+  for percent, template in templates.items():
+    if (badge_rgb.shape[0] < template.shape[0] or badge_rgb.shape[1] < template.shape[1]):
+      return None
+    scores[percent] = float(cv2.matchTemplate(badge_rgb, template,
+                                              cv2.TM_CCOEFF_NORMED).max())
+  best = max(scores.values())
+  if best < HINT_BADGE_THRESHOLD:
+    return None
+  return {percent for percent, score in scores.items() if score >= best - HINT_BADGE_TIE}
+
+
+def expected_prices(name, discounts):
+  """The prices `name` can show with one of `discounts` off, or None if it cannot say.
+
+  Either tier for a tiered name, as valid_prices does, and with and without Fast Learner,
+  which applies to the whole career and is not on the badge. None for what a badge
+  cannot price: a removal, a skill without a list price, and a gold that also carries a
+  differently named skill, whose own discount is not the one showing.
+  """
+  if not discounts or _tier_of(name) == CROSS:
+    return None
+  if _tier_of(name) or is_tiered_family(name):
+    family = base_name(name)
+    names = (f"{family} {CIRCLE}", f"{family} {DOUBLE}")
+  else:
+    granted = upgrade_grants().get(name)
+    if granted and base_name(granted) != base_name(name):
+      return None
+    names = (name,)
+  prices = set()
+  for each in names:
+    base = base_costs().get(each)
+    if base:
+      prices |= {base * (100 - hint - fast) // 100
+                 for hint in discounts for fast in (0, FAST_LEARNER_DISCOUNT)}
+  return prices or None
+
 
 def _list_prices(name):
   """Every price `name` alone can show, or an empty set when its list price is unknown."""
@@ -1151,17 +1238,54 @@ def _holds_digits(reading, price):
   return all(digit in remaining for digit in str(reading))
 
 
-def checked_cost(name, cost):
+def _closest_fit(cost, prices):
+  """Of `prices`, the one `cost` most likely lost digits from, erring dear; else the dearest.
+
+  The prices that still contain the digits that were read, the shortest of those (one
+  dropped digit is likelier than several), and of those the dearest: reserving too much
+  leaves points unspent, reserving too little is what breaks a plan.
+  """
+  fits = [price for price in prices if _holds_digits(cost, price)]
+  if not fits:
+    return max(prices)
+  shortest = min(len(str(price)) for price in fits)
+  return max(price for price in fits if len(str(price)) == shortest)
+
+
+def checked_cost(name, cost, discounts=None):
   """`cost` as read for `name`, or a correction when it is not a price the skill can show.
 
   The misread this exists for drops a narrow digit: "71" read as "7". One such reading
   priced Pace Chaser Savvy's double at 8 points instead of 155, the solver bought it as the
-  best value on the screen, and two skills fell off the end of the plan. A correction takes
-  the valid prices that still contain the digits that were read, the shortest of those
-  (one dropped digit is likelier than several), and of those the dearest: reserving too
-  much leaves points unspent, reserving too little is what broke that plan. With nothing
-  to go by, the list price itself.
+  best value on the screen, and two skills fell off the end of the plan.
+
+  `discounts` is what hint_discounts made of the row's badge. With it the price is worked
+  out rather than guessed: list price less the hint, so a "7" on a Lvl 4 row is 71, not
+  the dearest price that starts with a 7. The two sources check each other. A reading the
+  badge agrees with is taken as it stands; one that is a price this skill can show but
+  not with this badge is a disagreement between two readings that each look sound, and
+  the dearer one is reserved. Without a badge to go by -- unreadable, or a skill it cannot
+  price -- a correction comes from every price the skill can show, as before.
   """
+  expected = expected_prices(name, discounts)
+  if expected is not None:
+    if cost in expected:
+      return cost
+    if cost is None:
+      corrected = max(expected)
+      warning(f"'{name}': could not read its cost; the badge makes it {corrected}.")
+      return corrected
+    prices = valid_prices(name) or set()
+    if cost in prices:
+      corrected = max(cost, max(expected))
+      warning(f"'{name}': read {cost}, but its badge makes it one of {sorted(expected)}; "
+              f"reserving {corrected}.")
+      return corrected
+    corrected = _closest_fit(cost, expected)
+    warning(f"'{name}': read a cost of {cost}, which it cannot cost; its badge makes it "
+            f"{corrected}.")
+    return corrected
+
   if cost is None:
     return None
   prices = valid_prices(name)
@@ -1173,12 +1297,7 @@ def checked_cost(name, cost):
     return cost
   if cost in prices:
     return cost
-  fits = [price for price in prices if _holds_digits(cost, price)]
-  if fits:
-    shortest = min(len(str(price)) for price in fits)
-    corrected = max(price for price in fits if len(str(price)) == shortest)
-  else:
-    corrected = max(prices)
+  corrected = _closest_fit(cost, prices)
   warning(f"'{name}': read a cost of {cost}, which it cannot cost; using {corrected}.")
   return corrected
 
@@ -1248,6 +1367,7 @@ def parse_skill_rows(region_rgb, check_affordable=True):
 
     name_crop = _crop(region_rgb, name_box)
     cost_crop = _crop(region_rgb, _offset_box(icon_box, COST_OFFSET_XYWH))
+    badge_crop = _crop(region_rgb, _offset_box(icon_box, HINT_BADGE_OFFSET_XYWH))
     if name_crop is None:
       continue
 
@@ -1258,13 +1378,13 @@ def parse_skill_rows(region_rgb, check_affordable=True):
         # A greyed-out "+" means the skill cannot currently be afforded.
         affordable = compare_brightness(template_path=BUY_ICON, other=icon_crop,
                                         brightness_diff_threshold=0.20)
-    pending.append((icon_box, name_crop, cost_crop, affordable))
+    pending.append((icon_box, name_crop, cost_crop, badge_crop, affordable))
 
   if not pending:
     return []
 
   def read_row(pending_row):
-    icon_box, name_crop, cost_crop, affordable = pending_row
+    icon_box, name_crop, cost_crop, badge_crop, affordable = pending_row
     # The tier comes off the pixels, not the text: no engine reads these glyphs, and a
     # dropped one resolves the row to its untiered sibling, which is a different skill.
     name = resolve_row_name(
@@ -1275,7 +1395,7 @@ def parse_skill_rows(region_rgb, check_affordable=True):
       cost = parse_cost(extract_text(_enhance_for_ocr(cost_crop), use_recognize=True,
                                    allowlist="0123456789"))
     if name:
-      cost = checked_cost(name, cost)
+      cost = checked_cost(name, cost, hint_discounts(badge_crop))
     return name, cost, affordable, icon_box
 
   get_reader()  # initialize the model once, in this thread, before fanning out
