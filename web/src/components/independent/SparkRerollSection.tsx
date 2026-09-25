@@ -324,7 +324,7 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
         {triggered && !botReady && (
           <p className="text-sm text-destructive mb-3">
             After a reroll you choose the set to keep in Discord, which needs the Spark
-            Choice Bot under Discord Notifications. Until it is set up the sparks are
+            Choice Bot under Discord Notifications (a channel or your DMs). Until it is set up the sparks are
             kept as granted.
           </p>
         )}

@@ -35,16 +35,48 @@ class DiscordError(Exception):
 
 
 def configured():
-  """Whether a bot token and a channel are both set."""
-  return bool(_token() and _channel())
+  """Whether a bot token is set, and somewhere to ask: a channel, or a person to DM."""
+  if not _token():
+    return False
+  return bool(_user() if _target() == "dm" else _configured_channel())
 
 
 def _token():
   return str(getattr(config, "WEBHOOK_BOT_TOKEN", "") or "").strip()
 
 
-def _channel():
+def _target():
+  return "dm" if getattr(config, "WEBHOOK_CHOICE_TARGET", "channel") == "dm" else "channel"
+
+
+def _configured_channel():
   return str(getattr(config, "WEBHOOK_CHOICE_CHANNEL_ID", "") or "").strip()
+
+
+def _user():
+  return str(getattr(config, "WEBHOOK_CHOICE_USER_ID", "") or "").strip()
+
+
+# DM channels by (token, user). A DM channel's id never changes, so it is asked for once.
+_dm_channels = {}
+
+
+def dm_channel(user_id, token=None, opener=urllib.request.urlopen):
+  """The id of the bot's direct-message channel with `user_id`, opening it if needed."""
+  key = (token or _token(), user_id)
+  if key not in _dm_channels:
+    reply = _request("POST", "/users/@me/channels",
+                     json.dumps({"recipient_id": str(user_id)}).encode("utf-8"),
+                     token=token, opener=opener)
+    _dm_channels[key] = reply["id"]
+  return _dm_channels[key]
+
+
+def _channel(opener=urllib.request.urlopen):
+  """Where questions go, as a channel id: the configured one, or the DM with the user."""
+  if _target() == "dm":
+    return dm_channel(_user(), opener=opener)
+  return _configured_channel()
 
 
 def _request(method, path, body=None, content_type="application/json", token=None,
@@ -76,6 +108,12 @@ def _request(method, path, body=None, content_type="application/json", token=Non
 
 
 def _explain(code, detail):
+  # Before the bare 403 below: a DM Discord refuses is also a 403, and the channel
+  # advice that follows would send someone to fix permissions they do not need.
+  if '"code": 50007' in detail or '"code":50007' in detail:
+    return ("Discord will not let the bot message you. A bot can only DM someone it shares "
+            "a server with: invite it to one of yours (a private server with just you "
+            "works), and check that server allows direct messages from members.")
   if code == 401:
     return "Discord rejected the bot token. Copy it again from the Developer Portal's Bot page."
   if code == 403:
@@ -83,6 +121,8 @@ def _explain(code, detail):
             "Channel, Send Messages, Attach Files, Add Reactions and Read Message History there.")
   if code == 404:
     return "No channel with that ID. Right-click the channel and Copy Channel ID."
+  if code == 400 and "recipient_id" in detail:
+    return "That is not a user ID. Right-click your own name and Copy User ID."
   return f"Discord answered {code}: {detail}"
 
 
@@ -111,7 +151,7 @@ def whoami(token=None, opener=urllib.request.urlopen):
 
 def post(text, images=(), channel=None, token=None, opener=urllib.request.urlopen):
   """Post `text` with PNG `images` [(filename, bytes)]. Returns the message id."""
-  channel = channel or _channel()
+  channel = channel or _channel(opener)
   payload = {"content": text, "attachments": [
       {"id": index, "filename": name} for index, (name, _) in enumerate(images)]}
   body, content_type = _multipart(
@@ -124,7 +164,7 @@ def post(text, images=(), channel=None, token=None, opener=urllib.request.urlope
 
 def edit(message_id, text, channel=None, token=None, opener=urllib.request.urlopen):
   """Replace a posted message's text, keeping its pictures."""
-  channel = channel or _channel()
+  channel = channel or _channel(opener)
   _request("PATCH", f"/channels/{channel}/messages/{message_id}",
            json.dumps({"content": text}).encode("utf-8"), token=token, opener=opener)
 
@@ -136,7 +176,7 @@ def _emoji_path(emoji):
 def offer(message_id, emojis, channel=None, token=None, opener=urllib.request.urlopen,
           pause=time.sleep):
   """Put one reaction per answer on the message, so answering is a tap on it."""
-  channel = channel or _channel()
+  channel = channel or _channel(opener)
   for emoji in emojis:
     _request("PUT", f"/channels/{channel}/messages/{message_id}/reactions/"
                     f"{_emoji_path(emoji)}/@me", token=token, opener=opener)
@@ -150,7 +190,7 @@ def answer(message_id, emojis, bot_id, channel=None, token=None,
   None as well when people have picked more than one: that is not an answer yet, and
   whoever did it can take one away.
   """
-  channel = channel or _channel()
+  channel = channel or _channel(opener)
   picked = []
   for emoji in emojis:
     users = _request("GET", f"/channels/{channel}/messages/{message_id}/reactions/"
@@ -165,15 +205,23 @@ def answer(message_id, emojis, bot_id, channel=None, token=None,
   return None
 
 
-def test(token, channel, opener=urllib.request.urlopen):
-  """Check a token and channel from the Setup page: (ok, what to tell the person)."""
+def test(token, channel=None, user=None, opener=urllib.request.urlopen):
+  """Check a token and where to ask, from the page: (ok, what to tell the person).
+
+  Given `user`, the test goes to that person's DMs, which is also the only way to find
+  out whether Discord lets the bot message them at all.
+  """
   try:
     me = whoami(token=token, opener=opener)
-    post(f"✅ {me.get('username', 'The bot')} can post spark choices in this channel.",
+    where = "your DMs" if user else "this channel"
+    if user:
+      channel = dm_channel(user, token=token, opener=opener)
+    post(f"✅ {me.get('username', 'The bot')} can post spark choices in {where}.",
          channel=channel, token=token, opener=opener)
   except DiscordError as error:
     warning(f"Discord bot test failed: {error}")
     return False, str(error)
   except (KeyError, TypeError, ValueError) as error:
     return False, f"Discord sent something unexpected: {error}"
-  return True, f"Connected as {me.get('username')}; a test message was posted."
+  return True, (f"Connected as {me.get('username')}; a test message was sent to "
+                f"{'your DMs' if user else 'the channel'}.")

@@ -84,6 +84,12 @@ export default function IndependentSection({ config, updateConfig }: Props) {
     }
   })();
 
+  // Where the spark question goes, and whether that is filled in.
+  const toDm = webhook.choice_target === "dm";
+  const botReady = Boolean(
+    webhook.bot_token && (toDm ? webhook.choice_user_id : webhook.choice_channel_id),
+  );
+
   const testBot = async () => {
     setBotTesting(true);
     setBotResult(null);
@@ -91,7 +97,11 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       const res = await fetch("/discord/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: webhook.bot_token, channel: webhook.choice_channel_id }),
+        body: JSON.stringify(
+          toDm
+            ? { token: webhook.bot_token, user: webhook.choice_user_id }
+            : { token: webhook.bot_token, channel: webhook.choice_channel_id },
+        ),
       });
       const data = await res.json();
       setBotResult({ ok: data.status === "success", detail: data.detail });
@@ -635,7 +645,7 @@ export default function IndependentSection({ config, updateConfig }: Props) {
       <SparkRerollSection
         value={independent.spark_reroll}
         onChange={(spark_reroll) => update({ spark_reroll })}
-        botReady={Boolean(webhook.bot_token && webhook.choice_channel_id)}
+        botReady={botReady}
       />
 
       <h3 className="text-xl font-semibold mt-6 mb-2 flex items-center gap-2">
@@ -742,7 +752,7 @@ export default function IndependentSection({ config, updateConfig }: Props) {
           your server. The bot waits for your answer as long as it takes.
         </Tooltips>
       </h4>
-      {!(webhook.bot_token && webhook.choice_channel_id) && (
+      {!botReady && (
         <ol className="text-sm text-muted-foreground list-decimal pl-5 mb-3 space-y-1">
           <li>
             Open the{" "}
@@ -772,11 +782,22 @@ export default function IndependentSection({ config, updateConfig }: Props) {
             )}
           </li>
           <li>
-            In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then
-            right-click the channel to use and <b>Copy Channel ID</b>. Paste it below.
+            In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then{" "}
+            {toDm ? (
+              <>
+                right-click your own name and <b>Copy User ID</b>. Paste it below. The bot can
+                only DM someone it shares a server with, so step 3 has to be a server you are
+                in, and it has to allow direct messages from members.
+              </>
+            ) : (
+              <>
+                right-click the channel to use and <b>Copy Channel ID</b>. Paste it below.
+              </>
+            )}
           </li>
           <li>
-            Press <b>Test</b>. A message from the bot in that channel means it is ready.
+            Press <b>Test</b>. A message from the bot {toDm ? "in your DMs" : "in that channel"}{" "}
+            means it is ready.
           </li>
         </ol>
       )}
@@ -795,20 +816,51 @@ export default function IndependentSection({ config, updateConfig }: Props) {
           />
         </label>
         <label className="uma-label">
-          <span className="whitespace-nowrap">Channel ID</span>
+          <span className="whitespace-nowrap">Send To</span>
+          <div className="inline-flex rounded-md border-1 border-border overflow-hidden">
+            {(["dm", "channel"] as const).map((target) => (
+              <button
+                key={target}
+                type="button"
+                aria-pressed={(webhook.choice_target ?? "channel") === target}
+                onClick={() => {
+                  updateWebhook({ choice_target: target });
+                  setBotResult(null);
+                }}
+                className={`px-3 py-1.5 text-sm ${
+                  (webhook.choice_target ?? "channel") === target
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted/50"
+                }`}
+              >
+                {target === "dm" ? "My DMs" : "A Channel"}
+              </button>
+            ))}
+          </div>
+        </label>
+        <label className="uma-label lg:col-span-2">
+          <span className="whitespace-nowrap">{toDm ? "Your User ID" : "Channel ID"}</span>
           <Input
             className="grow"
-            placeholder="Right-click the channel, Copy Channel ID"
-            value={webhook.choice_channel_id}
+            placeholder={
+              toDm
+                ? "Right-click your own name, Copy User ID"
+                : "Right-click the channel, Copy Channel ID"
+            }
+            value={(toDm ? webhook.choice_user_id : webhook.choice_channel_id) ?? ""}
             onChange={(e) => {
-              updateWebhook({ choice_channel_id: e.target.value.trim() });
+              updateWebhook(
+                toDm
+                  ? { choice_user_id: e.target.value.trim() }
+                  : { choice_channel_id: e.target.value.trim() },
+              );
               setBotResult(null);
             }}
           />
           <Button
             type="button"
             variant="outline"
-            disabled={!webhook.bot_token || !webhook.choice_channel_id || botTesting}
+            disabled={!botReady || botTesting}
             onClick={testBot}
           >
             {botTesting ? "Testing…" : "Test"}

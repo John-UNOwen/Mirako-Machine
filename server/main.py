@@ -1206,9 +1206,11 @@ async def test_discord_bot(request: Request):
     body = {}
   token = str(body.get("token", "")).strip()
   channel = str(body.get("channel", "")).strip()
-  if not token or not channel:
-    return {"status": "fail", "detail": "Both the bot token and the channel ID are needed."}
-  ok, detail = test(token, channel)
+  user = str(body.get("user", "")).strip()
+  if not token or not (channel or user):
+    return {"status": "fail",
+            "detail": "The bot token is needed, and a channel ID or your user ID."}
+  ok, detail = test(token, channel=None if user else channel, user=user or None)
   return {"status": "success" if ok else "fail", "detail": detail}
 
 

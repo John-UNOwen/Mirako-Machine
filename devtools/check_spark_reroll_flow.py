@@ -422,6 +422,49 @@ def discord_cases():
   ok, detail = discord_choice.test("bad", "c", opener=refused)
   check(not ok and "token" in detail, f"a bad token is reported in words: {detail!r}")
 
+  print("\nDirect messages:")
+  opened = []
+
+  def dm(request, timeout=None):
+    if request.full_url.endswith("/users/@me/channels"):
+      opened.append(json.loads(request.data))
+      return Reply(b'{"id": "dm-channel"}')
+    sent.append(request)
+    if request.full_url.endswith("/users/@me"):
+      return Reply(b'{"id": "bot", "username": "Tazuna"}')
+    return Reply(b'{"id": "m2"}')
+  saved = {name: getattr(config, name, None) for name in
+           ("WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_TARGET", "WEBHOOK_CHOICE_USER_ID",
+            "WEBHOOK_CHOICE_CHANNEL_ID")}
+  discord_choice._dm_channels.clear()
+  try:
+    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_CHANNEL_ID = "t", ""
+    config.WEBHOOK_CHOICE_TARGET, config.WEBHOOK_CHOICE_USER_ID = "dm", ""
+    check(not discord_choice.configured(), "DMs with no user ID set is not set up")
+    config.WEBHOOK_CHOICE_USER_ID = "42"
+    check(discord_choice.configured(), "a token and a user ID are enough for DMs")
+    discord_choice.post("hi", opener=dm)
+    discord_choice.post("again", opener=dm)
+    check(opened == [{"recipient_id": "42"}] and sent[-1].full_url.endswith(
+        "/channels/dm-channel/messages"),
+          "the DM with that user is opened once and posted in, like a channel")
+    ok, detail = discord_choice.test("t2", user="7", opener=dm)
+    check(ok and "DMs" in detail and opened[-1] == {"recipient_id": "7"},
+          "the test goes to the user's DMs when a user is given")
+  finally:
+    for name, value in saved.items():
+      setattr(config, name, value)
+    discord_choice._dm_channels.clear()
+
+  def closed(request, timeout=None):
+    if request.full_url.endswith("/users/@me"):
+      return Reply(b'{"id": "bot", "username": "Tazuna"}')
+    raise urllib.error.HTTPError(request.full_url, 403, "no", {}, io.BytesIO(
+        b'{"message": "Cannot send messages to this user", "code": 50007}'))
+  ok, detail = discord_choice.test("t", user="9", opener=closed)
+  check(not ok and "shares" in detail,
+        f"a user the bot cannot message is told why: {detail!r}")
+
 
 def main():
   reader_cases()
