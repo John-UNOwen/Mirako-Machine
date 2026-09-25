@@ -404,6 +404,11 @@ def is_known_skill(name):
   return base_name(name) in _canonical_names()
 
 
+def has_double(family):
+  """Whether the game has a double circle in `family`, by its base name."""
+  return DOUBLE in (_canonical_names().get(family) or {})
+
+
 def is_tiered_family(name):
   """True when `name` is a base name whose skill exists only in tiered forms.
 
@@ -664,9 +669,15 @@ def _tier_options(row):
   Only a row read as a circle is offered the step. A bare name is one whose glyph the OCR
   lost, so its real tier is unknown -- it may already be the double, and pressing twice
   on one of those buys nothing for the price of a skill.
+
+  And only when the game has that double. Four families stop at the circle -- Corner
+  Adept, Corner Acceleration, Corner Recovery, Down in the Dirt -- and go on to a gold
+  instead (Professor of Curvature for Corner Adept). Offered anyway, the solve priced a
+  "Corner Adept double" that does not exist, at the circle times the usual step, and
+  scored it 0 because the rating table rightly has no such skill.
   """
   options = [row]
-  if _tier_of(row.name) == CIRCLE:
+  if _tier_of(row.name) == CIRCLE and has_double(base_name(row.name)):
     upgraded = reserve_for(row, f"{base_name(row.name)} {DOUBLE}")
     if upgraded.cost is not None and upgraded.cost != row.cost:
       options.append(upgraded)

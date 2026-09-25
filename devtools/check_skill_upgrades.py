@@ -189,7 +189,22 @@ def restraint_cases():
         f"got {[r.name for r in chosen]}")
 
 
+def missing_double_cases():
+  print("\nFamilies with no double circle:")
+  from core.independent_skill import _tier_options, has_double, SkillRow, rating_of
+  for family in ("Corner Adept", "Corner Acceleration", "Corner Recovery", "Down in the Dirt"):
+    options = _tier_options(SkillRow(f"{family} {CIRCLE}", 170, True, None))
+    check(not has_double(family) and [row.name for row in options] == [f"{family} {CIRCLE}"],
+          f"{family} circle is offered as itself only: the game has no double for it")
+  options = _tier_options(SkillRow(f"Right-Handed {CIRCLE}", 100, True, None))
+  check(has_double("Right-Handed")
+        and [row.name for row in options] == [f"Right-Handed {CIRCLE}", f"Right-Handed {DOUBLE}"]
+        and rating_of(f"Right-Handed {DOUBLE}", {}) is not None,
+        "a family that has one is still offered the step, and it has a rating")
+
+
 def main():
+  missing_double_cases()
   reach_cases()
   invariant_cases()
   restraint_cases()

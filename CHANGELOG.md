@@ -8,6 +8,13 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.9 (2026-09-25)
+
+- Maximise Rating no longer considers a double circle the game does not have. Corner
+  Adept, Corner Acceleration, Corner Recovery and Down in the Dirt stop at the single
+  circle (their next step is a gold skill), but were being offered as a made-up double
+  circle with no rating.
+
 ## 1.0.8 (2026-09-25)
 
 - Spark reroll can ask first (Automation tab, Ask Before Rerolling). For a career a
