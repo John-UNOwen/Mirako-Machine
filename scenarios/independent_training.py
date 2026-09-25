@@ -35,7 +35,7 @@ from core.independent_borrow import (borrow_list_region, find_card, normalise, s
 from core.independent_agenda import AgendaError, ListNotAtTop, find_agenda
 from core.independent_skill import buy_skills_by_priority, forget_survey_floor
 from core.independent_stats import (STAT_FIELDS, TYPICAL_CAREER_SECONDS,
-                                    add_pending_refill, new_record, record_run,
+                                    add_pending_refill, amend_run, new_record, record_run,
                                     take_pending_refills)
 from core.ocr import extract_text
 from core.scheduler import (HOLD_LABEL, Ready, Retry, Scheduler, Task,
@@ -1197,10 +1197,11 @@ def rating_from_cell(cell_rgb):
 def handle_career_rank(state):
   """Record the career's rating, then carry on as any other Next screen.
 
-  Read here because this is where the game first shows it, before the sparks. The record
-  it goes into was started on the Training Log and is written to stats after this, so the
-  rating travels with the rest of the career's results. Read once: the handler runs again
-  for as long as the screen stays up.
+  Read here because this is where the game first shows it, before the sparks. The
+  career's record was already written to stats at the Training Log, before skill buying,
+  so the rating is added to it as an amendment; it also goes into the record kept for the
+  career-complete message. Read once: the handler runs again for as long as the screen
+  stays up.
   """
   if state.career_rating is None:
     if not wait_for_still_screen():
@@ -1212,6 +1213,9 @@ def handle_career_rank(state):
       info(f"Career rating: {state.career_rating:,}.")
       if state.pending_record is not None:
         state.pending_record["rating"] = state.career_rating
+        if state.log_record_written:
+          amend_run(state.pending_record.get("finished_at"),
+                    {"rating": state.career_rating})
       else:
         debug("No career record to add the rating to (the Training Log was not read).")
   handle_next(state)

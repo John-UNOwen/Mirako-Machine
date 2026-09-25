@@ -8,6 +8,11 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.6 (2026-09-25)
+
+- The career rating now reaches run history and the Statistics tab. It was read, and
+  shown in the Discord message, but the career had already been recorded without it.
+
 ## 1.0.5 (2026-09-25)
 
 - Skill costs are double-checked against the hint badge (list price less its discount), so a

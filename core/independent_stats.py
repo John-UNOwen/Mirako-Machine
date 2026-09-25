@@ -193,8 +193,31 @@ def record_run(record, path=None):
   return True
 
 
+def amend_run(finished_at, fields, path=None):
+  """Add `fields` to the career recorded as finishing at `finished_at`. Never raises.
+
+  For what the game shows after the record is written: the rating comes on the Career
+  Rank screen, after skill buying, and the record went down at the Training Log before
+  it. Appended as its own line rather than by rewriting the file, for the same reason the
+  records are -- a kill mid-write can then cost this line, never the history. read_runs()
+  folds it into its career.
+  """
+  path = path or runs_path()
+  try:
+    with open(path, "a", encoding="utf-8") as handle:
+      handle.write(json.dumps({"amends": finished_at, **fields}, ensure_ascii=False) + "\n")
+  except OSError as exception:
+    warning(f"Could not add {sorted(fields)} to the run record ({exception}).")
+    return False
+  return True
+
+
 def read_runs(path=None):
-  """Every record in one file, oldest first. Malformed lines are skipped, not fatal."""
+  """Every record in one file, oldest first. Malformed lines are skipped, not fatal.
+
+  An amendment line (amend_run) is folded into the latest career before it that finished
+  at the time it names, and is not a career of its own.
+  """
   path = path or runs_path()
   if not os.path.exists(path):
     return []
@@ -205,10 +228,19 @@ def read_runs(path=None):
       if not line:
         continue
       try:
-        runs.append(json.loads(line))
+        entry = json.loads(line)
       except ValueError:
         # Almost always a partial last line from a process killed mid-append.
         skipped += 1
+        continue
+      if isinstance(entry, dict) and "amends" in entry:
+        fields = {key: value for key, value in entry.items() if key != "amends"}
+        target = next((run for run in reversed(runs)
+                       if run.get("finished_at") == entry["amends"]), None)
+        if target is not None:
+          target.update(fields)
+        continue
+      runs.append(entry)
   if skipped:
     debug(f"Skipped {skipped} unreadable line(s) in {path}.")
   return runs

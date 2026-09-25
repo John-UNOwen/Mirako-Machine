@@ -89,9 +89,73 @@ def capture_cases():
       check(screen != Screen.CAREER_RANK, f"{name} is not taken for Career Rank, got {screen}")
 
 
+class _State:
+  def __init__(self, record, written):
+    self.career_rating = None
+    self.pending_record = record
+    self.log_record_written = written
+
+
+def history_cases():
+  print("\nThe rating reaches run history:")
+  import tempfile
+  import core.independent_stats as stats
+  saved = {name: getattr(independent, name) for name in
+           ("wait_for_still_screen", "rating_from_cell", "handle_next")}
+  saved_device = {name: getattr(independent.device_action, name) for name in
+                  ("flush_screenshot_cache", "screenshot")}
+  saved_path = stats.runs_path
+  with tempfile.TemporaryDirectory() as folder:
+    path = os.path.join(folder, "runs.jsonl")
+    try:
+      stats.runs_path = lambda *a, **k: path
+      independent.wait_for_still_screen = lambda *a, **k: True
+      independent.rating_from_cell = lambda frame: 17769
+      independent.handle_next = lambda state: None
+      independent.device_action.flush_screenshot_cache = lambda: None
+      independent.device_action.screenshot = lambda **k: None
+
+      # The game's order: the Training Log writes the record, skills are bought, and only
+      # then does Career Rank show the rating.
+      earlier = {**stats.new_record(), "finished_at": "2026-09-25T02:00:00-04:00", "fans": 1}
+      stats.record_run(earlier)
+      record = {**stats.new_record(), "finished_at": "2026-09-25T04:23:34-04:00", "fans": 2}
+      stats.record_run(record)
+      state = _State(record, written=True)
+      independent.handle_career_rank(state)
+      independent.handle_career_rank(state)
+      runs = stats.read_runs(path)
+      check(len(runs) == 2, f"the amendment is not a career of its own: {len(runs)} runs")
+      check(runs[-1]["rating"] == 17769 and runs[-1]["fans"] == 2,
+            "a rating read after the record was written reaches that career")
+      check(runs[0]["rating"] is None, "and no other")
+      check(io_lines(path) == 3, "added once, though the screen is handled twice")
+
+      pending = {**stats.new_record(), "finished_at": "2026-09-25T06:38:06-04:00"}
+      independent.handle_career_rank(_State(pending, written=False))
+      check(pending["rating"] == 17769 and io_lines(path) == 3,
+            "a record not written yet takes the rating itself, with no amendment")
+
+      stats.amend_run("2020-01-01T00:00:00+00:00", {"rating": 1}, path=path)
+      check(len(stats.read_runs(path)) == 2,
+            "an amendment for a career not in the file changes nothing")
+    finally:
+      stats.runs_path = saved_path
+      for name, value in saved.items():
+        setattr(independent, name, value)
+      for name, value in saved_device.items():
+        setattr(independent.device_action, name, value)
+
+
+def io_lines(path):
+  with open(path, encoding="utf-8") as handle:
+    return sum(1 for line in handle if line.strip())
+
+
 def main():
   plausibility_cases()
   capture_cases()
+  history_cases()
   print()
   if failures:
     print(f"{len(failures)} failure(s).")
