@@ -1,0 +1,1203 @@
+{
+ "blue": [
+  "Speed",
+  "Stamina",
+  "Power",
+  "Guts",
+  "Wit"
+ ],
+ "pink": [
+  "Turf",
+  "Dirt",
+  "Front Runner",
+  "Pace Chaser",
+  "Late Surger",
+  "End Closer",
+  "Sprint",
+  "Mile",
+  "Medium",
+  "Long"
+ ],
+ "white": [
+  {
+   "name": "February S.",
+   "group": "race"
+  },
+  {
+   "name": "Takamatsunomiya Kinen",
+   "group": "race"
+  },
+  {
+   "name": "Osaka Hai",
+   "group": "race"
+  },
+  {
+   "name": "Oka Sho",
+   "group": "race"
+  },
+  {
+   "name": "Satsuki Sho",
+   "group": "race"
+  },
+  {
+   "name": "Tenno Sho (Spring)",
+   "group": "race"
+  },
+  {
+   "name": "NHK Mile C.",
+   "group": "race"
+  },
+  {
+   "name": "Victoria Mile",
+   "group": "race"
+  },
+  {
+   "name": "Japanese Oaks",
+   "group": "race"
+  },
+  {
+   "name": "Japanese Derby",
+   "group": "race"
+  },
+  {
+   "name": "Yasuda Kinen",
+   "group": "race"
+  },
+  {
+   "name": "Takarazuka Kinen",
+   "group": "race"
+  },
+  {
+   "name": "Sprinters S.",
+   "group": "race"
+  },
+  {
+   "name": "Shuka Sho",
+   "group": "race"
+  },
+  {
+   "name": "Kikuka Sho",
+   "group": "race"
+  },
+  {
+   "name": "Tenno Sho (Autumn)",
+   "group": "race"
+  },
+  {
+   "name": "Queen Elizabeth II Cup",
+   "group": "race"
+  },
+  {
+   "name": "Mile Ch.",
+   "group": "race"
+  },
+  {
+   "name": "Japan C.",
+   "group": "race"
+  },
+  {
+   "name": "Champions C.",
+   "group": "race"
+  },
+  {
+   "name": "Hanshin J.F.",
+   "group": "race"
+  },
+  {
+   "name": "Asahi Hai F.S.",
+   "group": "race"
+  },
+  {
+   "name": "Arima Kinen",
+   "group": "race"
+  },
+  {
+   "name": "Hopeful S.",
+   "group": "race"
+  },
+  {
+   "name": "Teio Sho",
+   "group": "race"
+  },
+  {
+   "name": "J.D. Derby",
+   "group": "race"
+  },
+  {
+   "name": "JBC L. Classic",
+   "group": "race"
+  },
+  {
+   "name": "JBC Sprint",
+   "group": "race"
+  },
+  {
+   "name": "JBC Classic",
+   "group": "race"
+  },
+  {
+   "name": "Tokyo Daishoten",
+   "group": "race"
+  },
+  {
+   "name": "M.C. Nambu Hai",
+   "group": "race"
+  },
+  {
+   "name": "Kashiwa Kinen",
+   "group": "race"
+  },
+  {
+   "name": "Zen-Nippon Junior Yushun",
+   "group": "race"
+  },
+  {
+   "name": "Kawasaki Kinen",
+   "group": "race"
+  },
+  {
+   "name": "Right-Handed ○",
+   "group": "skill"
+  },
+  {
+   "name": "Left-Handed ○",
+   "group": "skill"
+  },
+  {
+   "name": "Tokyo Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Nakayama Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Hanshin Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Kyoto Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Chukyo Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Sapporo Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Hakodate Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Fukushima Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Niigata Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Kokura Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Standard Distance ○",
+   "group": "skill"
+  },
+  {
+   "name": "Non-Standard Distance ○",
+   "group": "skill"
+  },
+  {
+   "name": "Firm Conditions ○",
+   "group": "skill"
+  },
+  {
+   "name": "Wet Conditions ○",
+   "group": "skill"
+  },
+  {
+   "name": "Spring Runner ○",
+   "group": "skill"
+  },
+  {
+   "name": "Summer Runner ○",
+   "group": "skill"
+  },
+  {
+   "name": "Fall Runner ○",
+   "group": "skill"
+  },
+  {
+   "name": "Winter Runner ○",
+   "group": "skill"
+  },
+  {
+   "name": "Sunny Days ○",
+   "group": "skill"
+  },
+  {
+   "name": "Cloudy Days ○",
+   "group": "skill"
+  },
+  {
+   "name": "Rainy Days ○",
+   "group": "skill"
+  },
+  {
+   "name": "Snowy Days ○",
+   "group": "skill"
+  },
+  {
+   "name": "Inner Post Proficiency ○",
+   "group": "skill"
+  },
+  {
+   "name": "Outer Post Proficiency ○",
+   "group": "skill"
+  },
+  {
+   "name": "Maverick ○",
+   "group": "skill"
+  },
+  {
+   "name": "Competitive Spirit ○",
+   "group": "skill"
+  },
+  {
+   "name": "Target in Sight ○",
+   "group": "skill"
+  },
+  {
+   "name": "Long Shot ○",
+   "group": "skill"
+  },
+  {
+   "name": "Corner Adept ○",
+   "group": "skill"
+  },
+  {
+   "name": "Corner Acceleration ○",
+   "group": "skill"
+  },
+  {
+   "name": "Corner Recovery ○",
+   "group": "skill"
+  },
+  {
+   "name": "Straightaway Adept",
+   "group": "skill"
+  },
+  {
+   "name": "Straightaway Acceleration",
+   "group": "skill"
+  },
+  {
+   "name": "Straightaway Recovery",
+   "group": "skill"
+  },
+  {
+   "name": "Focus",
+   "group": "skill"
+  },
+  {
+   "name": "Lay Low",
+   "group": "skill"
+  },
+  {
+   "name": "Prudent Positioning",
+   "group": "skill"
+  },
+  {
+   "name": "Ramp Up",
+   "group": "skill"
+  },
+  {
+   "name": "Pace Strategy",
+   "group": "skill"
+  },
+  {
+   "name": "Calm in a Crowd",
+   "group": "skill"
+  },
+  {
+   "name": "Nimble Navigator",
+   "group": "skill"
+  },
+  {
+   "name": "Go with the Flow",
+   "group": "skill"
+  },
+  {
+   "name": "Homestretch Haste",
+   "group": "skill"
+  },
+  {
+   "name": "Early Lead",
+   "group": "skill"
+  },
+  {
+   "name": "Fast-Paced",
+   "group": "skill"
+  },
+  {
+   "name": "Final Push",
+   "group": "skill"
+  },
+  {
+   "name": "Stamina to Spare",
+   "group": "skill"
+  },
+  {
+   "name": "Preferred Position",
+   "group": "skill"
+  },
+  {
+   "name": "Prepared to Pass",
+   "group": "skill"
+  },
+  {
+   "name": "Position Pilfer",
+   "group": "skill"
+  },
+  {
+   "name": "Slick Surge",
+   "group": "skill"
+  },
+  {
+   "name": "Outer Swell",
+   "group": "skill"
+  },
+  {
+   "name": "Standing By",
+   "group": "skill"
+  },
+  {
+   "name": "Masterful Gambit",
+   "group": "skill"
+  },
+  {
+   "name": "Straightaway Spurt",
+   "group": "skill"
+  },
+  {
+   "name": "Sprinting Gear",
+   "group": "skill"
+  },
+  {
+   "name": "Wait-and-See",
+   "group": "skill"
+  },
+  {
+   "name": "Gap Closer",
+   "group": "skill"
+  },
+  {
+   "name": "Productive Plan",
+   "group": "skill"
+  },
+  {
+   "name": "Watchful Eye",
+   "group": "skill"
+  },
+  {
+   "name": "Updrafters",
+   "group": "skill"
+  },
+  {
+   "name": "Rosy Outlook",
+   "group": "skill"
+  },
+  {
+   "name": "Up-Tempo",
+   "group": "skill"
+  },
+  {
+   "name": "Steadfast",
+   "group": "skill"
+  },
+  {
+   "name": "Deep Breaths",
+   "group": "skill"
+  },
+  {
+   "name": "Inside Scoop",
+   "group": "skill"
+  },
+  {
+   "name": "Extra Tank",
+   "group": "skill"
+  },
+  {
+   "name": "Trick (Front)",
+   "group": "skill"
+  },
+  {
+   "name": "Trick (Rear)",
+   "group": "skill"
+  },
+  {
+   "name": "Frenzied Front Runners",
+   "group": "skill"
+  },
+  {
+   "name": "Frenzied Pace Chasers",
+   "group": "skill"
+  },
+  {
+   "name": "Frenzied Late Surgers",
+   "group": "skill"
+  },
+  {
+   "name": "Frenzied End Closers",
+   "group": "skill"
+  },
+  {
+   "name": "Subdued Front Runners",
+   "group": "skill"
+  },
+  {
+   "name": "Flustered Front Runners",
+   "group": "skill"
+  },
+  {
+   "name": "Hesitant Front Runners",
+   "group": "skill"
+  },
+  {
+   "name": "Subdued Pace Chasers",
+   "group": "skill"
+  },
+  {
+   "name": "Flustered Pace Chasers",
+   "group": "skill"
+  },
+  {
+   "name": "Hesitant Pace Chasers",
+   "group": "skill"
+  },
+  {
+   "name": "Subdued Late Surgers",
+   "group": "skill"
+  },
+  {
+   "name": "Flustered Late Surgers",
+   "group": "skill"
+  },
+  {
+   "name": "Hesitant Late Surgers",
+   "group": "skill"
+  },
+  {
+   "name": "Subdued End Closers",
+   "group": "skill"
+  },
+  {
+   "name": "Flustered End Closers",
+   "group": "skill"
+  },
+  {
+   "name": "Hesitant End Closers",
+   "group": "skill"
+  },
+  {
+   "name": "Oi Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Sprint Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Sprint Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Huge Lead",
+   "group": "skill"
+  },
+  {
+   "name": "Countermeasure",
+   "group": "skill"
+  },
+  {
+   "name": "Meticulous Measures",
+   "group": "skill"
+  },
+  {
+   "name": "Intimidate",
+   "group": "skill"
+  },
+  {
+   "name": "Stop Right There!",
+   "group": "skill"
+  },
+  {
+   "name": "Mile Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Mile Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Shifting Gears",
+   "group": "skill"
+  },
+  {
+   "name": "Acceleration",
+   "group": "skill"
+  },
+  {
+   "name": "Unyielding Spirit",
+   "group": "skill"
+  },
+  {
+   "name": "Speed Eater",
+   "group": "skill"
+  },
+  {
+   "name": "Opening Gambit",
+   "group": "skill"
+  },
+  {
+   "name": "Medium Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Medium Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Hawkeye",
+   "group": "skill"
+  },
+  {
+   "name": "Thunderbolt Step",
+   "group": "skill"
+  },
+  {
+   "name": "Soft Step",
+   "group": "skill"
+  },
+  {
+   "name": "Tether",
+   "group": "skill"
+  },
+  {
+   "name": "Murmur",
+   "group": "skill"
+  },
+  {
+   "name": "Long Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Long Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Keeping the Lead",
+   "group": "skill"
+  },
+  {
+   "name": "Passing Pro",
+   "group": "skill"
+  },
+  {
+   "name": "Pressure",
+   "group": "skill"
+  },
+  {
+   "name": "Stamina Eater",
+   "group": "skill"
+  },
+  {
+   "name": "Smoke Screen",
+   "group": "skill"
+  },
+  {
+   "name": "Front Runner Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Front Runner Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Dodging Danger",
+   "group": "skill"
+  },
+  {
+   "name": "Leader's Pride",
+   "group": "skill"
+  },
+  {
+   "name": "Moxie",
+   "group": "skill"
+  },
+  {
+   "name": "Second Wind",
+   "group": "skill"
+  },
+  {
+   "name": "Restart",
+   "group": "skill"
+  },
+  {
+   "name": "Pace Chaser Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Pace Chaser Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Shrewd Step",
+   "group": "skill"
+  },
+  {
+   "name": "Straight Descent",
+   "group": "skill"
+  },
+  {
+   "name": "Hydrate",
+   "group": "skill"
+  },
+  {
+   "name": "Tactical Tweak",
+   "group": "skill"
+  },
+  {
+   "name": "Disorient",
+   "group": "skill"
+  },
+  {
+   "name": "Late Surger Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "Late Surger Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "Fighter",
+   "group": "skill"
+  },
+  {
+   "name": "1,500,000 CC",
+   "group": "skill"
+  },
+  {
+   "name": "A Small Breather",
+   "group": "skill"
+  },
+  {
+   "name": "Studious",
+   "group": "skill"
+  },
+  {
+   "name": "Sharp Gaze",
+   "group": "skill"
+  },
+  {
+   "name": "End Closer Straightaways ○",
+   "group": "skill"
+  },
+  {
+   "name": "End Closer Corners ○",
+   "group": "skill"
+  },
+  {
+   "name": "I Can See Right Through You",
+   "group": "skill"
+  },
+  {
+   "name": "After-School Stroll",
+   "group": "skill"
+  },
+  {
+   "name": "Levelheaded",
+   "group": "skill"
+  },
+  {
+   "name": "Strategist",
+   "group": "skill"
+  },
+  {
+   "name": "Intense Gaze",
+   "group": "skill"
+  },
+  {
+   "name": "Front Runner Savvy ○",
+   "group": "skill"
+  },
+  {
+   "name": "Pace Chaser Savvy ○",
+   "group": "skill"
+  },
+  {
+   "name": "Late Surger Savvy ○",
+   "group": "skill"
+  },
+  {
+   "name": "End Closer Savvy ○",
+   "group": "skill"
+  },
+  {
+   "name": "Lucky Seven",
+   "group": "skill"
+  },
+  {
+   "name": "Triple 7s",
+   "group": "skill"
+  },
+  {
+   "name": "Highlander",
+   "group": "skill"
+  },
+  {
+   "name": "Uma Stan",
+   "group": "skill"
+  },
+  {
+   "name": "Groundwork",
+   "group": "skill"
+  },
+  {
+   "name": "Tail Held High",
+   "group": "skill"
+  },
+  {
+   "name": "Shake It Out",
+   "group": "skill"
+  },
+  {
+   "name": "Sympathy",
+   "group": "skill"
+  },
+  {
+   "name": "Lone Wolf",
+   "group": "skill"
+  },
+  {
+   "name": "Slipstream",
+   "group": "skill"
+  },
+  {
+   "name": "Playtime's Over!",
+   "group": "skill"
+  },
+  {
+   "name": "Top Pick",
+   "group": "skill"
+  },
+  {
+   "name": "Forward, March!",
+   "group": "skill"
+  },
+  {
+   "name": "Be Still",
+   "group": "skill"
+  },
+  {
+   "name": "All I've Got",
+   "group": "skill"
+  },
+  {
+   "name": "Head-On",
+   "group": "skill"
+  },
+  {
+   "name": "Familiar Ground",
+   "group": "skill"
+  },
+  {
+   "name": "Feature Act",
+   "group": "skill"
+  },
+  {
+   "name": "Early Start",
+   "group": "skill"
+  },
+  {
+   "name": "Risky Business",
+   "group": "skill"
+  },
+  {
+   "name": "Light as a Feather",
+   "group": "skill"
+  },
+  {
+   "name": "Free-Spirited",
+   "group": "skill"
+  },
+  {
+   "name": "Take the Chance",
+   "group": "skill"
+  },
+  {
+   "name": "Fighting Spirit",
+   "group": "skill"
+  },
+  {
+   "name": "Eager",
+   "group": "skill"
+  },
+  {
+   "name": "Pumped",
+   "group": "skill"
+  },
+  {
+   "name": "Fearless",
+   "group": "skill"
+  },
+  {
+   "name": "With All My Soul",
+   "group": "skill"
+  },
+  {
+   "name": "Full Throttle",
+   "group": "skill"
+  },
+  {
+   "name": "Restraint",
+   "group": "skill"
+  },
+  {
+   "name": "Downhill Speedster",
+   "group": "skill"
+  },
+  {
+   "name": "All Set",
+   "group": "skill"
+  },
+  {
+   "name": "Kawasaki Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Funabashi Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Morioka Racecourse ○",
+   "group": "skill"
+  },
+  {
+   "name": "Night Races ○",
+   "group": "skill"
+  },
+  {
+   "name": "Sharp Turns ○",
+   "group": "skill"
+  },
+  {
+   "name": "Collaborative Graded Races ○",
+   "group": "skill"
+  },
+  {
+   "name": "Sunny Sign",
+   "group": "skill"
+  },
+  {
+   "name": "Comeback",
+   "group": "skill"
+  },
+  {
+   "name": "Full Tilt",
+   "group": "skill"
+  },
+  {
+   "name": "Rational",
+   "group": "skill"
+  },
+  {
+   "name": "Down in the Dirt ○",
+   "group": "skill"
+  },
+  {
+   "name": "Got the Spirit!",
+   "group": "skill"
+  },
+  {
+   "name": "Rapid Gain",
+   "group": "skill"
+  },
+  {
+   "name": "Solid Steps",
+   "group": "skill"
+  },
+  {
+   "name": "Muddy ○",
+   "group": "skill"
+  },
+  {
+   "name": "Dust Cloud",
+   "group": "skill"
+  },
+  {
+   "name": "Oppression",
+   "group": "skill"
+  },
+  {
+   "name": "On the Attack",
+   "group": "skill"
+  },
+  {
+   "name": "Breakin' Out",
+   "group": "skill"
+  },
+  {
+   "name": "Mad Dash",
+   "group": "skill"
+  },
+  {
+   "name": "Leap Forward",
+   "group": "skill"
+  },
+  {
+   "name": "Aspire",
+   "group": "skill"
+  },
+  {
+   "name": "Scramble",
+   "group": "skill"
+  },
+  {
+   "name": "Steady Gait",
+   "group": "skill"
+  },
+  {
+   "name": "Risk-Taker",
+   "group": "skill"
+  },
+  {
+   "name": "Pedal to the Metal",
+   "group": "skill"
+  },
+  {
+   "name": "Firm Resolve",
+   "group": "skill"
+  },
+  {
+   "name": "Latch On",
+   "group": "skill"
+  },
+  {
+   "name": "My True Strength",
+   "group": "skill"
+  },
+  {
+   "name": "Sharp Steps",
+   "group": "skill"
+  },
+  {
+   "name": "No Looking Back",
+   "group": "skill"
+  },
+  {
+   "name": "Break the Mold",
+   "group": "skill"
+  },
+  {
+   "name": "Graceful Gait",
+   "group": "skill"
+  },
+  {
+   "name": "High Speed",
+   "group": "skill"
+  },
+  {
+   "name": "Locked On",
+   "group": "skill"
+  },
+  {
+   "name": "Undistracted",
+   "group": "skill"
+  },
+  {
+   "name": "Hurry Up!",
+   "group": "skill"
+  },
+  {
+   "name": "Ignition",
+   "group": "skill"
+  },
+  {
+   "name": "Unrestrained Passion",
+   "group": "skill"
+  },
+  {
+   "name": "Start the Charge",
+   "group": "skill"
+  },
+  {
+   "name": "First Step",
+   "group": "skill"
+  },
+  {
+   "name": "Confident",
+   "group": "skill"
+  },
+  {
+   "name": "Rising Heat",
+   "group": "skill"
+  },
+  {
+   "name": "Beating Heart",
+   "group": "skill"
+  },
+  {
+   "name": "Pop Off!",
+   "group": "skill"
+  },
+  {
+   "name": "Goin' First",
+   "group": "skill"
+  },
+  {
+   "name": "Adventurer",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit SPD",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit STA",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit PWR",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit GUTS",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit WIT",
+   "group": "skill"
+  },
+  {
+   "name": "Glittering Star",
+   "group": "skill"
+  },
+  {
+   "name": "On the Way to Our Dream",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Speed",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Stamina",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Power",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Guts",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Wit",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Mood",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Speed +",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Stamina +",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Power +",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Guts +",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Wit +",
+   "group": "skill"
+  },
+  {
+   "name": "Racing Spirit: Mood +",
+   "group": "skill"
+  },
+  {
+   "name": "Eyes on the Goal",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit: Speed +",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit: Stamina +",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit: Power +",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit: Guts +",
+   "group": "skill"
+  },
+  {
+   "name": "Ignited Spirit: Wit +",
+   "group": "skill"
+  },
+  {
+   "name": "Sun's Blessing",
+   "group": "skill"
+  },
+  {
+   "name": "Sea's Blessing",
+   "group": "skill"
+  },
+  {
+   "name": "Earth's Blessing",
+   "group": "skill"
+  },
+  {
+   "name": "URA Finale",
+   "group": "scenario"
+  },
+  {
+   "name": "Unity Cup",
+   "group": "scenario"
+  },
+  {
+   "name": "TS Climax Scenario",
+   "group": "scenario"
+  },
+  {
+   "name": "Our Grand Concert",
+   "group": "scenario"
+  },
+  {
+   "name": "Grandmasters",
+   "group": "scenario"
+  },
+  {
+   "name": "Carnival Bonus",
+   "group": "other"
+  }
+ ]
+}

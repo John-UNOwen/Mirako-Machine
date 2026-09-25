@@ -159,8 +159,8 @@ function requireReact_production() {
   function cloneAndReplaceKey(oldElement, newKey) {
     return ReactElement(oldElement.type, newKey, oldElement.props);
   }
-  function isValidElement(object) {
-    return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
+  function isValidElement(object2) {
+    return "object" === typeof object2 && null !== object2 && object2.$$typeof === REACT_ELEMENT_TYPE;
   }
   function escape(key) {
     var escaperLookup = { "=": "=0", ":": "=2" };
@@ -12519,7 +12519,7 @@ const notification_volume = 0.3;
 const webhook = { "url": "", "skills_enabled": true, "career_summary_enabled": true, "recovery_enabled": true };
 const skill = { "is_auto_buy_skill": false, "skill_blacklist": ["Certain Victory", "Legacy of the Strong", "Warning Shot!", "Xceleration", "Red Ace", "Focused Mind", "Corazón ☆ Ardiente", "Empress's Pride", "1st Place Kiss☆", "V Is for Victory!", "Class Rep + Speed = Bakushin", "Luck Be with Me!", "I Can Win Sometimes, Right?", "Call Me King", "Shooting Star", "The View from the Lead Is Mine!", "Sky-High Teio Step", "Triumphant Pulse", "Anchors Aweigh!", "Cut and Drive!", "Resplendent Red Ace", "Where There's a Will, There's a Way", "The Duty of Dignity Calls", "Victoria por plancha ☆", "This Dance Is for Vittoria!", "Behold Thine Emperor's Divine Might", "Blazing Pride", "∴win Q.E.D.", "Flashy☆Landing", "G00 1st. F∞;", "Blue Rose Closer", "Our Ticket to Win!", "Genius x Bakushin = Victory", "I See Victory in My Future!", "Just a Little Farther!", "Prideful King", "#LookatCurren", "Nemesis", "SPARKLY☆STARDOM", "Shadow Break", "Eternal Moments", "Flowery☆Maneuver", "You and Me! One-on-One!", "Lights of Vaudeville", "KEEP IT REAL.", "A Kiss for Courage", "I Never Goof Up!", "Schwarzes Schwert", "Bountiful Harvest", "YUMMY☆SPEED!", "OMG! (ﾟ∀ﾟ)  The Final Sprint! ☆", "Give Mummy a Hug ♡", "A Princess Must Seize Victory!", "Chasing After You", "Arrows Whistle, Shadows Disperse", "Dancing in the Leaves", "Pop & Polish", "Festive Miracle", "Presents from X", "Fairy Tale", "White Lightning Comin' Through!", "Barcarole of Blessings", "114th Time's the Charm", "Ambition to Surpass the Sakura", "A Lifelong Dream, A Moment's Flight", "Operation Cacao", "Guten Appetit ♪", "Shooting Star of Dioskouroi", "Victory Cheer!", "Eternal Encompassing Shine", "Lovely Spring Breeze", "Ravissant", "Break It Down!", "Peerless Dance of Flowering Flames", "Go☆Go☆Goal!", "All Charged! It's Go Time!", "Best Day Ever", "One True Color", "Now We're Cruisin'!", "Victory belongs to me—Strelitzia! ☆", "Joyful Voyage!", "Wherever This Wonder Leads", "trigger:BEAT", "Dreams Donned with Pride!", "Ruler of Japan", "564 Escapades", "Your Smile Sparkles as the Waves", "Luck Runs My Way", "α-star*", "Ticket to Your Dreams!", "Hephaestus", "Snow Bright, Snow Flight", "I'm Possible!", "THE MOE AAAA Thanks for My Life", "Spooky, Scary, Happy", "Silent Letter", "Lightning Flare", "Firelight", "Laugh at the Odds", "Never Say Never", "Into High Gear!", "Queen's Lumination", "Raise My Soul's Blade!", "Free From the Ashes", "Rain Cloud Bolt", "Bring on the Banquet!", "Hands in the Air Like Ya Don't Care!", "A Warm Cup for You", "Fresh☆Parlor", "Ding Dong, Boo!", "Engines LIT!", "Lyrical Journey", "Turbo BLAST!", "Ever Supreme", "Mission: Triumph", "Danser le Présent", "World in Bloom", "Ad Astra", "Tumbly Power Drive!", "Bang! Miracle Shot ☆", "Sublimated Thunder", "First Bite of the Feast!", "Flowering Dreams", "Magical☆Marvelous★World", "Us Girlies Keep Winnin'! ♪", "Scorching Summer Tech!", "Sunrise Banner—Katsuragi Ace!", "Ahead of the Horizon", "Summer Halation", "Introduction to Physiology", "Clear Heart", "Super-Duper Stoked", "U=ma2", "Pure Heart", "Super-Duper Climax", "Superior Heal", "Dazzl'n ♪ Diver", "Every Rose Has Its Fangs", "Ready, Go!", "Go, Go, Mun!", "Keep Pushing Ahead", "Disorient", "Restart", "Trick (Front)", "Trick (Rear)", "Flustered Front Runners", "Subdued Pace Chasers", "Flustered Pace Chasers", "Subdued Late Surgers", "Flustered Late Surgers", "Subdued End Closers", "Flustered End Closers", "Murmur", "Sharp Gaze", "Smoke Screen", "Dust Cloud", "Oppression", "Intense Gaze", "Tether", "Intimidate", "Maverick ○"], "skill_list": [] };
 const team_trials = { "enabled": false, "keep_charges": 0, "prioritise_reward": true };
-const independent_training = { "max_runs": 0, "after_max_runs": "stop", "wait_poll_seconds": 60, "training_minutes": 50, "borrow_cards": [], "borrow_warn_every_refreshes": 10, "spend_leftover_points": false, "leftover_strategy": "bottom_up", "maximize_rating": false, "training_focus": "default", "scenario": "default", "deck": 0, "deck_name": "", "agenda_slot": 1, "agenda_name": "", "racing_style": "default", "tp_refill_enabled": false, "tp_refill_strategy": "toughness_first", "debug_select_skills_only": false, "debug_stop_before_start": false, "debug_force_tp_refill": false, "tp_refill_max_per_session": 0, "tp_refill_min_carats_remaining": 0, "session_conflict_wait_minutes": 60, "collect_missions": true, "collect_presents": true, "daily_races_enabled": false, "daily_race_program": "moonlight_sho", "daily_race_difficulty": "very_hard", "daily_race_tickets_per_day": 6, "wait_for_tp": true, "debug_pretend_tp_short": false, "debug_tp_wait_seconds": 0, "restart_on_stuck": true, "restart_max_per_session": 10, "restart_max_same_kind": 5, "game_package": "" };
+const independent_training = { "max_runs": 0, "after_max_runs": "stop", "wait_poll_seconds": 60, "training_minutes": 50, "borrow_cards": [], "borrow_warn_every_refreshes": 10, "spark_reroll": { "at_ss_rating": false, "any_rating": false, "blue": { "required": false, "sparks": [] }, "pink": { "required": false, "sparks": [] }, "white": { "required": false, "sparks": [] } }, "spend_leftover_points": false, "leftover_strategy": "bottom_up", "maximize_rating": false, "training_focus": "default", "scenario": "default", "deck": 0, "deck_name": "", "agenda_slot": 1, "agenda_name": "", "racing_style": "default", "tp_refill_enabled": false, "tp_refill_strategy": "toughness_first", "debug_select_skills_only": false, "debug_stop_before_start": false, "debug_force_tp_refill": false, "tp_refill_max_per_session": 0, "tp_refill_min_carats_remaining": 0, "session_conflict_wait_minutes": 60, "collect_missions": true, "collect_presents": true, "daily_races_enabled": false, "daily_race_program": "moonlight_sho", "daily_race_difficulty": "very_hard", "daily_race_tickets_per_day": 6, "wait_for_tp": true, "debug_pretend_tp_short": false, "debug_tp_wait_seconds": 0, "restart_on_stuck": true, "restart_max_per_session": 10, "restart_max_same_kind": 5, "game_package": "" };
 const window_name = "Bluestacks Umamusume";
 const preset_id = "default";
 const rawConfig = {
@@ -12880,9 +12880,9 @@ function floatSafeRemainder(val, step) {
   return valInt % stepInt / 10 ** decCount;
 }
 const EVALUATING = /* @__PURE__ */ Symbol("evaluating");
-function defineLazy(object, key, getter) {
+function defineLazy(object2, key, getter) {
   let value = void 0;
-  Object.defineProperty(object, key, {
+  Object.defineProperty(object2, key, {
     get() {
       if (value === EVALUATING) {
         return void 0;
@@ -12894,7 +12894,7 @@ function defineLazy(object, key, getter) {
       return value;
     },
     set(v) {
-      Object.defineProperty(object, key, {
+      Object.defineProperty(object2, key, {
         value: v
         // configurable: true,
       });
@@ -16617,6 +16617,14 @@ const ZodObject = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
   inst.partial = (...args) => partial(ZodOptional, inst, args[0]);
   inst.required = (...args) => required(ZodNonOptional, inst, args[0]);
 });
+function object(shape, params) {
+  const def = {
+    type: "object",
+    shape: shape ?? {},
+    ...normalizeParams(params)
+  };
+  return new ZodObject(def);
+}
 function looseObject(shape, params) {
   return new ZodObject({
     type: "object",
@@ -16874,6 +16882,10 @@ const SkillSchema = looseObject({
   // exclusive with skill_list -- the picker moves a skill between them.
   skill_blacklist: array(string()).default([])
 });
+const SparkWantSchema = object({
+  required: boolean().default(false),
+  sparks: array(string()).default([])
+});
 const IndependentTrainingSchema = looseObject({
   max_runs: number().default(0),
   after_max_runs: _enum(["stop", "dailies"]).default("stop"),
@@ -16882,6 +16894,23 @@ const IndependentTrainingSchema = looseObject({
   // Paths to the card artwork templates, in priority order.
   borrow_cards: array(string()).default([]),
   borrow_warn_every_refreshes: number().default(10),
+  // Rerolling the sparks after a career (30 TP). It happens when either trigger is on:
+  // at_ss_rating once the career rates SS (17,500) or better, any_rating at whatever
+  // rating. It is skipped when the sparks granted already meet every colour whose
+  // `required` is on -- one of that colour's chosen sparks is enough.
+  spark_reroll: object({
+    at_ss_rating: boolean().default(false),
+    any_rating: boolean().default(false),
+    blue: SparkWantSchema.default(SparkWantSchema.parse({})),
+    pink: SparkWantSchema.default(SparkWantSchema.parse({})),
+    white: SparkWantSchema.default(SparkWantSchema.parse({}))
+  }).default({
+    at_ss_rating: false,
+    any_rating: false,
+    blue: { required: false, sparks: [] },
+    pink: { required: false, sparks: [] },
+    white: { required: false, sparks: [] }
+  }),
   spend_leftover_points: boolean().default(false),
   // Which extras the leftover walk reaches first. "bottom_up" takes the end of the
   // game's list; "best_value" takes the most heavily discounted. Ignored entirely when
@@ -17159,12 +17188,12 @@ const createLucideIcon = (iconName, iconNode) => {
   Component.displayName = toPascalCase(iconName);
   return Component;
 };
-const __iconNode$B = [
+const __iconNode$C = [
   ["path", { d: "M4.929 4.929 19.07 19.071", key: "196cmz" }],
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }]
 ];
-const Ban = createLucideIcon("ban", __iconNode$B);
-const __iconNode$A = [
+const Ban = createLucideIcon("ban", __iconNode$C);
+const __iconNode$B = [
   ["path", { d: "M12 8V4H8", key: "hb8ula" }],
   ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2", key: "enze0r" }],
   ["path", { d: "M2 14h2", key: "vft8re" }],
@@ -17172,8 +17201,8 @@ const __iconNode$A = [
   ["path", { d: "M15 13v2", key: "1xurst" }],
   ["path", { d: "M9 13v2", key: "rq6x2g" }]
 ];
-const Bot = createLucideIcon("bot", __iconNode$A);
-const __iconNode$z = [
+const Bot = createLucideIcon("bot", __iconNode$B);
+const __iconNode$A = [
   [
     "path",
     {
@@ -17194,8 +17223,8 @@ const __iconNode$z = [
   ["circle", { cx: "20", cy: "21", r: ".5", key: "yhc1fs" }],
   ["circle", { cx: "20", cy: "8", r: ".5", key: "1e43v0" }]
 ];
-const BrainCircuit = createLucideIcon("brain-circuit", __iconNode$z);
-const __iconNode$y = [
+const BrainCircuit = createLucideIcon("brain-circuit", __iconNode$A);
+const __iconNode$z = [
   ["path", { d: "m8 2 1.88 1.88", key: "fmnt4t" }],
   ["path", { d: "M14.12 3.88 16 2", key: "qol33r" }],
   ["path", { d: "M9 7.13v-1a3.003 3.003 0 1 1 6 0v1", key: "d7y7pr" }],
@@ -17214,54 +17243,54 @@ const __iconNode$y = [
   ["path", { d: "M22 13h-4", key: "1jl80f" }],
   ["path", { d: "M17.2 17c2.1.1 3.8 1.9 3.8 4", key: "k3fwyw" }]
 ];
-const Bug = createLucideIcon("bug", __iconNode$y);
-const __iconNode$x = [
+const Bug = createLucideIcon("bug", __iconNode$z);
+const __iconNode$y = [
   ["path", { d: "M3 3v16a2 2 0 0 0 2 2h16", key: "c24i48" }],
   ["path", { d: "M18 17V9", key: "2bz60n" }],
   ["path", { d: "M13 17V5", key: "1frdt8" }],
   ["path", { d: "M8 17v-3", key: "17ska0" }]
 ];
-const ChartColumn = createLucideIcon("chart-column", __iconNode$x);
-const __iconNode$w = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$w);
-const __iconNode$v = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$v);
-const __iconNode$u = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$u);
-const __iconNode$t = [
+const ChartColumn = createLucideIcon("chart-column", __iconNode$y);
+const __iconNode$x = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$x);
+const __iconNode$w = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$w);
+const __iconNode$v = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$v);
+const __iconNode$u = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
   ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
 ];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$t);
-const __iconNode$s = [
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$u);
+const __iconNode$t = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "m16 12-4-4-4 4", key: "177agl" }],
   ["path", { d: "M12 16V8", key: "1sbj14" }]
 ];
-const CircleArrowUp = createLucideIcon("circle-arrow-up", __iconNode$s);
-const __iconNode$r = [
+const CircleArrowUp = createLucideIcon("circle-arrow-up", __iconNode$t);
+const __iconNode$s = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
 ];
-const CircleCheck = createLucideIcon("circle-check", __iconNode$r);
-const __iconNode$q = [
+const CircleCheck = createLucideIcon("circle-check", __iconNode$s);
+const __iconNode$r = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["circle", { cx: "12", cy: "12", r: "1", key: "41hilf" }]
 ];
-const CircleDot = createLucideIcon("circle-dot", __iconNode$q);
-const __iconNode$p = [
+const CircleDot = createLucideIcon("circle-dot", __iconNode$r);
+const __iconNode$q = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3", key: "1u773s" }],
   ["path", { d: "M12 17h.01", key: "p32p05" }]
 ];
-const CircleQuestionMark = createLucideIcon("circle-question-mark", __iconNode$p);
-const __iconNode$o = [
+const CircleQuestionMark = createLucideIcon("circle-question-mark", __iconNode$q);
+const __iconNode$p = [
   ["path", { d: "M12 6v6l4 2", key: "mmk7yg" }],
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }]
 ];
-const Clock = createLucideIcon("clock", __iconNode$o);
-const __iconNode$n = [
+const Clock = createLucideIcon("clock", __iconNode$p);
+const __iconNode$o = [
   ["path", { d: "M11 10.27 7 3.34", key: "16pf9h" }],
   ["path", { d: "m11 13.73-4 6.93", key: "794ttg" }],
   ["path", { d: "M12 22v-2", key: "1osdcq" }],
@@ -17277,21 +17306,21 @@ const __iconNode$n = [
   ["circle", { cx: "12", cy: "12", r: "2", key: "1c9p78" }],
   ["circle", { cx: "12", cy: "12", r: "8", key: "46899m" }]
 ];
-const Cog = createLucideIcon("cog", __iconNode$n);
-const __iconNode$m = [
+const Cog = createLucideIcon("cog", __iconNode$o);
+const __iconNode$n = [
   ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2", key: "17jyea" }],
   ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2", key: "zix9uf" }]
 ];
-const Copy = createLucideIcon("copy", __iconNode$m);
-const __iconNode$l = [
+const Copy = createLucideIcon("copy", __iconNode$n);
+const __iconNode$m = [
   ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   ["path", { d: "M10 9H8", key: "b1mrlr" }],
   ["path", { d: "M16 13H8", key: "t4e002" }],
   ["path", { d: "M16 17H8", key: "z1uh3a" }]
 ];
-const FileText = createLucideIcon("file-text", __iconNode$l);
-const __iconNode$k = [
+const FileText = createLucideIcon("file-text", __iconNode$m);
+const __iconNode$l = [
   [
     "path",
     {
@@ -17300,8 +17329,8 @@ const __iconNode$k = [
     }
   ]
 ];
-const Flag = createLucideIcon("flag", __iconNode$k);
-const __iconNode$j = [
+const Flag = createLucideIcon("flag", __iconNode$l);
+const __iconNode$k = [
   [
     "path",
     {
@@ -17312,8 +17341,8 @@ const __iconNode$j = [
   ["path", { d: "M12 10v6", key: "1bos4e" }],
   ["path", { d: "m15 13-3 3-3-3", key: "6j2sf0" }]
 ];
-const FolderDown = createLucideIcon("folder-down", __iconNode$j);
-const __iconNode$i = [
+const FolderDown = createLucideIcon("folder-down", __iconNode$k);
+const __iconNode$j = [
   [
     "path",
     {
@@ -17324,8 +17353,8 @@ const __iconNode$i = [
   ["path", { d: "M12 10v6", key: "1bos4e" }],
   ["path", { d: "m9 13 3-3 3 3", key: "1pxg3c" }]
 ];
-const FolderUp = createLucideIcon("folder-up", __iconNode$i);
-const __iconNode$h = [
+const FolderUp = createLucideIcon("folder-up", __iconNode$j);
+const __iconNode$i = [
   ["circle", { cx: "12", cy: "5", r: "1", key: "gxeob9" }],
   ["circle", { cx: "19", cy: "5", r: "1", key: "w8mnmm" }],
   ["circle", { cx: "5", cy: "5", r: "1", key: "lttvr7" }],
@@ -17336,32 +17365,32 @@ const __iconNode$h = [
   ["circle", { cx: "19", cy: "19", r: "1", key: "shf9b7" }],
   ["circle", { cx: "5", cy: "19", r: "1", key: "bfqh0e" }]
 ];
-const Grip = createLucideIcon("grip", __iconNode$h);
-const __iconNode$g = [
+const Grip = createLucideIcon("grip", __iconNode$i);
+const __iconNode$h = [
   ["path", { d: "m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16", key: "9kzy35" }],
   ["path", { d: "M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2", key: "1t0f0t" }],
   ["circle", { cx: "13", cy: "7", r: "1", fill: "currentColor", key: "1obus6" }],
   ["rect", { x: "8", y: "2", width: "14", height: "14", rx: "2", key: "1gvhby" }]
 ];
-const Images = createLucideIcon("images", __iconNode$g);
-const __iconNode$f = [
+const Images = createLucideIcon("images", __iconNode$h);
+const __iconNode$g = [
   ["path", { d: "m3 17 2 2 4-4", key: "1jhpwq" }],
   ["path", { d: "m3 7 2 2 4-4", key: "1obspn" }],
   ["path", { d: "M13 6h8", key: "15sg57" }],
   ["path", { d: "M13 12h8", key: "h98zly" }],
   ["path", { d: "M13 18h8", key: "oe0vm4" }]
 ];
-const ListChecks = createLucideIcon("list-checks", __iconNode$f);
-const __iconNode$e = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
-const LoaderCircle = createLucideIcon("loader-circle", __iconNode$e);
-const __iconNode$d = [
+const ListChecks = createLucideIcon("list-checks", __iconNode$g);
+const __iconNode$f = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$f);
+const __iconNode$e = [
   ["path", { d: "M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8", key: "10dyio" }],
   ["path", { d: "M10 19v-3.96 3.15", key: "1irgej" }],
   ["path", { d: "M7 19h5", key: "qswx4l" }],
   ["rect", { width: "6", height: "10", x: "16", y: "12", rx: "2", key: "1egngj" }]
 ];
-const MonitorSmartphone = createLucideIcon("monitor-smartphone", __iconNode$d);
-const __iconNode$c = [
+const MonitorSmartphone = createLucideIcon("monitor-smartphone", __iconNode$e);
+const __iconNode$d = [
   [
     "path",
     {
@@ -17370,8 +17399,8 @@ const __iconNode$c = [
     }
   ]
 ];
-const Moon = createLucideIcon("moon", __iconNode$c);
-const __iconNode$b = [
+const Moon = createLucideIcon("moon", __iconNode$d);
+const __iconNode$c = [
   [
     "path",
     {
@@ -17381,8 +17410,8 @@ const __iconNode$b = [
   ],
   ["path", { d: "m15 5 4 4", key: "1mk7zo" }]
 ];
-const Pencil = createLucideIcon("pencil", __iconNode$b);
-const __iconNode$a = [
+const Pencil = createLucideIcon("pencil", __iconNode$c);
+const __iconNode$b = [
   [
     "path",
     {
@@ -17391,29 +17420,42 @@ const __iconNode$a = [
     }
   ]
 ];
-const Play = createLucideIcon("play", __iconNode$a);
-const __iconNode$9 = [
+const Play = createLucideIcon("play", __iconNode$b);
+const __iconNode$a = [
   ["path", { d: "M5 12h14", key: "1ays0h" }],
   ["path", { d: "M12 5v14", key: "s699le" }]
 ];
-const Plus = createLucideIcon("plus", __iconNode$9);
-const __iconNode$8 = [
+const Plus = createLucideIcon("plus", __iconNode$a);
+const __iconNode$9 = [
   ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
   ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
 ];
-const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$8);
-const __iconNode$7 = [
+const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$9);
+const __iconNode$8 = [
   ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
   ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
 ];
-const Search = createLucideIcon("search", __iconNode$7);
-const __iconNode$6 = [
+const Search = createLucideIcon("search", __iconNode$8);
+const __iconNode$7 = [
   ["path", { d: "M14 17H5", key: "gfn3mx" }],
   ["path", { d: "M19 7h-9", key: "6i9tg" }],
   ["circle", { cx: "17", cy: "17", r: "3", key: "18b49y" }],
   ["circle", { cx: "7", cy: "7", r: "3", key: "dfmy0x" }]
 ];
-const Settings2 = createLucideIcon("settings-2", __iconNode$6);
+const Settings2 = createLucideIcon("settings-2", __iconNode$7);
+const __iconNode$6 = [
+  [
+    "path",
+    {
+      d: "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z",
+      key: "1s2grr"
+    }
+  ],
+  ["path", { d: "M20 2v4", key: "1rf3ol" }],
+  ["path", { d: "M22 4h-4", key: "gwowj6" }],
+  ["circle", { cx: "4", cy: "20", r: "2", key: "6kqj1y" }]
+];
+const Sparkles = createLucideIcon("sparkles", __iconNode$6);
 const __iconNode$5 = [
   ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }]
 ];
@@ -28812,7 +28854,7 @@ function useUniqueId(prefix, value) {
   }, [prefix, value]);
 }
 function createAdjustmentFn(modifier) {
-  return function(object) {
+  return function(object2) {
     for (var _len = arguments.length, adjustments = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       adjustments[_key - 1] = arguments[_key];
     }
@@ -28826,7 +28868,7 @@ function createAdjustmentFn(modifier) {
       }
       return accumulator;
     }, {
-      ...object
+      ...object2
     });
   };
 }
@@ -32783,10 +32825,10 @@ function shouldThrowError(throwOnError, params) {
   }
   return !!throwOnError;
 }
-function addConsumeAwareSignal(object, getSignal, onCancelled) {
+function addConsumeAwareSignal(object2, getSignal, onCancelled) {
   let consumed = false;
   let signal;
-  Object.defineProperty(object, "signal", {
+  Object.defineProperty(object2, "signal", {
     enumerable: true,
     get: () => {
       signal ??= getSignal();
@@ -32802,7 +32844,7 @@ function addConsumeAwareSignal(object, getSignal, onCancelled) {
       return signal;
     }
   });
-  return object;
+  return object2;
 }
 var FocusManager = class extends Subscribable {
   #focused;
@@ -33482,8 +33524,8 @@ var Query = class extends Removable {
       }
     }
     const abortController = new AbortController();
-    const addSignalProperty = (object) => {
-      Object.defineProperty(object, "signal", {
+    const addSignalProperty = (object2) => {
+      Object.defineProperty(object2, "signal", {
         enumerable: true,
         get: () => {
           this.#abortSignalConsumed = true;
@@ -34175,9 +34217,9 @@ function infiniteQueryBehavior(pages) {
       let currentPage = 0;
       const fetchFn = async () => {
         let cancelled = false;
-        const addSignalProperty = (object) => {
+        const addSignalProperty = (object2) => {
           addConsumeAwareSignal(
-            object,
+            object2,
             () => context.signal,
             () => cancelled = true
           );
@@ -35405,6 +35447,223 @@ function cardMatches(card, query) {
     (word) => RARITIES.has(word) ? word === rarity : haystack.includes(word)
   );
 }
+const WHITE_GROUPS = [
+  { id: "all", label: "All" },
+  { id: "race", label: "Races" },
+  { id: "skill", label: "Skills" },
+  { id: "scenario", label: "Scenarios" },
+  { id: "other", label: "Other" }
+];
+const SWATCH = {
+  blue: "bg-sky-500",
+  pink: "bg-pink-400",
+  white: "bg-zinc-300 border border-zinc-400"
+};
+function SparkRerollSection({ value, onChange }) {
+  const [catalogue, setCatalogue] = reactExports.useState({ blue: [], pink: [], white: [] });
+  const [pickerOpen, setPickerOpen] = reactExports.useState(false);
+  const [search, setSearch] = reactExports.useState("");
+  const [group, setGroup] = reactExports.useState("all");
+  reactExports.useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/sparks", { cache: "no-store" });
+        if (response.ok && !cancelled) setCatalogue(await response.json());
+      } catch {
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  reactExports.useEffect(() => {
+    if (pickerOpen) setSearch("");
+  }, [pickerOpen]);
+  const setColour = (colour, patch) => onChange({ ...value, [colour]: { ...value[colour], ...patch } });
+  const toggleSpark = (colour, name) => {
+    const chosen = value[colour].sparks;
+    setColour(colour, {
+      sparks: chosen.includes(name) ? chosen.filter((n) => n !== name) : [...chosen, name]
+    });
+  };
+  const triggered = value.at_ss_rating || value.any_rating;
+  const query = search.trim().toLowerCase();
+  const shownWhite = catalogue.white.filter(
+    (spark) => (group === "all" || spark.group === group) && (!query || spark.name.toLowerCase().includes(query))
+  );
+  const chips = (colour) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2 mt-2", children: catalogue[colour].map((name) => {
+    const on = value[colour].sparks.includes(name);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        type: "button",
+        "aria-pressed": on,
+        onClick: () => toggleSpark(colour, name),
+        className: `px-3 py-1 rounded-full border text-sm transition-colors ${on ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"}`,
+        children: [
+          on && /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "inline w-3.5 h-3.5 mr-1 -mt-0.5" }),
+          name
+        ]
+      },
+      name
+    );
+  }) });
+  const colourRow = (colour, title, hint) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-4", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Checkbox,
+        {
+          checked: value[colour].required,
+          onCheckedChange: () => setColour(colour, { required: !value[colour].required })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `inline-block w-3 h-3 rounded-sm ${SWATCH[colour]}`, "aria-hidden": true }),
+      "Require a ",
+      title,
+      " Spark",
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: hint })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: value[colour].required ? "" : "disabled", children: [
+      colour === "white" ? whitePicker : chips(colour),
+      value[colour].required && value[colour].sparks.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground mt-1", children: "Nothing chosen yet, so this colour asks for nothing." })
+    ] })
+  ] });
+  const whitePicker = /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2", children: [
+    value.white.sparks.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2 mb-2", children: value.white.sparks.map((name) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "span",
+      {
+        className: "pl-3 pr-1.5 py-1 rounded-full border border-primary bg-primary/15\n                         text-sm flex items-center gap-1",
+        children: [
+          name,
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              "aria-label": `Remove ${name}`,
+              onClick: () => toggleSpark("white", name),
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "w-3.5 h-3.5" })
+            }
+          )
+        ]
+      },
+      name
+    )) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: pickerOpen, onOpenChange: setPickerOpen, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", variant: "outline", className: "uma-btn", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { size: 16, className: "mr-1" }),
+        "Choose White Sparks"
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "sm:max-w-2xl", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogHeader, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: "White Sparks" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { children: "Any one of the sparks chosen here meets the white requirement. Races, the scenario, and skills: a skill's spark can only come from a skill the trainee ended the career with, including the lower skill a gold one brings along." })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 flex-wrap", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative grow", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { className: "absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4\n                                 text-muted-foreground pointer-events-none" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Input,
+              {
+                autoFocus: true,
+                type: "search",
+                className: "pl-8",
+                placeholder: "Search sparks",
+                "aria-label": "Search sparks",
+                value: search,
+                onChange: (e) => setSearch(e.target.value)
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "inline-flex rounded-md border-1 border-border overflow-hidden", children: WHITE_GROUPS.map((g) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => setGroup(g.id),
+              className: `px-3 py-1.5 text-sm ${group === g.id ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"}`,
+              children: g.label
+            },
+            g.id
+          )) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-muted-foreground tabular-nums", children: [
+          shownWhite.length,
+          " of ",
+          catalogue.white.length,
+          " ·",
+          " ",
+          value.white.sparks.length,
+          " chosen"
+        ] }),
+        shownWhite.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground py-6", children: catalogue.white.length === 0 ? "No spark list loaded. It comes from data/sparks.json." : `No spark matches “${search}”.` }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid sm:grid-cols-2 grid-cols-1 gap-1.5 max-h-[55vh] overflow-y-auto", children: shownWhite.map((spark) => {
+          const on = value.white.sparks.includes(spark.name);
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              "aria-pressed": on,
+              onClick: () => toggleSpark("white", spark.name),
+              className: `flex items-center gap-2 px-3 py-2 rounded-md border text-left
+                                text-sm transition-colors ${on ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "grow", children: spark.name }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground capitalize", children: spark.group }),
+                on && /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "shrink-0 w-4 h-4 text-primary" })
+              ]
+            },
+            spark.name
+          );
+        }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogFooter, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { type: "button", onClick: () => setPickerOpen(false), children: "Done" }) })
+      ] })
+    ] })
+  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("h3", { className: "text-xl font-semibold mt-6 mb-2 flex items-center gap-2", children: [
+      "Spark Reroll",
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "After a career the game grants sparks, and they can be rerolled once for 30 TP before choosing which set to keep. The bot rerolls when a trigger below allows it and the sparks granted miss a colour you require. A required colour is met by any one of the sparks chosen for it; every required colour has to be met." })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid lg:grid-cols-2 grid-cols-1 gap-2 mb-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Checkbox,
+          {
+            checked: value.at_ss_rating,
+            onCheckedChange: () => onChange({ ...value, at_ss_rating: !value.at_ss_rating })
+          }
+        ),
+        "Reroll at SS Rating or Higher",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "Only for careers that rate SS (17,500) or better, read off the Career Rank screen straight after Complete Career." })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Checkbox,
+          {
+            checked: value.any_rating,
+            onCheckedChange: () => onChange({ ...value, any_rating: !value.any_rating })
+          }
+        ),
+        "Reroll at Any Rating",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "Overrides the rating: a career below SS is rerolled too when it misses a required spark." })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: triggered ? "" : "disabled", children: [
+      !triggered && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mb-3", children: "Neither trigger is on, so the sparks are never rerolled." }),
+      colourRow("blue", "Blue", "A stat spark: one of the five stats."),
+      colourRow(
+        "pink",
+        "Pink",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "An aptitude spark. The trainee can only be granted one for an aptitude it has at A or better, so choosing one the trainee does not have at A cannot be met however often the sparks are rerolled." })
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground -mt-3 mb-4", children: "Only aptitudes the trainee has at A or better can come up as a pink spark." }),
+      colourRow(
+        "white",
+        "White",
+        "Race, skill and scenario sparks. A career usually grants several."
+      )
+    ] })
+  ] });
+}
 function IndependentSection({ config: config2, updateConfig }) {
   const independent = config2.independent_training;
   const webhook2 = config2.webhook;
@@ -35825,6 +36084,13 @@ function IndependentSection({ config: config2, updateConfig }) {
         ] })
       ] })
     ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      SparkRerollSection,
+      {
+        value: independent.spark_reroll,
+        onChange: (spark_reroll) => update({ spark_reroll })
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("h3", { className: "text-xl font-semibold mt-6 mb-2 flex items-center gap-2", children: [
       "Discord Notifications",
       /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltips, { children: "Sends a message to a Discord channel as things happen — the point of which is a run you are not watching. Paste a channel's webhook URL to switch it on; leave it empty and nothing is sent." })

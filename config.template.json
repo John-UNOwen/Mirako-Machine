@@ -195,6 +195,13 @@
     "training_minutes": 50,
     "borrow_cards": [],
     "borrow_warn_every_refreshes": 10,
+    "spark_reroll": {
+      "at_ss_rating": false,
+      "any_rating": false,
+      "blue": {"required": false, "sparks": []},
+      "pink": {"required": false, "sparks": []},
+      "white": {"required": false, "sparks": []}
+    },
     "spend_leftover_points": false,
     "leftover_strategy": "bottom_up",
     "maximize_rating": false,

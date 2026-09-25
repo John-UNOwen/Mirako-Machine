@@ -1819,6 +1819,13 @@ def get_notifs():
 BORROW_DIR = os.path.join("assets", "independent", "borrow")
 
 
+@app.get("/sparks")
+def list_sparks():
+  """Every spark the reroll settings can ask for, by colour, from data/sparks.json."""
+  from core.independent_sparks import catalogue
+  return catalogue()
+
+
 @app.get("/borrow/cards")
 def list_borrow_cards():
   """Every card in the library, with the title the config stores it under."""

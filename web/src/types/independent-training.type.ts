@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+// One colour of spark the reroll looks for: whether it is required at all, and which
+// names satisfy it. Names as the game prints them, from data/sparks.json.
+export const SparkWantSchema = z.object({
+  required: z.boolean().default(false),
+  sparks: z.array(z.string()).default([]),
+});
+
 // Independent Training is opt-in and self-contained, so every field carries a default.
 // A preset saved before the mode existed then parses cleanly with the mode simply off,
 // rather than failing validation over a block the user may never touch.
@@ -11,6 +18,25 @@ export const IndependentTrainingSchema = z.looseObject({
   // Paths to the card artwork templates, in priority order.
   borrow_cards: z.array(z.string()).default([]),
   borrow_warn_every_refreshes: z.number().default(10),
+  // Rerolling the sparks after a career (30 TP). It happens when either trigger is on:
+  // at_ss_rating once the career rates SS (17,500) or better, any_rating at whatever
+  // rating. It is skipped when the sparks granted already meet every colour whose
+  // `required` is on -- one of that colour's chosen sparks is enough.
+  spark_reroll: z
+    .object({
+      at_ss_rating: z.boolean().default(false),
+      any_rating: z.boolean().default(false),
+      blue: SparkWantSchema.default(SparkWantSchema.parse({})),
+      pink: SparkWantSchema.default(SparkWantSchema.parse({})),
+      white: SparkWantSchema.default(SparkWantSchema.parse({})),
+    })
+    .default({
+      at_ss_rating: false,
+      any_rating: false,
+      blue: { required: false, sparks: [] },
+      pink: { required: false, sparks: [] },
+      white: { required: false, sparks: [] },
+    }),
   spend_leftover_points: z.boolean().default(false),
   // Which extras the leftover walk reaches first. "bottom_up" takes the end of the
   // game's list; "best_value" takes the most heavily discounted. Ignored entirely when

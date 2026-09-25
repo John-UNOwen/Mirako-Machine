@@ -292,6 +292,9 @@ def reload_config():
       borrow_cards = [borrow_cards] if borrow_cards else []
     load_var('INDEPENDENT_BORROW_CARDS', _borrow_titles(borrow_cards))
     load_var('INDEPENDENT_BORROW_WARN_EVERY', independent.get("borrow_warn_every_refreshes", 10))
+    # Which sparks a career has to come away with, and when a reroll may be spent on
+    # them. Interpreted by core/independent_sparks.py.
+    load_var('INDEPENDENT_SPARK_REROLL', independent.get("spark_reroll", {}))
 
     # Skill points do not survive the end of a career, so any balance left after the
     # priority list is bought is simply lost. With this on, the remainder is spent on

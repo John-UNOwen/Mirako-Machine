@@ -16,6 +16,7 @@ import {
 import Tooltips from "@/components/_c/Tooltips";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { cardMatches } from "@/lib/borrow-search";
+import SparkRerollSection from "./SparkRerollSection";
 
 // A card is identified by the title the game prints for it, not by its artwork, so
 // `file` here is only a thumbnail for this picker and may be empty.
@@ -591,6 +592,11 @@ export default function IndependentSection({ config, updateConfig }: Props) {
           </DialogContent>
         </Dialog>
       </div>
+
+      <SparkRerollSection
+        value={independent.spark_reroll}
+        onChange={(spark_reroll) => update({ spark_reroll })}
+      />
 
       <h3 className="text-xl font-semibold mt-6 mb-2 flex items-center gap-2">
         Discord Notifications
