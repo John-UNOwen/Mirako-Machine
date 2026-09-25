@@ -66,6 +66,24 @@ export default function IndependentSection({ config, updateConfig }: Props) {
   const [botTesting, setBotTesting] = useState(false);
   const [botResult, setBotResult] = useState<{ ok: boolean; detail: string } | null>(null);
   // What is typed, not what is saved, as with the webhook test.
+  // The invite link, built from the token. A bot token's first part is its application ID
+  // in base64, so the link needs nothing else -- which spares the Developer Portal's URL
+  // Generator, a page it is easy to come away from with nothing but the ID. The
+  // permissions are View Channels, Send Messages, Attach Files, Add Reactions and Read
+  // Message History, and nothing more.
+  const inviteLink = (() => {
+    try {
+      const head = webhook.bot_token.trim().split(".")[0];
+      const padded = head.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((head.length + 3) % 4);
+      const id = atob(padded);
+      return /^\d{15,22}$/.test(id)
+        ? `https://discord.com/oauth2/authorize?client_id=${id}&scope=bot&permissions=101440`
+        : "";
+    } catch {
+      return "";
+    }
+  })();
+
   const testBot = async () => {
     setBotTesting(true);
     setBotResult(null);
@@ -739,9 +757,19 @@ export default function IndependentSection({ config, updateConfig }: Props) {
             Token below.
           </li>
           <li>
-            On <b>OAuth2 &rarr; URL Generator</b>, tick <b>bot</b>, then the permissions
-            View Channels, Send Messages, Attach Files, Add Reactions and Read Message
-            History. Open the link at the bottom and add the bot to your server.
+            {inviteLink ? (
+              <>
+                Open{" "}
+                <a className="underline" href={inviteLink} target="_blank" rel="noreferrer">
+                  this invite link
+                </a>{" "}
+                and add the bot to your server. It asks for exactly the permissions the bot
+                uses: View Channels, Send Messages, Attach Files, Add Reactions and Read
+                Message History.
+              </>
+            ) : (
+              <>Paste the token first: the invite link for step 3 appears here.</>
+            )}
           </li>
           <li>
             In Discord, turn on <b>Developer Mode</b> (User Settings &rarr; Advanced), then

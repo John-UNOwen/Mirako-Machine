@@ -35722,6 +35722,16 @@ function IndependentSection({ config: config2, updateConfig }) {
   };
   const [botTesting, setBotTesting] = reactExports.useState(false);
   const [botResult, setBotResult] = reactExports.useState(null);
+  const inviteLink = (() => {
+    try {
+      const head = webhook2.bot_token.trim().split(".")[0];
+      const padded = head.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((head.length + 3) % 4);
+      const id = atob(padded);
+      return /^\d{15,22}$/.test(id) ? `https://discord.com/oauth2/authorize?client_id=${id}&scope=bot&permissions=101440` : "";
+    } catch {
+      return "";
+    }
+  })();
   const testBot = async () => {
     setBotTesting(true);
     setBotResult(null);
@@ -36250,13 +36260,13 @@ function IndependentSection({ config: config2, updateConfig }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Reset Token" }),
         " and paste the token into Bot Token below."
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
-        "On ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "OAuth2 → URL Generator" }),
-        ", tick ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "bot" }),
-        ", then the permissions View Channels, Send Messages, Attach Files, Add Reactions and Read Message History. Open the link at the bottom and add the bot to your server."
-      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: inviteLink ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        "Open",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { className: "underline", href: inviteLink, target: "_blank", rel: "noreferrer", children: "this invite link" }),
+        " ",
+        "and add the bot to your server. It asks for exactly the permissions the bot uses: View Channels, Send Messages, Attach Files, Add Reactions and Read Message History."
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: "Paste the token first: the invite link for step 3 appears here." }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
         "In Discord, turn on ",
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "Developer Mode" }),
