@@ -24,7 +24,8 @@ STATS_DIR = "stats"
 
 # Written into every record so a reader can tell what a missing field means: absent
 # because the career never had it, or absent because the writer predates it.
-SCHEMA_VERSION = 1
+# 2: adds `rating`, read off the Career Rank screen. A version 1 record has none to give.
+SCHEMA_VERSION = 2
 
 # What a career takes when nobody is timing it.
 #
@@ -49,7 +50,7 @@ STAT_FIELDS = ("speed", "stamina", "power", "guts", "wit")
 # it could start. Unlike the rest it is not read off a screen -- the bot drives the
 # refill itself, so it counts what it bought.
 READ_FIELDS = STAT_FIELDS + ("skill_points", "fans", "races", "wins",
-                             "carats_earned", "tp_refills")
+                             "carats_earned", "tp_refills", "rating")
 
 # Refills happen between careers, and the career they paid for finishes about fifty
 # minutes later -- long enough for the bot to be stopped and started in between, which

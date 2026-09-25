@@ -73,6 +73,9 @@ class Screen:
   # bond crosses a threshold most careers.
   STORY_UNLOCKED = "story_unlocked"
   REWARDS = "rewards"
+  # The Career Rank screen right after Complete Career: the rank badge and the career's
+  # rating, the one place the game shows the number before the sparks.
+  CAREER_RANK = "career_rank"
   POST_CAREER_NEXT = "post_career_next"
 
   # Connection loss. CONNECTION_ERROR_RETRY offers Retry and is the common case;
@@ -845,8 +848,12 @@ SCREEN_ORDER = (
              search_region=(0, 0, 800, 240)),
   ScreenSpec(Screen.POST_LOGIN_CLOSE, [f"{BUTTONS}/close_btn.png"]),
 
-  # Remaining post-career screens (final rank, and the event reward that only appears
-  # while an event is running) are visually distinct but all just need "Next".
+  # Career Rank carries the same Next as the generic fallback below, so it goes first. It
+  # is told apart by its "CAREER" title, which the rating is read beneath.
+  ScreenSpec(Screen.CAREER_RANK, [f"{ASSETS}/career_rank_title.png"],
+             search_region=(200, 0, 600, 140)),
+  # Remaining post-career screens (the event reward that only appears while an event is
+  # running, and others) are visually distinct but all just need "Next".
   ScreenSpec(Screen.POST_CAREER_NEXT, [f"{BUTTONS}/next_btn.png"],
              search_region=_BOTTOM_STRIP_LOCAL),
 )
@@ -991,6 +998,7 @@ CLICK_TARGETS = {
   # outside the game -- here it follows a stranger on the user's account. cancel_btn
   # scores 0.997 here and ok_btn only 0.500, so nothing generic can reach Follow.
   Screen.FOLLOW_TRAINER: (f"{BUTTONS}/cancel_btn.png",),
+  Screen.CAREER_RANK: (f"{BUTTONS}/next_btn.png",),
   Screen.POST_CAREER_NEXT: (f"{BUTTONS}/next_btn.png",),
   # Two exits, like CAREER_COMPLETE: the dialog reached after a career offers To Home,
   # the one reached after a Team Trials race offers Close. The handler tries both.

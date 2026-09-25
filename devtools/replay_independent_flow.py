@@ -191,6 +191,8 @@ def install_fakes(remaining_seconds_sequence=(0,)):
   # Whether the award is found on the page is the ADB screen suite's job; here it only
   # has to resolve, so the scan stops on the first look and never scrolls.
   independent.read_log_carats = lambda: 5
+  # The rating's own reading is check_career_rating.py's; here it only has to arrive.
+  independent.rating_from_cell = lambda cell: 17811
 
 
 # The screens a full career walks through, in order.
@@ -220,6 +222,7 @@ FLOW = [
   Screen.LEARN,                           # 2nd visit -> nothing left, so leave
   Screen.COMPLETE_CAREER,                 # 2nd visit -> Complete Career
   Screen.COMPLETE_CAREER_CONFIRM,         # which only opens a modal; Finish ends it
+  Screen.CAREER_RANK,                     # the rating is read here, then Next
   Screen.SPARKS,
   Screen.KEEP_SPARKS,
   Screen.UMA_DETAILS,
@@ -256,6 +259,7 @@ EXPECTED_CLICKS = [
   "back_btn.png",                  # nothing affordable left -> leave the skill screen
   "complete_career_btn.png",       # skills done -> complete, not skills again
   "finish_btn.png",                # confirm losing any unspent points
+  "next_btn.png",                  # career rank, once the rating is read
   "confirm_btn.png",               # sparks
   "confirm_btn.png",               # keep sparks
   "close_btn.png",                 # uma details
@@ -362,6 +366,12 @@ def main():
 
   if state.runs_completed != 1:
     failures.append(f"expected runs_completed == 1, got {state.runs_completed}")
+
+  # The rating is read on the Career Rank screen, after the Training Log started the
+  # record and before it is written, so it has to land in the record that is written.
+  if [run.get("rating") for run in recorded_runs] != [17811]:
+    failures.append(f"the recorded career should carry the rating read on Career Rank, "
+                    f"got {[run.get('rating') for run in recorded_runs]}")
 
   # State must reset so the next career edits its agenda and buys skills again.
   if state.agenda_loaded or state.skill_screen_visits:

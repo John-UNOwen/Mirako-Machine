@@ -350,6 +350,8 @@ class RunState:
     # page is polled several times before Next lands.
     self.career_started_at = None
     self.carats_earned = None
+    # The rating the Career Rank screen showed, read once per career.
+    self.career_rating = None
     # The trainee's aptitudes, read once off the Complete Career screen. Per career
     # rather than per session: nothing stops the next one using a different trainee.
     self.aptitudes = None
@@ -1156,6 +1158,55 @@ def handle_continue_training(state):
 
 def handle_next(state):
   _click(f"{BUTTONS}/next_btn.png")
+
+
+# No career rates below 0 or anywhere near this: the game's own badge table tops out at
+# 190,400 (LS24). A reading outside it has lost or gained digits.
+MAX_PLAUSIBLE_RATING = 200_000
+
+
+def rating_from_cell(cell_rgb):
+  """The career rating in the Career Rank screen's "Rating 17,811" box, or None.
+
+  Pure, so it replays against a capture. The comma is let through the allowlist and then
+  dropped, rather than kept out of it: forced to spell it with a digit, OCR would add one.
+  """
+  if cell_rgb is None or cell_rgb.size == 0:
+    return None
+  text = extract_text(cell_rgb, use_recognize=True, allowlist="0123456789,.") or ""
+  digits = re.sub(r"[^0-9]", "", text)
+  if not digits:
+    debug(f"Could not read a rating from {text!r}.")
+    return None
+  rating = int(digits)
+  if not 0 < rating < MAX_PLAUSIBLE_RATING:
+    warning(f"Read a career rating of {rating} from {text!r}, which no career gets; "
+            "recording nothing.")
+    return None
+  return rating
+
+
+def handle_career_rank(state):
+  """Record the career's rating, then carry on as any other Next screen.
+
+  Read here because this is where the game first shows it, before the sparks. The record
+  it goes into was started on the Training Log and is written to stats after this, so the
+  rating travels with the rest of the career's results. Read once: the handler runs again
+  for as long as the screen stays up.
+  """
+  if state.career_rating is None:
+    if not wait_for_still_screen():
+      debug("The Career Rank screen never stopped moving; reading the rating anyway.")
+    device_action.flush_screenshot_cache()
+    state.career_rating = rating_from_cell(
+        device_action.screenshot(region_ltrb=constants.INDEPENDENT_CAREER_RATING_BBOX))
+    if state.career_rating is not None:
+      info(f"Career rating: {state.career_rating:,}.")
+      if state.pending_record is not None:
+        state.pending_record["rating"] = state.career_rating
+      else:
+        debug("No career record to add the rating to (the Training Log was not read).")
+  handle_next(state)
 
 
 def _scenario():
@@ -2951,6 +3002,7 @@ HANDLERS = {
   Screen.UMA_DETAILS: handle_uma_details,
   Screen.REWARDS: handle_next,
   Screen.FOLLOW_TRAINER: handle_follow_trainer,
+  Screen.CAREER_RANK: handle_career_rank,
   Screen.POST_CAREER_NEXT: handle_next,
   Screen.MISSIONS: handle_missions,
   Screen.PRESENT_BOX: handle_present_box,

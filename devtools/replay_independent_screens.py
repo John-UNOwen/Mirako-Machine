@@ -290,7 +290,10 @@ EXPECTED = {
   "uma_details.png": Screen.UMA_DETAILS,
   "sparks.png": Screen.SPARKS,
   "rewards.png": Screen.REWARDS,
-  "post_career_next.png": Screen.POST_CAREER_NEXT,
+  # Named for the generic Next it used to be handled as. It is the Career Rank screen, and
+  # career_rank.png is the same screen from another career (rating 17,837 and 17,811).
+  "post_career_next.png": Screen.CAREER_RANK,
+  "career_rank.png": Screen.CAREER_RANK,
   "career_complete.png": Screen.CAREER_COMPLETE,
   "career_complete_close.png": Screen.CAREER_COMPLETE,
   "story_unlocked_tt.png": Screen.STORY_UNLOCKED,
@@ -424,7 +427,7 @@ ADB_ONLY = frozenset(("story_unlocked_tt.png", "missions.png", "present_box.png"
                       "home_career_in_progress.png",
                       "tt_race_menu.png", "tt_lobby.png", "tt_matchup.png", "tt_item_select.png", "tt_racing.png", "tt_race_finished.png", "tt_result.png", "tt_result_no_rematch.png", "tt_winnings.png", "tt_not_enough_rp.png",
                       "continue_training.png", "training_log.png", "training_log_career.png", "complete_career.png", "learn.png", "learn_confirm.png", "skills_learned.png", "uma_details.png",
-                      "sparks.png", "rewards.png", "post_career_next.png", "career_complete.png", "career_complete_close.png",
+                      "sparks.png", "rewards.png", "post_career_next.png", "career_rank.png", "career_complete.png", "career_complete_close.png",
                       "story_unlocked.png", "date_changed.png",
                       "sales.png", "outing_gauge_up.png",
                       "outing_gauge_max.png"))

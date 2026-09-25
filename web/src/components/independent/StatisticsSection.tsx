@@ -19,6 +19,8 @@ type Run = {
   skill_points: number | null;
   carats_earned: number | null;
   tp_refills: number | null;
+  // Absent on careers recorded before the rating was read (schema 1).
+  rating?: number | null;
 };
 
 const RANGES = [
@@ -197,6 +199,12 @@ export default function StatisticsSection() {
       fansPerCareer: fans !== null && withFans ? fans / withFans : null,
       careersPerDay: careers ? careers / spanDays : null,
       carats: sum(inRange, "carats_earned"),
+      // Averaged over the careers that have one, not all of them: older records predate it.
+      rating: (() => {
+        const rated = inRange.filter((r) => typeof r.rating === "number").length;
+        const total = sum(inRange, "rating");
+        return total !== null && rated ? total / rated : null;
+      })(),
       refills: sum(inRange, "tp_refills"),
       seconds,
       estimated,
@@ -216,6 +224,11 @@ export default function StatisticsSection() {
     { label: "Fans", value: formatNumber(summary.fans) },
     { label: "Fans / Career", value: formatNumber(summary.fansPerCareer) },
     { label: "Careers / Day", value: formatNumber(summary.careersPerDay, 1) },
+    {
+      label: "Avg Rating",
+      value: formatNumber(summary.rating),
+      hint: "Read off the Career Rank screen after each career. Careers recorded before the rating was read are left out.",
+    },
     {
       label: "Carats",
       value: formatNumber(summary.carats),
@@ -366,6 +379,7 @@ export default function StatisticsSection() {
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground">
               <th className="text-left font-medium py-2 pr-4">Finished</th>
+              <th className="text-right font-medium py-2 pr-4">Rating</th>
               <th className="text-right font-medium py-2 pr-4">Fans</th>
               <th className="text-right font-medium py-2 pr-4">Races</th>
               <th className="text-right font-medium py-2 pr-4">Wins</th>
@@ -383,7 +397,7 @@ export default function StatisticsSection() {
           <tbody>
             {inRange.length === 0 && (
               <tr>
-                <td colSpan={13} className="py-6 text-muted-foreground">
+                <td colSpan={14} className="py-6 text-muted-foreground">
                   {runs === null
                     ? ""
                     : "No careers recorded in this range yet. One row is written at the end of each career."}
@@ -393,6 +407,7 @@ export default function StatisticsSection() {
             {[...inRange].reverse().map((r, i) => (
               <tr key={`${r.finished_at}-${i}`} className="border-t-1 border-border">
                 <td className="py-2 pr-4 whitespace-nowrap">{formatWhen(r.finished_at)}</td>
+                <td className="py-2 pr-4 text-right tabular-nums">{formatNumber(r.rating)}</td>
                 <td className="py-2 pr-4 text-right tabular-nums">{formatNumber(r.fans)}</td>
                 <td className="py-2 pr-4 text-right tabular-nums">{formatNumber(r.races)}</td>
                 <td className="py-2 pr-4 text-right tabular-nums">{formatNumber(r.wins)}</td>

@@ -36471,6 +36471,12 @@ function StatisticsSection() {
       fansPerCareer: fans !== null && withFans ? fans / withFans : null,
       careersPerDay: careers ? careers / spanDays : null,
       carats: sum(inRange, "carats_earned"),
+      // Averaged over the careers that have one, not all of them: older records predate it.
+      rating: (() => {
+        const rated = inRange.filter((r2) => typeof r2.rating === "number").length;
+        const total = sum(inRange, "rating");
+        return total !== null && rated ? total / rated : null;
+      })(),
       refills: sum(inRange, "tp_refills"),
       seconds,
       estimated
@@ -36488,6 +36494,11 @@ function StatisticsSection() {
     { label: "Fans", value: formatNumber(summary.fans) },
     { label: "Fans / Career", value: formatNumber(summary.fansPerCareer) },
     { label: "Careers / Day", value: formatNumber(summary.careersPerDay, 1) },
+    {
+      label: "Avg Rating",
+      value: formatNumber(summary.rating),
+      hint: "Read off the Career Rank screen after each career. Careers recorded before the rating was read are left out."
+    },
     {
       label: "Carats",
       value: formatNumber(summary.carats),
@@ -36599,6 +36610,7 @@ function StatisticsSection() {
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: "w-full text-sm", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { className: "text-xs uppercase tracking-wider text-muted-foreground", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "text-left font-medium py-2 pr-4", children: "Finished" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "text-right font-medium py-2 pr-4", children: "Rating" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "text-right font-medium py-2 pr-4", children: "Fans" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "text-right font-medium py-2 pr-4", children: "Races" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "text-right font-medium py-2 pr-4", children: "Wins" }),
@@ -36613,9 +36625,10 @@ function StatisticsSection() {
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "text-right font-medium py-2", children: "Time" })
       ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("tbody", { children: [
-        inRange.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 13, className: "py-6 text-muted-foreground", children: runs === null ? "" : "No careers recorded in this range yet. One row is written at the end of each career." }) }),
+        inRange.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 14, className: "py-6 text-muted-foreground", children: runs === null ? "" : "No careers recorded in this range yet. One row is written at the end of each career." }) }),
         [...inRange].reverse().map((r2, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { className: "border-t-1 border-border", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "py-2 pr-4 whitespace-nowrap", children: formatWhen(r2.finished_at) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "py-2 pr-4 text-right tabular-nums", children: formatNumber(r2.rating) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "py-2 pr-4 text-right tabular-nums", children: formatNumber(r2.fans) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "py-2 pr-4 text-right tabular-nums", children: formatNumber(r2.races) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "py-2 pr-4 text-right tabular-nums", children: formatNumber(r2.wins) }),

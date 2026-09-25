@@ -193,6 +193,7 @@ def send_career_complete(record: dict, careers_done: int):
             title=_titled(f"🏁 Career {careers_done} Complete"),
             color=_COLOR_SUCCESS,
             fields=[
+                _field("Rating", value("rating")),
                 _field("Fans", value("fans")),
                 _field("Record", f"{wins}/{races}"),
                 _field("Took", took),

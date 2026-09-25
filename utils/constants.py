@@ -178,6 +178,9 @@ INDEPENDENT_TP_COST_REGION = convert_xyxy_to_xywh(INDEPENDENT_TP_COST_BBOX)
 # earlier attempt stopping at y932 sliced the bottom off and read "379" for "3791".
 INDEPENDENT_CAREER_SKILL_PTS_BBOX = add_tuple_elements(GAME_WINDOW_BBOX, (277, 904, -455, -125))
 INDEPENDENT_CAREER_SKILL_PTS_REGION = convert_xyxy_to_xywh(INDEPENDENT_CAREER_SKILL_PTS_BBOX)
+# The "Rating 17,811" figure on the Career Rank screen right after Complete Career: the
+# number alone, not the label beside it.
+INDEPENDENT_CAREER_RATING_BBOX = add_tuple_elements(GAME_WINDOW_BBOX, (385, 530, -240, -495))
 
 # Skill point balance on the Learn screen (the number only, not the "Skill Points" label).
 # The number is right-aligned and grows leftwards, so the right edge is the one that

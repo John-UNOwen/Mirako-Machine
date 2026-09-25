@@ -13,6 +13,8 @@ as one, so a change to either is worth reading about.
 - Skill costs are double-checked against the hint badge (list price less its discount), so a
   price OCR misreads (for example 71 read as 7) is corrected to the exact price and the
   purchase plan no longer comes up short and drops skills at the end.
+- Each career's rating is recorded: shown in the Statistics tab (per career and on average)
+  and in the Discord career message.
 
 ## 1.0.4 (2026-09-24)
 
