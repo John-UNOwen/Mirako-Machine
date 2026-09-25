@@ -12941,7 +12941,7 @@ const allowsEval = cached(() => {
     return false;
   }
 });
-function isPlainObject$1(o) {
+function isPlainObject$2(o) {
   if (isObject(o) === false)
     return false;
   const ctor = o.constructor;
@@ -12958,7 +12958,7 @@ function isPlainObject$1(o) {
   return true;
 }
 function shallowClone(o) {
-  if (isPlainObject$1(o))
+  if (isPlainObject$2(o))
     return { ...o };
   if (Array.isArray(o))
     return [...o];
@@ -13053,7 +13053,7 @@ function omit(schema, mask) {
   return clone(schema, def);
 }
 function extend(schema, shape) {
-  if (!isPlainObject$1(shape)) {
+  if (!isPlainObject$2(shape)) {
     throw new Error("Invalid input to extend: expected a plain object");
   }
   const checks = schema._zod.def.checks;
@@ -13076,7 +13076,7 @@ function extend(schema, shape) {
   return clone(schema, def);
 }
 function safeExtend(schema, shape) {
-  if (!isPlainObject$1(shape)) {
+  if (!isPlainObject$2(shape)) {
     throw new Error("Invalid input to safeExtend: expected a plain object");
   }
   const def = mergeDefs(schema._zod.def, {
@@ -14707,7 +14707,7 @@ function mergeValues(a, b) {
   if (a instanceof Date && b instanceof Date && +a === +b) {
     return { valid: true, data: a };
   }
-  if (isPlainObject$1(a) && isPlainObject$1(b)) {
+  if (isPlainObject$2(a) && isPlainObject$2(b)) {
     const bKeys = Object.keys(b);
     const sharedKeys = Object.keys(a).filter((key) => bKeys.indexOf(key) !== -1);
     const newObj = { ...a, ...b };
@@ -32710,7 +32710,7 @@ function hashQueryKeyByOptions(queryKey, options2) {
 function hashKey(queryKey) {
   return JSON.stringify(
     queryKey,
-    (_, val) => isPlainObject(val) ? Object.keys(val).sort().reduce((result, key) => {
+    (_, val) => isPlainObject$1(val) ? Object.keys(val).sort().reduce((result, key) => {
       result[key] = val[key];
       return result;
     }, {}) : val
@@ -32735,7 +32735,7 @@ function replaceEqualDeep(a, b, depth = 0) {
   }
   if (depth > 500) return b;
   const array2 = isPlainArray(a) && isPlainArray(b);
-  if (!array2 && !(isPlainObject(a) && isPlainObject(b))) return b;
+  if (!array2 && !(isPlainObject$1(a) && isPlainObject$1(b))) return b;
   const aItems = array2 ? a : Object.keys(a);
   const aSize = aItems.length;
   const bItems = array2 ? b : Object.keys(b);
@@ -32775,7 +32775,7 @@ function shallowEqualObjects(a, b) {
 function isPlainArray(value) {
   return Array.isArray(value) && value.length === Object.keys(value).length;
 }
-function isPlainObject(o) {
+function isPlainObject$1(o) {
   if (!hasObjectPrototype(o)) {
     return false;
   }
@@ -37067,8 +37067,19 @@ const stripSetupConfig = (config2) => {
   }
   return next;
 };
+const isPlainObject = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+const fillFromTemplate = (value, template) => {
+  if (!isPlainObject(value) || !isPlainObject(template)) {
+    return value === void 0 ? template : value;
+  }
+  const filled = { ...value };
+  for (const [key, inner] of Object.entries(template)) {
+    filled[key] = key in value ? fillFromTemplate(value[key], inner) : inner;
+  }
+  return filled;
+};
 const mergeConfigWithSetup = (config2, setup) => ({
-  ...stripSetupConfig(config2),
+  ...stripSetupConfig(fillFromTemplate(config2, rawConfig)),
   ...setup
 });
 const canonical = (value) => JSON.stringify(

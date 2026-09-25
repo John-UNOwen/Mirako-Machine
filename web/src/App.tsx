@@ -69,8 +69,28 @@ const stripSetupConfig = (config: Config): Config => {
   return next as Config;
 };
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+// `value` with every key it lacks taken from `template`, nested objects included; what it
+// has, and keys the template does not know, are kept as they are. The server heals preset
+// files against the template only when the process starts, so a page served by a newer
+// build than the process that loaded the presets -- files updated while the bot kept
+// running -- met a preset without a newer key, and a section reading it crashed the whole
+// page. The template is bundled with the page, so it always has what the page reads.
+const fillFromTemplate = (value: unknown, template: unknown): unknown => {
+  if (!isPlainObject(value) || !isPlainObject(template)) {
+    return value === undefined ? template : value;
+  }
+  const filled: Record<string, unknown> = { ...value };
+  for (const [key, inner] of Object.entries(template)) {
+    filled[key] = key in value ? fillFromTemplate(value[key], inner) : inner;
+  }
+  return filled;
+};
+
 const mergeConfigWithSetup = (config: Config, setup: SetupConfig): Config => ({
-  ...stripSetupConfig(config),
+  ...stripSetupConfig(fillFromTemplate(config, rawConfig) as Config),
   ...setup,
 });
 

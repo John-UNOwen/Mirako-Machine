@@ -8,6 +8,13 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.7 (2026-09-25)
+
+- The web page no longer goes blank when a preset predates a newer setting. That happened
+  when the bot's files were updated while it kept running: the page came from the new
+  files and the presets had not been brought up to date yet. Missing settings now take
+  their defaults on the page.
+
 ## 1.0.6 (2026-09-25)
 
 - The career rating now reaches run history and the Statistics tab. It was read, and
