@@ -89,6 +89,8 @@ export default function IndependentSection({ config, updateConfig }: Props) {
   const botReady = Boolean(
     webhook.bot_token && (toDm ? webhook.choice_user_id : webhook.choice_channel_id),
   );
+  // DMs set up take the notifications too, in place of the webhook (utils/webhook.py).
+  const dmActive = toDm && botReady;
 
   const testBot = async () => {
     setBotTesting(true);
@@ -697,8 +699,14 @@ export default function IndependentSection({ config, updateConfig }: Props) {
         Webhook, then Copy Webhook URL. Treat it like a password &mdash; anyone with it
         can post to that channel.
       </p>
+      {dmActive && (
+        <p className="text-sm text-primary mb-3">
+          Spark Choice Bot is sending to your DMs, so these messages go there too, in place
+          of the webhook.
+        </p>
+      )}
 
-      <div className={`grid lg:grid-cols-3 grid-cols-1 gap-2 ${webhook.url ? "" : "disabled"}`}>
+      <div className={`grid lg:grid-cols-3 grid-cols-1 gap-2 ${webhook.url || dmActive ? "" : "disabled"}`}>
         <label className="uma-label">
           <Checkbox
             checked={webhook.career_summary_enabled}

@@ -465,6 +465,70 @@ def discord_cases():
   check(not ok and "shares" in detail,
         f"a user the bot cannot message is told why: {detail!r}")
 
+  print("\nNotifications, when DMs are set up:")
+  import utils.notifications as notifications
+  import utils.webhook as webhook
+
+  class Recorder:
+    def __init__(self):
+      self.items = []
+
+    def put(self, item):
+      self.items.append(item)
+
+  names = ("WEBHOOK_URL", "WEBHOOK_BOT_TOKEN", "WEBHOOK_CHOICE_TARGET",
+           "WEBHOOK_CHOICE_USER_ID", "WEBHOOK_CAREER_SUMMARY_ENABLED")
+  saved = {name: getattr(config, name, None) for name in names}
+  real_queue = webhook._delivery_queue
+  queued = Recorder()
+  webhook._delivery_queue = queued
+  try:
+    config.WEBHOOK_URL = "https://discord.com/api/webhooks/1/x"
+    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
+    config.WEBHOOK_CHOICE_TARGET = "channel"
+    config.WEBHOOK_CAREER_SUMMARY_ENABLED = True
+    webhook.send_started()
+    check(queued.items and queued.items[-1][0] == config.WEBHOOK_URL,
+          "with the question going to a channel, notifications use the webhook as before")
+    config.WEBHOOK_CHOICE_TARGET = "dm"
+    webhook.send_started()
+    check(queued.items[-1][0] is webhook._DM,
+          "with DMs set up, they go to the DMs instead of the webhook")
+    config.WEBHOOK_URL = ""
+    check(notifications._webhook_enabled(), "DMs alone count as notifications being on")
+    before = len(queued.items)
+    notifications.on_career_complete({"rating": 17811}, 1)
+    check(len(queued.items) == before + 1 and queued.items[-1][0] is webhook._DM,
+          "a career result goes to the DMs with no webhook set at all")
+    config.WEBHOOK_CAREER_SUMMARY_ENABLED = False
+    notifications.on_career_complete({"rating": 17811}, 1)
+    check(len(queued.items) == before + 1, "and its own switch still turns it off")
+  finally:
+    webhook._delivery_queue = real_queue
+    for name, value in saved.items():
+      setattr(config, name, value)
+
+  delivered = []
+
+  def dm_embeds(request, timeout=None):
+    if request.full_url.endswith("/users/@me/channels"):
+      return Reply(b'{"id": "dm-channel"}')
+    delivered.append((request.full_url, json.loads(request.data)))
+    return Reply(b'{"id": "m3"}')
+  saved = {name: getattr(config, name, None) for name in names}
+  discord_choice._dm_channels.clear()
+  try:
+    config.WEBHOOK_BOT_TOKEN, config.WEBHOOK_CHOICE_USER_ID = "t", "42"
+    config.WEBHOOK_CHOICE_TARGET = "dm"
+    discord_choice.send_embeds([{"title": "Career 1 Complete"}], opener=dm_embeds)
+    check(delivered and delivered[0][0].endswith("/channels/dm-channel/messages")
+          and delivered[0][1] == {"embeds": [{"title": "Career 1 Complete"}]},
+          "a notification is posted in the DM as the bot, embed and all")
+  finally:
+    for name, value in saved.items():
+      setattr(config, name, value)
+    discord_choice._dm_channels.clear()
+
 
 def main():
   reader_cases()

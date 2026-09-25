@@ -6,7 +6,9 @@ _stop_sent = False
 
 
 def _webhook_enabled():
-    return bool(getattr(config, "WEBHOOK_URL", "").strip())
+    """Whether notifications go anywhere: a webhook, or the user's DMs, which replace it."""
+    from core import discord_choice
+    return bool(getattr(config, "WEBHOOK_URL", "").strip()) or discord_choice.dm_active()
 
 
 def on_started():

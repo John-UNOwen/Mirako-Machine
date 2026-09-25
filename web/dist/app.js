@@ -35740,6 +35740,7 @@ function IndependentSection({ config: config2, updateConfig }) {
   const botReady = Boolean(
     webhook2.bot_token && (toDm ? webhook2.choice_user_id : webhook2.choice_channel_id)
   );
+  const dmActive = toDm && botReady;
   const testBot = async () => {
     setBotTesting(true);
     setBotResult(null);
@@ -36205,7 +36206,8 @@ function IndependentSection({ config: config2, updateConfig }) {
       }
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground mt-1 mb-3", children: "In Discord: Server Settings → Integrations → Webhooks → New Webhook, then Copy Webhook URL. Treat it like a password — anyone with it can post to that channel." }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `grid lg:grid-cols-3 grid-cols-1 gap-2 ${webhook2.url ? "" : "disabled"}`, children: [
+    dmActive && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-primary mb-3", children: "Spark Choice Bot is sending to your DMs, so these messages go there too, in place of the webhook." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `grid lg:grid-cols-3 grid-cols-1 gap-2 ${webhook2.url || dmActive ? "" : "disabled"}`, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "uma-label", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           Checkbox,

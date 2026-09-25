@@ -46,12 +46,21 @@ def _titled(text):
 
 
 _delivery_queue: queue.Queue = queue.Queue()
+# Queued in place of a URL for a message bound for the user's DMs.
+_DM = object()
 
 
 def _delivery_worker():
     while True:
         url, payload = _delivery_queue.get()
         try:
+            if url is _DM:
+                # To the user's DMs through the spark-choice bot, which replaces the
+                # webhook while DMs are set up. The webhook's own display name is left
+                # off: a bot posts as itself.
+                from core import discord_choice
+                discord_choice.send_embeds(json.loads(payload)["embeds"])
+                continue
             req = urllib.request.Request(url, data=payload, method="POST")
             req.add_header("Content-Type", "application/json")
             req.add_header("User-Agent", "UmaAuto/1.0")
@@ -93,10 +102,20 @@ def _embed(title, color, fields, footer=None):
 
 
 def _post(embed):
+    """Queue one notification: to the user's DMs when those are set up, else the webhook.
+
+    DMs win. Someone who has pointed the spark-choice bot at their own DMs wants the
+    bot's messages in one place, and the webhook is the older, channel-bound route to
+    the same person.
+    """
+    from core import discord_choice
+    payload = json.dumps({"username": _USERNAME, "embeds": [embed]}).encode("utf-8")
+    if discord_choice.dm_active():
+        _delivery_queue.put((_DM, payload))
+        return
     url = _url()
     if not url:
         return
-    payload = json.dumps({"username": _USERNAME, "embeds": [embed]}).encode("utf-8")
     _delivery_queue.put((url, payload))
 
 

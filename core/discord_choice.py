@@ -41,6 +41,17 @@ def configured():
   return bool(_user() if _target() == "dm" else _configured_channel())
 
 
+def dm_active():
+  """Whether questions go to one person's DMs -- which then takes the notifications too."""
+  return bool(_token() and _target() == "dm" and _user())
+
+
+def send_embeds(embeds, opener=urllib.request.urlopen):
+  """Post notification embeds where the questions go. Used when DMs replace the webhook."""
+  _request("POST", f"/channels/{_channel(opener)}/messages",
+           json.dumps({"embeds": embeds}).encode("utf-8"), opener=opener)
+
+
 def _token():
   return str(getattr(config, "WEBHOOK_BOT_TOKEN", "") or "").strip()
 
