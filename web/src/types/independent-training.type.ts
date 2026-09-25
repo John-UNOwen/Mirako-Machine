@@ -31,6 +31,8 @@ export const IndependentTrainingSchema = z.looseObject({
     .object({
       at_ss_rating: z.boolean().default(false),
       any_rating: z.boolean().default(false),
+      // Ask in Discord before rerolling, rather than rerolling whenever a trigger allows.
+      ask_first: z.boolean().default(false),
       blue: StarredSparkWantSchema.default(StarredSparkWantSchema.parse({})),
       pink: StarredSparkWantSchema.default(StarredSparkWantSchema.parse({})),
       white: SparkWantSchema.default(SparkWantSchema.parse({})),
@@ -38,6 +40,7 @@ export const IndependentTrainingSchema = z.looseObject({
     .default({
       at_ss_rating: false,
       any_rating: false,
+      ask_first: false,
       blue: { required: false, sparks: [], min_stars: 1 },
       pink: { required: false, sparks: [], min_stars: 1 },
       white: { required: false, sparks: [] },

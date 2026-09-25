@@ -320,6 +320,19 @@ export default function SparkRerollSection({ value, onChange, botReady }: Props)
       </div>
 
       <div className={triggered ? "" : "disabled"}>
+        <label className="uma-label mb-3">
+          <Checkbox
+            checked={value.ask_first ?? false}
+            onCheckedChange={() => onChange({ ...value, ask_first: !value.ask_first })}
+          />
+          Ask Before Rerolling
+          <Tooltips>
+            Instead of rerolling on its own, the bot sends you the rating, the blue and
+            pink sparks, the white sparks that match your priority skills, then every
+            white spark with the total, and rerolls only if you answer Reroll. The triggers above
+            still decide which careers you are asked about.
+          </Tooltips>
+        </label>
         {!triggered && (
           <p className="text-sm text-muted-foreground mb-3">
             Neither trigger is on, so the sparks are never rerolled.

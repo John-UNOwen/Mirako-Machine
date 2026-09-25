@@ -6,9 +6,10 @@ two pages (Rerolled, Original) with one Confirm that keeps the page showing -> a
 "Keep this set of Sparks?" dialog whose header names the set.
 
 Whether to reroll is decided here, by the rules in core/independent_sparks.py, from the
-sparks read off the first screen. Which set to keep is not: that is asked in Discord
-(core/asker.py: the shared Mirako bot or the player's own), with both sets posted as pictures, and the bot waits for the
-answer however long it takes. Every answer is written to stats/.../spark_choices.jsonl
+sparks read off the first screen -- or, with ask_first on, asked in Discord: the first
+set is summed up and the player answers Reroll or Keep before any TP is spent. Which set
+to keep is always asked in Discord (core/asker.py, the Mirako bot), with both sets posted
+as pictures, and the bot waits for either answer however long it takes. Every answer is written to stats/.../spark_choices.jsonl
 beside both sets, which is what a rule for choosing on its own can later be tested
 against.
 
@@ -83,6 +84,11 @@ def reset(state):
   state.spark_ask_key = uuid.uuid4().hex
   state.spark_post_failures = 0
   state.spark_choice_recorded = False
+  # The question before the reroll (ask_first), kept apart from the one after it: its own
+  # id and its own relay key, which would otherwise hand this question back for that one.
+  state.spark_reroll_answer = None  # "reroll"/"keep", once answered
+  state.spark_reroll_question_id = None
+  state.spark_reroll_ask_key = uuid.uuid4().hex
 
 
 def active():
@@ -190,9 +196,12 @@ def which_label(text):
 
 # --- the screens --------------------------------------------------------------------------
 
-def handle_sparks(state):
+def handle_sparks(state, wait=None):
   if not getattr(state, "spark_decision", None) and active():
     decide(state)
+  if state.spark_decision == "ask":
+    if wait is None or not ask_reroll(state, wait):
+      return
   if state.spark_decision != "reroll":
     _click(f"{BUTTONS}/confirm_btn.png")
     return
@@ -238,11 +247,14 @@ def decide(state):
   if not independent_sparks.COLOUR_RULES:
     state.spark_decision = "reroll"
     info(f"Rating {state.career_rating} meets a trigger; rerolling.")
-    return
-  missing = independent_sparks.unmet(granted, wanted, held, state.aptitudes)
-  state.spark_decision = "reroll" if missing else "keep"
-  info(f"Missing a required {', '.join(missing)} spark; rerolling." if missing
-       else "The sparks already have everything required; keeping them.")
+  else:
+    missing = independent_sparks.unmet(granted, wanted, held, state.aptitudes)
+    state.spark_decision = "reroll" if missing else "keep"
+    info(f"Missing a required {', '.join(missing)} spark; rerolling." if missing
+         else "The sparks already have everything required; keeping them.")
+  if state.spark_decision == "reroll" and wanted.get("ask_first"):
+    state.spark_decision = "ask"
+    info("Asking in Discord whether to reroll.")
 
 
 def handle_reroll_confirm(state):
@@ -340,48 +352,104 @@ def _message(state):
 OPTIONS = [asker.Option("original", "Keep the original", EMOJI["original"]),
            asker.Option("rerolled", "Keep the reroll", EMOJI["rerolled"])]
 
+REROLL_OPTIONS = [asker.Option("reroll", "Reroll (30 TP)", "🔁"),
+                  asker.Option("keep", "Keep these", "✅")]
 
-def ask(state, wait):
-  """Send the question if it is not out yet, then wait for the answer. True once answered."""
+
+def _reroll_message(state):
+  """The question before a reroll: the rating, the blue and pink sparks, the whites the
+  priority list shares, then every white with the total after it."""
+  rows = state.spark_sets["original"][0]
+  lines = [f"🎲 **Reroll the sparks?** Rating {state.career_rating:,}" if state.career_rating
+           else "🎲 **Reroll the sparks?**"]
+  shown = describe(rows)
+  for colour in ("blue", "pink"):
+    lines.append(f"{colour.title()}: {shown.get(colour, 'none')}")
+  overlap = [f"{name} {'★' * stars}" + ("" if wanted == name else f" ({wanted})")
+             for name, stars, wanted in priority_overlap(rows)]
+  lines.append(f"Priority ({len(overlap)}): {', '.join(overlap)}" if overlap
+               else "Priority: none")
+  whites = sum(1 for row in rows if row.colour == "white")
+  lines.append(f"White: {shown.get('white', 'none')} ({whites} total)")
+  return "\n".join(lines)[:1900]
+
+
+def ask_reroll(state, wait):
+  """Ask whether to reroll, and wait on the Sparks screen for the answer.
+
+  True once answered, with spark_decision settled to "reroll" or "keep"."""
+  image = state.spark_sets["original"][1]
+  answer = _ask(state, "spark_reroll_question_id", "spark_reroll_ask_key",
+                _reroll_message(state), [("sparks.png", image)] if image else [],
+                REROLL_OPTIONS, Screen.SPARKS, "whether to reroll the sparks", wait)
+  if answer is None:
+    return False
+  state.spark_reroll_answer = answer
+  state.spark_decision = answer
+  if answer == "keep":
+    info("Keeping the sparks as granted, as answered in Discord.")
+    record_choice(state)
+  else:
+    info("Rerolling the sparks, as answered in Discord.")
+  asker.backend().finish(state.spark_reroll_question_id, f"{_reroll_message(state)}\n\n"
+                         + ("✅ Rerolling." if answer == "reroll" else "✅ Kept as granted."))
+  return True
+
+
+def _ask(state, id_field, key_field, text, images, options, screen, about, wait):
+  """Send a question if it is not out yet, then wait on `screen` for its answer.
+
+  The question's id and relay key live on the state under `id_field` and `key_field`.
+  Returns the id of the option picked, or None while there is none.
+  """
   way = asker.backend()
   try:
-    if state.spark_question_id is None:
-      images = [(f"{which}.png", state.spark_sets[which][1])
-                for which in ("original", "rerolled") if state.spark_sets[which][1]]
-      state.spark_question_id = way.ask(_message(state), images, OPTIONS,
-                                        key=state.spark_ask_key)
-      info("Asked in Discord which sparks to keep; waiting for the answer.")
+    if getattr(state, id_field) is None:
+      setattr(state, id_field, way.ask(text, images, options, key=getattr(state, key_field)))
+      info(f"Asked in Discord {about}; waiting for the answer.")
     state.spark_post_failures = 0
   except asker.AskError as error:
     state.spark_post_failures += 1
     warning(f"Could not ask in Discord ({error}); trying again shortly.")
     if state.spark_post_failures >= MAX_POST_FAILURES:
       _stop(StopReason.STUCK, "ERROR_NOTIFICATION",
-            f"Could not ask in Discord which sparks to keep after "
+            f"Could not ask in Discord {about} after "
             f"{state.spark_post_failures} tries: {error}")
     sleep(30)
-    return False
+    return None
+
+  picked = {}
 
   def unanswered():
     try:
-      picked = way.answer(state.spark_question_id, OPTIONS)
+      answer = way.answer(getattr(state, id_field), options)
     except asker.AskGone as error:
       warning(f"The spark question can no longer be answered ({error}); asking again.")
-      state.spark_question_id = None
-      state.spark_ask_key = uuid.uuid4().hex
+      setattr(state, id_field, None)
+      setattr(state, key_field, uuid.uuid4().hex)
       return False
     except asker.AskError as error:
       debug(f"Could not read the answer yet ({error}).")
       return True
-    if picked is None:
+    if answer is None:
       return True
-    state.spark_choice = picked
+    picked["answer"] = answer
     return False
 
-  wait(WAIT_SECONDS, Screen.SPARK_SELECTION, "the spark choice in Discord",
-       still_waiting=unanswered)
-  if state.spark_choice is None:
+  wait(WAIT_SECONDS, screen, f"{about} in Discord", still_waiting=unanswered)
+  return picked.get("answer")
+
+
+def ask(state, wait):
+  """Ask which set to keep and wait for the answer. True once answered."""
+  images = [(f"{which}.png", state.spark_sets[which][1])
+            for which in ("original", "rerolled") if state.spark_sets[which][1]]
+  answer = _ask(state, "spark_question_id", "spark_ask_key", _message(state), images,
+                OPTIONS, Screen.SPARK_SELECTION, "which sparks to keep", wait)
+  if answer is None:
     return False
+  state.spark_choice = answer
+  way = asker.backend()
   info(f"Keeping the {LABEL[state.spark_choice].lower()}, as answered in Discord.")
   way.finish(state.spark_question_id,
              f"{_message(state)}\n\n✅ Kept the {LABEL[state.spark_choice].lower()}.")
@@ -412,6 +480,8 @@ def record_choice(state, path=None):
     "at": datetime.now().astimezone().isoformat(timespec="seconds"),
     "rating": state.career_rating,
     "choice": state.spark_choice,
+    # Asked before the reroll (ask_first): "reroll", or "keep" with no choice after it.
+    "reroll_answer": getattr(state, "spark_reroll_answer", None),
     "bought": state.skills_bought,
     "aptitudes": state.aptitudes,
     "wanted": independent_sparks.settings(),

@@ -670,9 +670,105 @@ def relay_cases():
     asker.SharedBot._last_poll.clear()
 
 
+def ask_first_cases():
+  print("\nAsking before the reroll (ask_first):")
+  saved = (getattr(config, "INDEPENDENT_SPARK_REROLL", None), getattr(config, "SKILL_LIST", []),
+           spark_reroll.record_choice, independent_sparks.COLOUR_RULES)
+  independent_sparks.COLOUR_RULES = False     # as shipped
+  fakes = Fakes().install()
+  image = b"\x89PNG-original"
+  fakes.reads[spark_reroll.LIST_BAND] = (rows_of(ORIGINAL), image)
+  recorded = []
+  try:
+    config.SKILL_LIST = ["Groundwork", "Long Corners ◎"]
+    config.INDEPENDENT_SPARK_REROLL = setting(ask_first=True,
+                                              white={"required": False, "sparks": []})
+    check(independent_sparks.settings()["ask_first"], "the setting is read")
+    with tempfile.TemporaryDirectory() as folder:
+      path = os.path.join(folder, "spark_choices.jsonl")
+      spark_reroll.record_choice = lambda st: saved[2](st, path)
+
+      state = State()
+      fakes.answers = [None, None, "reroll"]
+      run(spark_reroll.handle_sparks, state, fake_wait)
+      text, images, options = fakes.posts[0]
+      check(len(fakes.posts) == 1 and [o["id"] for o in options] == ["reroll", "keep"],
+            "a career a trigger allows is asked about, with Reroll and Keep")
+      check("rating 17,811" in text.lower() and "Blue: Power ★★" in text
+            and "Pink: Pace Chaser ★★" in text,
+            f"the question gives the rating, blue and pink: {text!r}")
+      whites = [(name, stars) for colour, name, stars in ORIGINAL if colour == "white"]
+      listed = ", ".join(f"{name} {'★' * stars}" for name, stars in whites)
+      check("Priority (2): Groundwork ★★, Long Corners ○ ★★ (Long Corners ◎)" in text,
+            "the whites that match the priority list")
+      check(text.rstrip().endswith(f"White: {listed} ({len(whites)} total)")
+            and text.index("Priority (2)") < text.index("White:"),
+            "then every white in detail, with the total after it, last")
+      check(images == [("sparks.png", image)], "with the first set's picture")
+      check(state.spark_decision == "reroll" and fakes.clicks == ["spark_reroll_btn.png"],
+            "answered Reroll, the reroll goes ahead as usual")
+      reroll_key = fakes.keys[0]
+      check(reroll_key != state.spark_ask_key,
+            "under a key of its own, so the keep question later is not handed this one")
+
+      fakes.clicks.clear()
+      fakes.posts.clear()
+      state = State()
+      fakes.answers = ["keep"]
+      run(spark_reroll.handle_sparks, state, fake_wait)
+      check(state.spark_decision == "keep" and fakes.clicks == ["confirm_btn.png"],
+            "answered Keep, the sparks are confirmed and nothing is spent")
+      entry = json.loads(io.open(path, encoding="utf-8").read().splitlines()[-1])
+      check(entry["reroll_answer"] == "keep" and entry["choice"] is None,
+            "and the answer is recorded, for a rule to learn from later")
+
+      fakes.clicks.clear()
+      fakes.posts.clear()
+      state = State()
+      fakes.answers = []
+      run(spark_reroll.handle_sparks, state, fake_wait)
+      check(state.spark_decision == "ask" and not fakes.clicks and len(fakes.posts) == 1,
+            "unanswered, it stays on the Sparks screen and presses nothing")
+      run(spark_reroll.handle_sparks, state, fake_wait)
+      check(len(fakes.posts) == 1 and not fakes.clicks,
+            "and the next pass waits on the same question rather than asking again")
+
+      config.INDEPENDENT_SPARK_REROLL = setting(ask_first=True, at_ss_rating=True)
+      fakes.clicks.clear()
+      fakes.posts.clear()
+      state = State(rating=17_000)
+      run(spark_reroll.handle_sparks, state, fake_wait)
+      check(not fakes.posts and fakes.clicks == ["confirm_btn.png"],
+            "a career no trigger allows is not asked about")
+
+      import scenarios.independent_training as independent
+      from scenarios.independent_screens import Screen
+      seen = {}
+      real_handle = spark_reroll.handle_sparks
+      spark_reroll.handle_sparks = lambda st, wait=None: seen.update(wait=wait)
+      try:
+        independent.HANDLERS[Screen.SPARKS](State())
+      finally:
+        spark_reroll.handle_sparks = real_handle
+      check(seen.get("wait") is independent._wait_on_screen,
+            "the loop's Sparks handler hands over its wait, which the question needs")
+
+      config.INDEPENDENT_SPARK_REROLL = setting(ask_first=False)
+      fakes.clicks.clear()
+      state = State()
+      run(spark_reroll.handle_sparks, state, fake_wait)
+      check(not fakes.posts and fakes.clicks == ["spark_reroll_btn.png"],
+            "with the option off, the reroll is decided without asking, as before")
+  finally:
+    fakes.restore()
+    (config.INDEPENDENT_SPARK_REROLL, config.SKILL_LIST, spark_reroll.record_choice,
+     independent_sparks.COLOUR_RULES) = saved
+
+
 def main():
   reader_cases()
   handler_cases()
+  ask_first_cases()
   notification_cases()
   relay_cases()
   print()

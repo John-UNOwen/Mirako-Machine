@@ -2654,7 +2654,7 @@ def handle_learn(state):
 def handle_sparks(state):
   # Confirmed as it always was, unless the spark reroll is set up and wants this set
   # rerolled. See scenarios/tasks/spark_reroll.py.
-  spark_reroll.handle_sparks(state)
+  spark_reroll.handle_sparks(state, wait=_wait_on_screen)
 
 
 def handle_keep_sparks(state):

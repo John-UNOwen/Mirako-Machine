@@ -8,6 +8,13 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.8 (2026-09-25)
+
+- Spark reroll can ask first (Automation tab, Ask Before Rerolling). For a career a
+  trigger allows, the Mirako bot sends the rating, the blue and pink sparks, the white
+  sparks that match your priority skills, then every white spark with the total, and the
+  sparks are rerolled only if you answer Reroll. Keep confirms them as granted and spends no TP.
+
 ## 1.0.7 (2026-09-25)
 
 - The web page no longer goes blank when a preset predates a newer setting. That happened

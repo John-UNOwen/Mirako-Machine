@@ -105,7 +105,9 @@ def settings():
                      "sparks": [name for name in sparks if isinstance(name, str) and name],
                      "min_stars": _stars(want.get("min_stars", 1)) if colour in STARRED else 1}
   return {"at_ss_rating": bool(raw.get("at_ss_rating")),
-          "any_rating": bool(raw.get("any_rating")), **wants}
+          "any_rating": bool(raw.get("any_rating")),
+          # Ask in Discord before each reroll a trigger allows, rather than rerolling.
+          "ask_first": bool(raw.get("ask_first")), **wants}
 
 
 def spark_skill(name):
