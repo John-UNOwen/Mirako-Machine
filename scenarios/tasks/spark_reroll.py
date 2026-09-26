@@ -332,6 +332,47 @@ def priority_overlap(rows):
   return [(name, stars, wanted) for _, name, stars, wanted in sorted(found)]
 
 
+def priority_bought(bought):
+  """The priority skills this career bought, in the list's order, or None when what was
+  bought is not known (a career picked up after its skills were bought).
+
+  Returns [(skill held, priority skill)]. An entry counts when it is held, or when a lower
+  tier it brings along is -- a circle bought towards a double circle on the list.
+  """
+  from core.independent_sparks import held_skills
+  held = held_skills(bought)
+  if held is None:
+    return None
+  found = []
+  for wanted in getattr(config, "SKILL_LIST", None) or []:
+    if wanted in held:
+      found.append((wanted, wanted))
+      continue
+    lower = [skill for skill in held_skills([wanted]) if skill in held]
+    if lower:
+      found.append((lower[0], wanted))
+  return found
+
+
+def _important_line(rows):
+  """The white sparks that come from a priority skill."""
+  overlap = [f"{name} {'★' * stars}" + ("" if wanted == name else f" ({wanted})")
+             for name, stars, wanted in priority_overlap(rows)]
+  return (f"Important skills ({len(overlap)}): {', '.join(overlap)}" if overlap
+          else "Important skills: none")
+
+
+def _priority_line(state):
+  """The priority skills the career bought, out of how many the list holds."""
+  found = priority_bought(state.skills_bought)
+  if found is None:
+    return "Priority: not known"
+  listed = len(getattr(config, "SKILL_LIST", None) or [])
+  names = [held + ("" if held == wanted else f" ({wanted})") for held, wanted in found]
+  return (f"Priority ({len(found)} of {listed}): {', '.join(names)}" if names
+          else f"Priority (0 of {listed}): none")
+
+
 def _message(state):
   """The question: rating, and both sets, each with the sparks it shares with the priority
   list. The buttons are the asker's to add."""
@@ -342,10 +383,7 @@ def _message(state):
     lines.append(f"\n**{EMOJI[which]} {LABEL[which]}**")
     for colour, line in describe(rows).items():
       lines.append(f"{colour.title()}: {line}")
-    overlap = [f"{name} {'★' * stars}" + ("" if wanted == name else f" ({wanted})")
-               for name, stars, wanted in priority_overlap(rows)]
-    lines.append(f"Priority ({len(overlap)}): {', '.join(overlap)}" if overlap
-                 else "Priority: none")
+    lines.append(_important_line(rows))
   return "\n".join(lines)[:1900]
 
 
@@ -358,17 +396,15 @@ REROLL_OPTIONS = [asker.Option("reroll", "Reroll (30 TP)", "🔁"),
 
 def _reroll_message(state):
   """The question before a reroll: the rating, the blue and pink sparks, the whites the
-  priority list shares, then every white with the total after it."""
+  priority list shares, the priority skills bought, then every white with the total."""
   rows = state.spark_sets["original"][0]
   lines = [f"🎲 **Reroll the sparks?** Rating {state.career_rating:,}" if state.career_rating
            else "🎲 **Reroll the sparks?**"]
   shown = describe(rows)
   for colour in ("blue", "pink"):
     lines.append(f"{colour.title()}: {shown.get(colour, 'none')}")
-  overlap = [f"{name} {'★' * stars}" + ("" if wanted == name else f" ({wanted})")
-             for name, stars, wanted in priority_overlap(rows)]
-  lines.append(f"Priority ({len(overlap)}): {', '.join(overlap)}" if overlap
-               else "Priority: none")
+  lines.append(_important_line(rows))
+  lines.append(_priority_line(state))
   whites = sum(1 for row in rows if row.colour == "white")
   lines.append(f"White: {shown.get('white', 'none')} ({whites} total)")
   return "\n".join(lines)[:1900]

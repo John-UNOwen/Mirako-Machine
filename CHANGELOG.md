@@ -8,6 +8,12 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.10 (2026-09-25)
+
+- The Discord messages about sparks now call the sparks that come from your priority
+  skills "Important skills". The "Reroll the sparks?" question also gains a Priority line:
+  the priority skills this career actually bought, out of how many are on the list.
+
 ## 1.0.9 (2026-09-25)
 
 - Maximise Rating no longer considers a double circle the game does not have. Corner

@@ -342,16 +342,16 @@ def handler_cases():
     check("Power" in fakes.posts[0][0] and "Turf" in fakes.posts[0][0],
           "the message lists both sets too")
     text = fakes.posts[0][0]
-    check("Priority skills bought" not in text, "the list of skills bought is gone")
-    check("Priority (3): Uma Stan ★ (Superstan), Groundwork ★★, Long Corners ○ ★★ "
+    check("Important skills (3): Uma Stan ★ (Superstan), Groundwork ★★, Long Corners ○ ★★ "
           "(Long Corners ◎)" in text,
           "the original set's overlap with the priority list, in its order, a spark "
           "from an upgrade naming the skill it came with -- got "
-          + repr([line for line in text.splitlines() if line.startswith("Priority")]))
-    check("Priority (2): Groundwork ★★, Prudent Positioning ★★" in text,
+          + repr([line for line in text.splitlines() if line.startswith("Important")]))
+    check("Important skills (2): Groundwork ★★, Prudent Positioning ★★" in text,
           "and the rerolled set's, under its own summary")
-    check(text.index("Priority (3)") < text.index("Rerolled") < text.index("Priority (2)"),
-          "each overlap sits below its own set")
+    check(text.index("Important skills (3)") < text.index("Rerolled")
+          < text.index("Important skills (2)"), "each overlap sits below its own set")
+    check("Priority" not in text, "the choice between sets has no Priority line")
     check("React to answer" not in fakes.posts[0][0]
           and [o["id"] for o in fakes.posts[0][2]] == ["original", "rerolled"]
           and fakes.posts[0][2][0]["label"] == "Keep the original",
@@ -688,7 +688,7 @@ def ask_first_cases():
       path = os.path.join(folder, "spark_choices.jsonl")
       spark_reroll.record_choice = lambda st: saved[2](st, path)
 
-      state = State()
+      state = State(bought=["Long Corners ○", "Groundwork", "Slipstream"])
       fakes.answers = [None, None, "reroll"]
       run(spark_reroll.handle_sparks, state, fake_wait)
       text, images, options = fakes.posts[0]
@@ -699,10 +699,16 @@ def ask_first_cases():
             f"the question gives the rating, blue and pink: {text!r}")
       whites = [(name, stars) for colour, name, stars in ORIGINAL if colour == "white"]
       listed = ", ".join(f"{name} {'★' * stars}" for name, stars in whites)
-      check("Priority (2): Groundwork ★★, Long Corners ○ ★★ (Long Corners ◎)" in text,
-            "the whites that match the priority list")
+      check("Important skills (2): Groundwork ★★, Long Corners ○ ★★ (Long Corners ◎)"
+            in text, "the whites that match the priority list")
+      check("Priority (2 of 2): Groundwork, Long Corners ○ (Long Corners ◎)" in text
+            and text.index("Important skills") < text.index("Priority (2 of 2)"),
+            f"then the priority skills bought, not the sparks: {text!r}")
+      check(spark_reroll._priority_line(State()) == "Priority: not known"
+            and spark_reroll._priority_line(State(bought=[])) == "Priority (0 of 2): none",
+            "unknown after a restart, and none when nothing on the list was bought")
       check(text.rstrip().endswith(f"White: {listed} ({len(whites)} total)")
-            and text.index("Priority (2)") < text.index("White:"),
+            and text.index("Priority (2") < text.index("White:"),
             "then every white in detail, with the total after it, last")
       check(images == [("sparks.png", image)], "with the first set's picture")
       check(state.spark_decision == "reroll" and fakes.clicks == ["spark_reroll_btn.png"],
