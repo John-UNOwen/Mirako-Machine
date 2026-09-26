@@ -72,6 +72,7 @@ class Screen:
   # Sparks?" dialog, the new set, a notice that a set has to be chosen, and the two-page
   # Spark Selection screen (Rerolled, Original) whose Confirm leads to KEEP_SPARKS.
   SPARK_REROLL_CONFIRM = "spark_reroll_confirm"
+  SPARK_TP_SHORT = "spark_tp_short"
   SPARKS_REROLLED = "sparks_rerolled"
   SPARK_SELECTION_NOTICE = "spark_selection_notice"
   SPARK_SELECTION = "spark_selection"
@@ -630,6 +631,12 @@ SCREEN_ORDER = (
   # search stops well above that.
   ScreenSpec(Screen.SPARK_REROLL_CONFIRM, [f"{ASSETS}/spark_reroll_confirm_body.png"],
              search_region=(350, 420, 600, 510)),
+  # Reroll Sparks pressed with too little TP: "You need N more TP to reroll Sparks. /
+  # Restore TP?" Cut after the shortfall, which changes with the balance. The dimmed
+  # Sparks screen underneath scores 0.856 on its own anchor, so without this the dialog
+  # went unrecognised until the run stopped as stuck.
+  ScreenSpec(Screen.SPARK_TP_SHORT, [f"{ASSETS}/spark_tp_short_body.png"],
+             search_region=(300, 470, 620, 550)),
   ScreenSpec(Screen.SPARK_SELECTION_NOTICE, [f"{ASSETS}/spark_selection_notice_body.png"],
              search_region=(200, 470, 600, 570)),
   ScreenSpec(Screen.SPARKS_REROLLED, [f"{ASSETS}/sparks_rerolled_title.png"],
@@ -1023,6 +1030,7 @@ CLICK_TARGETS = {
   # Cancel as well as the Reroll button: a reroll the bot decides against after all is
   # backed out of.
   Screen.SPARK_REROLL_CONFIRM: (f"{BUTTONS}/cancel_btn.png",),
+  Screen.SPARK_TP_SHORT: (f"{ASSETS}/tt_no_btn.png", f"{ASSETS}/tp_short_restore_btn.png"),
   Screen.SPARKS_REROLLED: (f"{BUTTONS}/next_btn.png",),
   Screen.SPARK_SELECTION_NOTICE: (f"{BUTTONS}/next_btn.png",),
   Screen.SPARK_SELECTION: (f"{BUTTONS}/confirm_btn.png",),

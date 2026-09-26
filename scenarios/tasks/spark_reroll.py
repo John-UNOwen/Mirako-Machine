@@ -55,9 +55,8 @@ STILL_TO_END = 2
 # says "Original Sparks" or "Rerolled Sparks", and the one word is all that is needed.
 PAGE_TITLE_BOX = (290, 108, 510, 148)
 KEEP_HEADER_BOX = (125, 110, 320, 140)
-# Presses of Reroll Sparks one career may make before giving up on it. The game's
-# Recover TP list opens in between when TP is short, and a refill that is switched off
-# closes it again, which puts the Sparks screen back up with the reroll still wanted.
+# Presses of Reroll Sparks one career may make before giving up on it. When TP is short
+# the first press only opens the refill (handle_tp_short), and the second rerolls.
 MAX_REROLL_PRESSES = 2
 # Consecutive failures to post the question before the bot stops rather than going on
 # retrying a Discord that is refusing it.
@@ -255,6 +254,30 @@ def decide(state):
   if state.spark_decision == "reroll" and wanted.get("ask_first"):
     state.spark_decision = "ask"
     info("Asking in Discord whether to reroll.")
+
+
+def handle_tp_short(state):
+  """Reroll Sparks pressed with too little TP: "You need N more TP ... Restore TP?"
+
+  Follows the refill settings, the same as a career start that is short. Restore opens
+  the usual Recover TP list, whose handlers spend under the configured strategy and land
+  back on Sparks, where the reroll is pressed again. With refilling off, the session's
+  cap reached or the list already found empty, the answer is No and the sparks are kept.
+  """
+  cap = int(getattr(config, "INDEPENDENT_TP_REFILL_MAX_PER_SESSION", 0) or 0)
+  if not getattr(config, "INDEPENDENT_TP_REFILL_ENABLED", False):
+    why = "TP refill is switched off"
+  elif state.tp_refills_used >= cap:
+    why = f"the refill cap ({cap}) is reached"
+  elif getattr(state, "tp_list_exhausted", False):
+    why = "there is nothing left to refill with"
+  else:
+    info("Not enough TP to reroll the sparks; restoring TP first.")
+    _click(f"{ASSETS}/tp_short_restore_btn.png")
+    return
+  warning(f"Not enough TP to reroll the sparks and {why}; keeping them.")
+  state.spark_decision = "keep"
+  _click(f"{ASSETS}/tt_no_btn.png")
 
 
 def handle_reroll_confirm(state):

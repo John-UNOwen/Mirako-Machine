@@ -771,10 +771,56 @@ def ask_first_cases():
      independent_sparks.COLOUR_RULES) = saved
 
 
+def tp_short_cases():
+  print("\nReroll Sparks with too little TP:")
+  keys = ("INDEPENDENT_TP_REFILL_ENABLED", "INDEPENDENT_TP_REFILL_MAX_PER_SESSION")
+  saved = {key: getattr(config, key, None) for key in keys}
+  import scenarios.independent_training as independent
+  from scenarios.independent_screens import Screen
+  check(independent.HANDLERS.get(Screen.SPARK_TP_SHORT) is spark_reroll.handle_tp_short,
+        "the dialog has its handler in the loop")
+  fakes = Fakes().install()
+  try:
+    def short(enabled=True, cap=3, used=0, exhausted=False):
+      config.INDEPENDENT_TP_REFILL_ENABLED = enabled
+      config.INDEPENDENT_TP_REFILL_MAX_PER_SESSION = cap
+      state = State()
+      state.tp_refills_used = used
+      state.tp_list_exhausted = exhausted
+      state.spark_decision = "reroll"
+      state.spark_reroll_presses = 1
+      fakes.clicks.clear()
+      run(spark_reroll.handle_tp_short, state)
+      return state
+
+    state = short()
+    check(fakes.clicks == ["tp_short_restore_btn.png"] and state.spark_decision == "reroll",
+          "refill on with room: Restore, and the reroll is still wanted")
+    fakes.clicks.clear()
+    run(spark_reroll.handle_sparks, state)
+    check(fakes.clicks == ["spark_reroll_btn.png"],
+          "back on Sparks after the refill, Reroll Sparks is pressed again")
+    for label, kwargs in (("refill off", {"enabled": False}),
+                          ("the cap reached", {"cap": 2, "used": 2}),
+                          ("a cap of zero", {"cap": 0}),
+                          ("the list found empty", {"exhausted": True})):
+      state = short(**kwargs)
+      check(fakes.clicks == ["tt_no_btn.png"] and state.spark_decision == "keep",
+            f"with {label}: No, and the sparks are kept")
+    fakes.clicks.clear()
+    run(spark_reroll.handle_sparks, state)
+    check(fakes.clicks == ["confirm_btn.png"], "and Sparks is then confirmed as it stands")
+  finally:
+    fakes.restore()
+    for key, value in saved.items():
+      setattr(config, key, value)
+
+
 def main():
   reader_cases()
   handler_cases()
   ask_first_cases()
+  tp_short_cases()
   notification_cases()
   relay_cases()
   print()

@@ -3068,6 +3068,7 @@ HANDLERS = {
   Screen.SPARKS: handle_sparks,
   Screen.KEEP_SPARKS: handle_keep_sparks,
   Screen.SPARK_REROLL_CONFIRM: spark_reroll.handle_reroll_confirm,
+  Screen.SPARK_TP_SHORT: spark_reroll.handle_tp_short,
   Screen.SPARKS_REROLLED: spark_reroll.handle_sparks_rerolled,
   Screen.SPARK_SELECTION_NOTICE: spark_reroll.handle_selection_notice,
   Screen.SPARK_SELECTION: handle_spark_selection,

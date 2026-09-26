@@ -297,6 +297,8 @@ EXPECTED = {
   # The spark reroll, 2026-09-24: the confirm dialog, the rerolled set, the notice, both
   # pages of Spark Selection, and the final keep dialog for the original set.
   "spark_reroll_confirm.png": Screen.SPARK_REROLL_CONFIRM,
+  # Reroll Sparks pressed 14 TP short.
+  "spark_tp_short.png": Screen.SPARK_TP_SHORT,
   "sparks_rerolled.png": Screen.SPARKS_REROLLED,
   "spark_selection_notice.png": Screen.SPARK_SELECTION_NOTICE,
   "spark_selection_rerolled.png": Screen.SPARK_SELECTION,
@@ -439,7 +441,7 @@ ADB_ONLY = frozenset(("story_unlocked_tt.png", "missions.png", "present_box.png"
                       "home_career_in_progress.png",
                       "tt_race_menu.png", "tt_lobby.png", "tt_matchup.png", "tt_item_select.png", "tt_racing.png", "tt_race_finished.png", "tt_result.png", "tt_result_no_rematch.png", "tt_winnings.png", "tt_not_enough_rp.png",
                       "continue_training.png", "training_log.png", "training_log_career.png", "complete_career.png", "learn.png", "learn_confirm.png", "skills_learned.png", "uma_details.png",
-                      "sparks.png", "rewards.png", "post_career_next.png", "career_rank.png", "spark_reroll_confirm.png", "sparks_rerolled.png", "spark_selection_notice.png", "spark_selection_rerolled.png", "spark_selection_original.png", "keep_sparks_original.png", "career_complete.png", "career_complete_close.png",
+                      "sparks.png", "rewards.png", "post_career_next.png", "career_rank.png", "spark_reroll_confirm.png", "spark_tp_short.png", "sparks_rerolled.png", "spark_selection_notice.png", "spark_selection_rerolled.png", "spark_selection_original.png", "keep_sparks_original.png", "career_complete.png", "career_complete_close.png",
                       "story_unlocked.png", "date_changed.png",
                       "sales.png", "outing_gauge_up.png",
                       "outing_gauge_max.png"))

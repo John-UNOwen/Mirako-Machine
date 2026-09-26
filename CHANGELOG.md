@@ -8,6 +8,13 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.11 (2026-09-25)
+
+- Rerolling the sparks without enough TP no longer stops the bot. The game asks whether
+  to restore TP, and the bot used to not recognise that and give up as stuck. It now
+  follows your TP refill settings: with refill on and the session's limit not reached,
+  it restores TP and rerolls; otherwise it keeps the sparks as they are.
+
 ## 1.0.10 (2026-09-25)
 
 - The Discord messages about sparks now call the sparks that come from your priority
