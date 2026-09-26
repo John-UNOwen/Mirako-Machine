@@ -222,7 +222,7 @@ def main():
 
 
 def _run_bot():
-  print("Uma Auto!")
+  print("Mirako Machine!")
   config.reload_config()
   bot.stop_after_career = False
 

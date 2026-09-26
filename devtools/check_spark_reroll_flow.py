@@ -342,15 +342,15 @@ def handler_cases():
     check("Power" in fakes.posts[0][0] and "Turf" in fakes.posts[0][0],
           "the message lists both sets too")
     text = fakes.posts[0][0]
-    check("Important skills (3): Uma Stan ★ (Superstan), Groundwork ★★, Long Corners ○ ★★ "
+    check("Matching Sparks (3): Uma Stan ★ (Superstan), Groundwork ★★, Long Corners ○ ★★ "
           "(Long Corners ◎)" in text,
           "the original set's overlap with the priority list, in its order, a spark "
           "from an upgrade naming the skill it came with -- got "
           + repr([line for line in text.splitlines() if line.startswith("Important")]))
-    check("Important skills (2): Groundwork ★★, Prudent Positioning ★★" in text,
+    check("Matching Sparks (2): Groundwork ★★, Prudent Positioning ★★" in text,
           "and the rerolled set's, under its own summary")
-    check(text.index("Important skills (3)") < text.index("Rerolled")
-          < text.index("Important skills (2)"), "each overlap sits below its own set")
+    check(text.index("Matching Sparks (3)") < text.index("Rerolled")
+          < text.index("Matching Sparks (2)"), "each overlap sits below its own set")
     check("Priority" not in text, "the choice between sets has no Priority line")
     check("React to answer" not in fakes.posts[0][0]
           and [o["id"] for o in fakes.posts[0][2]] == ["original", "rerolled"]
@@ -699,16 +699,17 @@ def ask_first_cases():
             f"the question gives the rating, blue and pink: {text!r}")
       whites = [(name, stars) for colour, name, stars in ORIGINAL if colour == "white"]
       listed = ", ".join(f"{name} {'★' * stars}" for name, stars in whites)
-      check("Important skills (2): Groundwork ★★, Long Corners ○ ★★ (Long Corners ◎)"
+      check("Matching Sparks (2): Groundwork ★★, Long Corners ○ ★★ (Long Corners ◎)"
             in text, "the whites that match the priority list")
-      check("Priority (2 of 2): Groundwork, Long Corners ○ (Long Corners ◎)" in text
-            and text.index("Important skills") < text.index("Priority (2 of 2)"),
-            f"then the priority skills bought, not the sparks: {text!r}")
-      check(spark_reroll._priority_line(State()) == "Priority: not known"
-            and spark_reroll._priority_line(State(bought=[])) == "Priority (0 of 2): none",
+      check("Bought Priority Skills (2 of 2): Groundwork, Long Corners ○ (Long Corners ◎)"
+            in text and text.index("Pink:") < text.index("Bought Priority Skills (2 of 2)")
+            < text.index("Matching Sparks"),
+            f"then the priority skills bought, then the matching sparks: {text!r}")
+      check(spark_reroll._priority_line(State()) == "Bought Priority Skills: not known (the bot was restarted during this career)"
+            and spark_reroll._priority_line(State(bought=[])) == "Bought Priority Skills (0 of 2): none",
             "unknown after a restart, and none when nothing on the list was bought")
       check(text.rstrip().endswith(f"White: {listed} ({len(whites)} total)")
-            and text.index("Priority (2") < text.index("White:"),
+            and text.index("Matching Sparks") < text.index("White:"),
             "then every white in detail, with the total after it, last")
       check(images == [("sparks.png", image)], "with the first set's picture")
       check(state.spark_decision == "reroll" and fakes.clicks == ["spark_reroll_btn.png"],
