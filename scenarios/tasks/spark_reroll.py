@@ -381,19 +381,19 @@ def _important_line(rows):
   """The white sparks that come from a priority skill."""
   overlap = [f"{name} {'★' * stars}" + ("" if wanted == name else f" ({wanted})")
              for name, stars, wanted in priority_overlap(rows)]
-  return (f"Important skills ({len(overlap)}): {', '.join(overlap)}" if overlap
-          else "Important skills: none")
+  return (f"Matching Sparks ({len(overlap)}): {', '.join(overlap)}" if overlap
+          else "Matching Sparks: none")
 
 
 def _priority_line(state):
   """The priority skills the career bought, out of how many the list holds."""
   found = priority_bought(state.skills_bought)
   if found is None:
-    return "Priority: not known"
+    return "Bought Priority Skills: not known (the bot was restarted during this career)"
   listed = len(getattr(config, "SKILL_LIST", None) or [])
   names = [held + ("" if held == wanted else f" ({wanted})") for held, wanted in found]
-  return (f"Priority ({len(found)} of {listed}): {', '.join(names)}" if names
-          else f"Priority (0 of {listed}): none")
+  return (f"Bought Priority Skills ({len(found)} of {listed}): {', '.join(names)}" if names
+          else f"Bought Priority Skills (0 of {listed}): none")
 
 
 def _message(state):
@@ -405,7 +405,7 @@ def _message(state):
     rows = state.spark_sets[which][0]
     lines.append(f"\n**{EMOJI[which]} {LABEL[which]}**")
     for colour, line in describe(rows).items():
-      lines.append(f"{colour.title()}: {line}")
+      lines.append(f"**{colour.title()}:** {line}")
     lines.append(_important_line(rows))
   return "\n".join(lines)[:1900]
 
@@ -418,18 +418,18 @@ REROLL_OPTIONS = [asker.Option("reroll", "Reroll (30 TP)", "🔁"),
 
 
 def _reroll_message(state):
-  """The question before a reroll: the rating, the blue and pink sparks, the whites the
-  priority list shares, the priority skills bought, then every white with the total."""
+  """The question before a reroll: the rating, the blue and pink sparks, the priority
+  skills bought, the whites the priority list shares, then every white with the total."""
   rows = state.spark_sets["original"][0]
   lines = [f"🎲 **Reroll the sparks?** Rating {state.career_rating:,}" if state.career_rating
            else "🎲 **Reroll the sparks?**"]
   shown = describe(rows)
   for colour in ("blue", "pink"):
-    lines.append(f"{colour.title()}: {shown.get(colour, 'none')}")
-  lines.append(_important_line(rows))
+    lines.append(f"**{colour.title()}:** {shown.get(colour, 'none')}")
   lines.append(_priority_line(state))
+  lines.append(_important_line(rows))
   whites = sum(1 for row in rows if row.colour == "white")
-  lines.append(f"White: {shown.get('white', 'none')} ({whites} total)")
+  lines.append(f"**White:** {shown.get('white', 'none')} ({whites} total)")
   return "\n".join(lines)[:1900]
 
 

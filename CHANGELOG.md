@@ -14,6 +14,11 @@ as one, so a change to either is worth reading about.
   to restore TP, and the bot used to not recognise that and give up as stuck. It now
   follows your TP refill settings: with refill on and the session's limit not reached,
   it restores TP and rerolls; otherwise it keeps the sparks as they are.
+- The "Reroll the sparks?" question now lists "Bought Priority Skills" first, then
+  "Matching Sparks" (the sparks that come from your priority skills, previously called
+  Important skills). When the bot was restarted during the career it says so, since it
+  cannot know what was bought before the restart.
+- Discord notifications are sent as Mirako Machine instead of Tazuna (Uma-Auto).
 
 ## 1.0.10 (2026-09-25)
 

@@ -11,8 +11,8 @@ import core.config as config
 from utils.log import info
 
 _TIMEOUT = 5
-_USERNAME = "Tazuna (Uma-Auto)"
-_FOOTER = "Uma-Auto Notifier"
+_USERNAME = "Mirako Machine"
+_FOOTER = "Mirako Machine"
 
 _COLOR_SUCCESS = 0x2ECC71
 _COLOR_ERROR = 0xE74C3C
@@ -34,9 +34,9 @@ class StopReason(str, Enum):
 # positional identity was the known flaw; this was the marker failing to be even that.
 _STOP_STYLES = {
     StopReason.FINISHED: (_COLOR_SUCCESS, "🎉 Training Finished!"),
-    StopReason.STUCK: (_COLOR_ERROR, "🚨 Tazuna Got Stuck"),
+    StopReason.STUCK: (_COLOR_ERROR, "🚨 Mirako Machine Got Stuck"),
     StopReason.CLAW_MACHINE: (_COLOR_WARNING, "🕹️ Claw Machine - Manual Play Required"),
-    StopReason.UNKNOWN: (_COLOR_ERROR, "⚠️ Uma-Auto Stopped"),
+    StopReason.UNKNOWN: (_COLOR_ERROR, "⚠️ Mirako Machine Stopped"),
 }
 
 
@@ -183,7 +183,7 @@ def send_test(url: str = ""):
 
 
 def send_started():
-    _post(_embed(title=_titled("🥕 Uma-Auto Started"), color=_COLOR_INFO, fields=[]))
+    _post(_embed(title=_titled("🥕 Mirako Machine Started"), color=_COLOR_INFO, fields=[]))
 
 
 def send_stopped(reason: StopReason):
