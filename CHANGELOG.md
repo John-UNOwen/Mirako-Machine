@@ -8,6 +8,11 @@ Versions are read as "how much has changed", not as an API promise. Each release
 the last number. The first two move only for a step that has been deliberately chosen
 as one, so a change to either is worth reading about.
 
+## 1.0.12 (2026-09-26)
+
+- The Blue, Pink, Green and White labels in the Discord spark messages are bold, so each
+  line is easier to tell apart.
+
 ## 1.0.11 (2026-09-25)
 
 - Rerolling the sparks without enough TP no longer stops the bot. The game asks whether
